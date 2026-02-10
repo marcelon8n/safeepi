@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -10,6 +12,7 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { signOut, user } = useAuth();
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar text-sidebar-foreground flex flex-col">
@@ -43,8 +46,18 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/40">© 2026 SafeEPI</p>
+      <div className="px-3 py-4 border-t border-sidebar-border space-y-3">
+        {user && (
+          <p className="px-3 text-xs text-sidebar-foreground/50 truncate">{user.email}</p>
+        )}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-destructive"
+          onClick={signOut}
+        >
+          <LogOut className="w-5 h-5" />
+          Sair
+        </Button>
       </div>
     </aside>
   );
