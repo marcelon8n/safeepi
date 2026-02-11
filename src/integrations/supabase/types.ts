@@ -163,6 +163,38 @@ export type Database = {
           },
         ]
       }
+      perfis: {
+        Row: {
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nome_completo: string | null
+          role: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          empresa_id?: string | null
+          id: string
+          nome_completo?: string | null
+          role?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome_completo?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfis_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
