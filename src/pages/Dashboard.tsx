@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, HardHat, AlertTriangle, ClipboardList } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Users, HardHat, AlertTriangle, ClipboardList, TrendingUp, TrendingDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/AppLayout";
-import { format } from "date-fns";
+import { format, subMonths, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+
+const COLORS = ["hsl(215, 70%, 45%)", "hsl(142, 60%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(280, 60%, 50%)", "hsl(190, 70%, 45%)"];
 
 const Dashboard = () => {
   const { data: colaboradores } = useQuery({
@@ -25,19 +28,6 @@ const Dashboard = () => {
     },
   });
 
-  const { data: vencidos } = useQuery({
-    queryKey: ["vencidos"],
-    queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const { data } = await supabase
-        .from("entregas_epi")
-        .select("*, colaboradores(nome_completo), epis(nome_epi)")
-        .lt("data_vencimento", today)
-        .order("data_vencimento", { ascending: true });
-      return data ?? [];
-    },
-  });
-
   const { data: totalEpis } = useQuery({
     queryKey: ["epis-count"],
     queryFn: async () => {
@@ -46,15 +36,65 @@ const Dashboard = () => {
     },
   });
 
+  // All deliveries for charts and alerts
+  const { data: allEntregas } = useQuery({
+    queryKey: ["entregas-all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("entregas_epi")
+        .select("*, colaboradores(nome_completo), epis(nome_epi)")
+        .order("data_entrega", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const today = new Date().toISOString().split("T")[0];
+  const in7 = format(addDays(new Date(), 7), "yyyy-MM-dd");
+  const in15 = format(addDays(new Date(), 15), "yyyy-MM-dd");
+  const in30 = format(addDays(new Date(), 30), "yyyy-MM-dd");
+
+  const vencidos = allEntregas?.filter((e) => e.data_vencimento < today) ?? [];
+  const vencendo7 = allEntregas?.filter((e) => e.data_vencimento >= today && e.data_vencimento <= in7) ?? [];
+  const vencendo15 = allEntregas?.filter((e) => e.data_vencimento > in7 && e.data_vencimento <= in15) ?? [];
+  const vencendo30 = allEntregas?.filter((e) => e.data_vencimento > in15 && e.data_vencimento <= in30) ?? [];
+
+  // Monthly deliveries chart data (last 6 months)
+  const monthlyData = Array.from({ length: 6 }, (_, i) => {
+    const month = subMonths(new Date(), 5 - i);
+    const key = format(month, "yyyy-MM");
+    const label = format(month, "MMM", { locale: ptBR });
+    const count = allEntregas?.filter((e) => e.data_entrega.startsWith(key)).length ?? 0;
+    return { label, count };
+  });
+
+  // Top EPIs chart
+  const epiCounts: Record<string, number> = {};
+  allEntregas?.forEach((e) => {
+    const nome = (e.epis as any)?.nome_epi ?? "Outro";
+    epiCounts[nome] = (epiCounts[nome] ?? 0) + 1;
+  });
+  const topEpis = Object.entries(epiCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, value]) => ({ name, value }));
+
+  // Trend: this month vs last month
+  const thisMonth = format(new Date(), "yyyy-MM");
+  const lastMonth = format(subMonths(new Date(), 1), "yyyy-MM");
+  const thisCount = allEntregas?.filter((e) => e.data_entrega.startsWith(thisMonth)).length ?? 0;
+  const lastCount = allEntregas?.filter((e) => e.data_entrega.startsWith(lastMonth)).length ?? 0;
+  const trendUp = thisCount >= lastCount;
+
   const stats = [
     { label: "Colaboradores", value: colaboradores ?? 0, icon: Users, color: "text-primary" },
     { label: "EPIs Cadastrados", value: totalEpis ?? 0, icon: HardHat, color: "text-success" },
     { label: "Entregas Realizadas", value: totalEntregas ?? 0, icon: ClipboardList, color: "text-primary" },
-    { label: "EPIs Vencidos", value: vencidos?.length ?? 0, icon: AlertTriangle, color: "text-destructive" },
+    { label: "EPIs Vencidos", value: vencidos.length, icon: AlertTriangle, color: "text-destructive" },
   ];
 
   return (
     <AppLayout title="Dashboard" description="Visão geral da gestão de EPIs">
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {stats.map((stat) => (
           <Card key={stat.label} className="shadow-sm">
@@ -73,15 +113,85 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {(vencidos?.length ?? 0) > 0 && (
+      {/* Expiration Alerts */}
+      {(vencendo7.length > 0 || vencendo15.length > 0 || vencendo30.length > 0) && (
+        <div className="flex flex-wrap gap-3 mb-8">
+          {vencendo7.length > 0 && (
+            <Badge variant="destructive" className="text-sm px-3 py-1.5">
+              🔴 {vencendo7.length} vencendo em 7 dias
+            </Badge>
+          )}
+          {vencendo15.length > 0 && (
+            <Badge className="text-sm px-3 py-1.5 bg-warning text-warning-foreground">
+              🟡 {vencendo15.length} vencendo em 15 dias
+            </Badge>
+          )}
+          {vencendo30.length > 0 && (
+            <Badge className="text-sm px-3 py-1.5 bg-success text-success-foreground">
+              🟢 {vencendo30.length} vencendo em 30 dias
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              Entregas por Mês
+              {trendUp ? (
+                <TrendingUp className="w-4 h-4 text-success" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-destructive" />
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={monthlyData}>
+                <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="hsl(215, 70%, 45%)" radius={[4, 4, 0, 0]} name="Entregas" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">EPIs Mais Entregues</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {topEpis.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-10">Nenhuma entrega registrada.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie data={topEpis} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                    {topEpis.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Expired Table */}
+      {vencidos.length > 0 && (
         <Card className="border-destructive/30 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-5 h-5 text-destructive" />
               <h2 className="text-lg font-semibold text-destructive">EPIs Vencidos</h2>
-              <Badge variant="destructive" className="ml-2">{vencidos?.length}</Badge>
+              <Badge variant="destructive" className="ml-2">{vencidos.length}</Badge>
             </div>
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -92,7 +202,7 @@ const Dashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {vencidos?.map((item) => (
+                  {vencidos.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">
                         {(item.colaboradores as any)?.nome_completo ?? "—"}

@@ -11,11 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { useEmpresaId } from "@/hooks/useEmpresaId";
 
 type Epi = Tables<"epis">;
 
 const CatalogoEpis = () => {
   const queryClient = useQueryClient();
+  const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
   const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
@@ -40,7 +42,7 @@ const CatalogoEpis = () => {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("epis").insert(payload as TablesInsert<"epis">);
+        const { error } = await supabase.from("epis").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"epis">);
         if (error) throw error;
       }
     },
