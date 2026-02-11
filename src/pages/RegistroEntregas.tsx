@@ -13,9 +13,11 @@ import { ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useEmpresaId } from "@/hooks/useEmpresaId";
 
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
+  const { empresaId } = useEmpresaId();
   const [colaboradorId, setColaboradorId] = useState("");
   const [epiId, setEpiId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -73,6 +75,7 @@ const RegistroEntregas = () => {
         epi_id: epiId,
         data_entrega: dataEntrega,
         data_vencimento: dataVencimento,
+        empresa_id: empresaId,
       });
       if (error) throw error;
     },
