@@ -200,6 +200,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_empresa_onboarding: {
+        Args: { p_cnpj: string; p_nome_fantasia: string }
+        Returns: string
+      }
       get_user_empresa_id: { Args: never; Returns: string }
     }
     Enums: {

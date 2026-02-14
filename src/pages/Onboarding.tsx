@@ -20,46 +20,51 @@ const Onboarding = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !nomeFantasia || !cnpj) return;
-
     setLoading(true);
+
     try {
-      // Create the company (use RPC or raw insert without select, since SELECT policy requires empresa_id link)
+      // 1. Obter o user.id do usuário autenticado
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !authUser) {
+        console.error("Erro ao obter usuário:", authError);
+        toast.error("Erro de autenticação. Faça login novamente.");
+        return;
+      }
+
+      // 2. INSERT na tabela empresas e capturar o ID gerado
       const { data: empresa, error: empresaError } = await supabase
         .from("empresas")
         .insert({ nome_fantasia: nomeFantasia, cnpj })
         .select("id")
         .single();
 
-      // If SELECT is blocked by RLS, try fetching the id via a separate approach
-      let empresaId = empresa?.id;
       if (empresaError) {
-        // The insert may have succeeded but SELECT was blocked by RLS
-        // Check if it's specifically an RLS error on the response
-        if (empresaError.code === '42501' || empresaError.message?.includes('row-level security')) {
-          // Fetch the empresa by CNPJ using a DB function or retry after linking
-          // Use a workaround: query by cnpj after temporarily relaxing or use the insert without select
-          const { data: insertOnly, error: insertOnlyError } = await supabase
-            .from("empresas")
-            .insert({ nome_fantasia: nomeFantasia, cnpj });
-          // This will also fail since we already inserted. Let's use a different approach.
-        }
-        throw empresaError;
+        console.error("Erro ao criar empresa:", empresaError);
+        toast.error(`Erro ao criar empresa: ${empresaError.message}`);
+        return;
       }
 
-      // Link user profile to company
+      const empresaId = empresa.id;
+
+      // 3. UPDATE na tabela profiles vinculando a empresa ao usuário
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ empresa_id: empresaId })
-        .eq("user_id", user.id);
+        .eq("user_id", authUser.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erro ao vincular empresa ao perfil:", profileError);
+        toast.error(`Erro ao vincular empresa: ${profileError.message}`);
+        return;
+      }
 
+      // 4. Sucesso: invalidar cache, mostrar toast e redirecionar
       queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
       toast.success("Empresa cadastrada com sucesso!");
       navigate("/dashboard");
-    } catch (err) {
-      toast.error("Erro ao cadastrar empresa. Tente novamente.");
+    } catch (err: any) {
+      console.error("Erro inesperado no onboarding:", err);
+      toast.error(`Erro inesperado: ${err.message || "Tente novamente."}`);
     } finally {
       setLoading(false);
     }
