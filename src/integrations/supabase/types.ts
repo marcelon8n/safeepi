@@ -22,6 +22,7 @@ export type Database = {
           empresa_id: string | null
           id: string
           nome_completo: string
+          setor_id: string | null
           status: string | null
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           empresa_id?: string | null
           id?: string
           nome_completo: string
+          setor_id?: string | null
           status?: string | null
         }
         Update: {
@@ -40,6 +42,7 @@ export type Database = {
           empresa_id?: string | null
           id?: string
           nome_completo?: string
+          setor_id?: string | null
           status?: string | null
         }
         Relationships: [
@@ -48,6 +51,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
             referencedColumns: ["id"]
           },
         ]
@@ -188,6 +198,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      setores: {
+        Row: {
+          created_at: string | null
+          email_encarregado: string | null
+          empresa_id: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_encarregado?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string | null
+          email_encarregado?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
