@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, UserCog } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,6 +10,7 @@ const navItems = [
   { to: "/colaboradores", label: "Colaboradores", icon: Users },
   { to: "/epis", label: "Catálogo de EPIs", icon: HardHat },
   { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList },
+  { to: "/equipe", label: "Equipe", icon: UserCog },
 ];
 
 const AppSidebar = () => {
