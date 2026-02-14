@@ -62,6 +62,41 @@ export type Database = {
           },
         ]
       }
+      convites: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string
+          empresa_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email: string
+          empresa_id: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string
+          empresa_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           cnpj: string
@@ -242,6 +277,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invite: { Args: { p_convite_id: string }; Returns: string }
       create_empresa_onboarding: {
         Args: { p_cnpj: string; p_nome_fantasia: string }
         Returns: string
