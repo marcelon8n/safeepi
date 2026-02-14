@@ -8,24 +8,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 
 type Colaborador = Tables<"colaboradores">;
+type Setor = Tables<"setores">;
 
-const Colaboradores = () => {
+// ── Setores Tab ──────────────────────────────────────────────────────────────
+
+const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const queryClient = useQueryClient();
-  const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Colaborador | null>(null);
-  const [form, setForm] = useState({ nome_completo: "", cargo: "", email_encarregado: "" });
+  const [editing, setEditing] = useState<Setor | null>(null);
+  const [form, setForm] = useState({ nome: "", email_encarregado: "" });
 
-  const { data: colaboradores, isLoading } = useQuery({
-    queryKey: ["colaboradores"],
+  const { data: setores, isLoading } = useQuery({
+    queryKey: ["setores"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("colaboradores").select("*").order("nome_completo");
+      const { data, error } = await supabase.from("setores").select("*").order("nome");
       if (error) throw error;
       return data;
     },
@@ -34,10 +38,158 @@ const Colaboradores = () => {
   const save = useMutation({
     mutationFn: async () => {
       if (editing) {
-        const { error } = await supabase.from("colaboradores").update(form).eq("id", editing.id);
+        const { error } = await supabase.from("setores").update(form).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("colaboradores").insert({ ...form, empresa_id: empresaId } as TablesInsert<"colaboradores">);
+        const { error } = await supabase.from("setores").insert({ ...form, empresa_id: empresaId } as TablesInsert<"setores">);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["setores"] });
+      toast.success(editing ? "Setor atualizado!" : "Setor cadastrado!");
+      closeDialog();
+    },
+    onError: () => toast.error("Erro ao salvar setor."),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("setores").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["setores"] });
+      toast.success("Setor removido!");
+    },
+    onError: () => toast.error("Erro ao remover setor."),
+  });
+
+  const openEdit = (s: Setor) => {
+    setEditing(s);
+    setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "" });
+    setOpen(true);
+  };
+
+  const closeDialog = () => {
+    setOpen(false);
+    setEditing(null);
+    setForm({ nome: "", email_encarregado: "" });
+  };
+
+  return (
+    <>
+      <div className="flex justify-end mb-4">
+        <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
+          <DialogTrigger asChild>
+            <Button><Plus className="w-4 h-4 mr-2" />Novo Setor</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editing ? "Editar Setor" : "Novo Setor"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Nome do Setor *</Label>
+                <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+              </div>
+              <div>
+                <Label>Email do Encarregado</Label>
+                <Input value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
+              <Button onClick={() => save.mutate()} disabled={!form.nome || save.isPending}>
+                {save.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Email Encarregado</TableHead>
+                <TableHead className="w-24">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+              ) : setores?.length === 0 ? (
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Nenhum setor cadastrado.</TableCell></TableRow>
+              ) : (
+                setores?.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.nome}</TableCell>
+                    <TableCell>{s.email_encarregado ?? "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => remove.mutate(s.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
+  );
+};
+
+// ── Colaboradores Tab ────────────────────────────────────────────────────────
+
+const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Colaborador | null>(null);
+  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "" });
+
+  const { data: setores } = useQuery({
+    queryKey: ["setores"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("setores").select("*").order("nome");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: colaboradores, isLoading } = useQuery({
+    queryKey: ["colaboradores"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("colaboradores")
+        .select("*, setores(nome)")
+        .order("nome_completo");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        nome_completo: form.nome_completo,
+        cargo: form.cargo || null,
+        setor_id: form.setor_id || null,
+      };
+      if (editing) {
+        const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("colaboradores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"colaboradores">);
         if (error) throw error;
       }
     },
@@ -63,18 +215,24 @@ const Colaboradores = () => {
 
   const openEdit = (c: Colaborador) => {
     setEditing(c);
-    setForm({ nome_completo: c.nome_completo, cargo: c.cargo ?? "", email_encarregado: c.email_encarregado ?? "" });
+    setForm({
+      nome_completo: c.nome_completo,
+      cargo: c.cargo ?? "",
+      setor_id: (c as any).setor_id ?? "",
+    });
     setOpen(true);
   };
 
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_completo: "", cargo: "", email_encarregado: "" });
+    setForm({ nome_completo: "", cargo: "", setor_id: "" });
   };
 
+  const getSetorNome = (c: any) => c.setores?.nome ?? "—";
+
   return (
-    <AppLayout title="Colaboradores" description="Gerencie os colaboradores da empresa">
+    <>
       <div className="flex justify-end mb-4">
         <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
           <DialogTrigger asChild>
@@ -94,8 +252,17 @@ const Colaboradores = () => {
                 <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} />
               </div>
               <div>
-                <Label>Email do Encarregado</Label>
-                <Input value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} />
+                <Label>Setor</Label>
+                <Select value={form.setor_id} onValueChange={(v) => setForm({ ...form, setor_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {setores?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
@@ -115,7 +282,7 @@ const Colaboradores = () => {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Cargo</TableHead>
-                <TableHead>Email Encarregado</TableHead>
+                <TableHead>Setor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
@@ -130,7 +297,7 @@ const Colaboradores = () => {
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.nome_completo}</TableCell>
                     <TableCell>{c.cargo ?? "—"}</TableCell>
-                    <TableCell>{c.email_encarregado ?? "—"}</TableCell>
+                    <TableCell>{getSetorNome(c)}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.status === "ativo" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {c.status ?? "ativo"}
@@ -153,6 +320,29 @@ const Colaboradores = () => {
           </Table>
         </CardContent>
       </Card>
+    </>
+  );
+};
+
+// ── Main Page ────────────────────────────────────────────────────────────────
+
+const Colaboradores = () => {
+  const { empresaId } = useEmpresaId();
+
+  return (
+    <AppLayout title="Colaboradores" description="Gerencie setores e colaboradores da empresa">
+      <Tabs defaultValue="setores" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="setores">Gestão de Setores</TabsTrigger>
+          <TabsTrigger value="colaboradores">Colaboradores</TabsTrigger>
+        </TabsList>
+        <TabsContent value="setores">
+          <SetoresTab empresaId={empresaId} />
+        </TabsContent>
+        <TabsContent value="colaboradores">
+          <ColaboradoresTab empresaId={empresaId} />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 };
