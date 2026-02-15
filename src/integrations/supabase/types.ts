@@ -274,7 +274,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_alertas_vencimento: {
+        Row: {
+          colaborador_nome: string | null
+          data_vencimento: string | null
+          email_encarregado: string | null
+          empresa_id: string | null
+          entrega_id: string | null
+          epi_id: string | null
+          setor_nome: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_epi_id_fkey"
+            columns: ["epi_id"]
+            isOneToOne: false
+            referencedRelation: "epis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invite: { Args: { p_convite_id: string }; Returns: string }
