@@ -48,9 +48,10 @@ const Onboarding = () => {
         toast.error(`Erro ao criar empresa: ${error.message}`);
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
+      await queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
+      await queryClient.refetchQueries({ queryKey: ["empresa-id"] });
       toast.success("Empresa cadastrada com sucesso!");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast.error(`Erro inesperado: ${err.message || "Tente novamente."}`);
     } finally {
@@ -68,9 +69,10 @@ const Onboarding = () => {
         toast.error(`Erro ao aceitar convite: ${error.message}`);
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
+      await queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
+      await queryClient.refetchQueries({ queryKey: ["empresa-id"] });
       toast.success("Você foi vinculado à empresa com sucesso!");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast.error(`Erro inesperado: ${err.message || "Tente novamente."}`);
     } finally {
