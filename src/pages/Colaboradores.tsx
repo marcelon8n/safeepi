@@ -15,6 +15,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
+import RoleGate from "@/components/RoleGate";
 
 type Colaborador = Tables<"colaboradores">;
 type Setor = Tables<"setores">;
@@ -80,6 +81,7 @@ const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
 
   return (
     <>
+      <RoleGate allowWrite>
       <div className="flex justify-end mb-4">
         <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
           <DialogTrigger asChild>
@@ -108,6 +110,7 @@ const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
           </DialogContent>
         </Dialog>
       </div>
+      </RoleGate>
 
       <Card className="shadow-sm">
         <CardContent className="p-0">
@@ -130,6 +133,7 @@ const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
                     <TableCell className="font-medium">{s.nome}</TableCell>
                     <TableCell>{s.email_encarregado ?? "—"}</TableCell>
                     <TableCell>
+                      <RoleGate allowWrite>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
                           <Pencil className="w-4 h-4" />
@@ -154,6 +158,7 @@ const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
+                      </RoleGate>
                     </TableCell>
                   </TableRow>
                 ))
@@ -250,6 +255,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
 
   return (
     <>
+      <RoleGate allowWrite>
       <div className="flex justify-end mb-4">
         <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
           <DialogTrigger asChild>
@@ -291,6 +297,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
           </DialogContent>
         </Dialog>
       </div>
+      </RoleGate>
 
       <Card className="shadow-sm">
         <CardContent className="p-0">
@@ -321,6 +328,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                       </span>
                     </TableCell>
                     <TableCell>
+                      <RoleGate allowWrite>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                           <Pencil className="w-4 h-4" />
@@ -345,6 +353,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
+                      </RoleGate>
                     </TableCell>
                   </TableRow>
                 ))
