@@ -1,23 +1,28 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, UserCog } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, UserCog, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/colaboradores", label: "Colaboradores", icon: Users },
-  { to: "/epis", label: "Catálogo de EPIs", icon: HardHat },
-  { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList },
-  { to: "/equipe", label: "Equipe", icon: UserCog },
-];
 
 const AppSidebar = () => {
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const { canWrite, isSuperAdmin } = useRole();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
+    { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
+    { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
+    { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: true },
+    { to: "/equipe", label: "Equipe", icon: UserCog, show: canWrite },
+    { to: "/admin", label: "Administração Geral", icon: Shield, show: isSuperAdmin },
+  ];
+
+  const visibleItems = navItems.filter((item) => item.show);
 
   const sidebarContent = (
     <>
@@ -39,7 +44,7 @@ const AppSidebar = () => {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
             <Link

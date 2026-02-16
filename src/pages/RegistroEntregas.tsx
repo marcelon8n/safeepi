@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
+import RoleGate from "@/components/RoleGate";
 
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
@@ -97,6 +98,7 @@ const RegistroEntregas = () => {
   return (
     <AppLayout title="Registro de Entregas" description="Registre a entrega de EPIs aos colaboradores">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <RoleGate allowWrite>
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -144,6 +146,7 @@ const RegistroEntregas = () => {
             </Button>
           </CardContent>
         </Card>
+        </RoleGate>
 
         <div className="lg:col-span-2">
           <Card className="shadow-sm">
