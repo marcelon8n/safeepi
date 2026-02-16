@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Users, UserPlus, Copy, Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,7 +27,7 @@ const Equipe = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, user_id, nome, created_at")
+        .select("id, user_id, nome, email, created_at")
         .eq("empresa_id", empresaId!);
       if (error) throw error;
       return data;
@@ -49,7 +50,6 @@ const Equipe = () => {
     enabled: !!empresaId,
   });
 
-  // Enviar convite
   const enviarConvite = useMutation({
     mutationFn: async (email: string) => {
       const { error } = await supabase.from("convites").insert({
@@ -65,11 +65,14 @@ const Equipe = () => {
       queryClient.invalidateQueries({ queryKey: ["convites"] });
     },
     onError: (err: any) => {
-      toast.error(`Erro ao enviar convite: ${err.message}`);
+      if (err.message?.includes("convites_empresa_email_unique")) {
+        toast.error("Já existe um convite para este e-mail.");
+      } else {
+        toast.error(`Erro ao enviar convite: ${err.message}`);
+      }
     },
   });
 
-  // Excluir convite
   const excluirConvite = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("convites").delete().eq("id", id);
@@ -164,13 +167,25 @@ const Equipe = () => {
                         </Badge>
                       </div>
                       {c.status === "pendente" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => excluirConvite.mutate(c.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir convite</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o convite para "{c.email}"?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => excluirConvite.mutate(c.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   ))}
@@ -193,6 +208,7 @@ const Equipe = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
                   <TableHead>Membro desde</TableHead>
                 </TableRow>
               </TableHeader>
@@ -200,6 +216,7 @@ const Equipe = () => {
                 {membros.map((m) => (
                   <TableRow key={m.id}>
                     <TableCell>{m.nome || "Sem nome"}</TableCell>
+                    <TableCell className="text-muted-foreground">{(m as any).email || "—"}</TableCell>
                     <TableCell>
                       {m.created_at
                         ? new Date(m.created_at).toLocaleDateString("pt-BR")
@@ -209,7 +226,7 @@ const Equipe = () => {
                 ))}
                 {membros.length === 0 && !loadingMembros && (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
                       Nenhum membro encontrado.
                     </TableCell>
                   </TableRow>
