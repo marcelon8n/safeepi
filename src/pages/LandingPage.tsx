@@ -4,13 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { HardHat, Shield, Users, ClipboardList, BarChart3, Bell } from "lucide-react";
 
 const features = [
-  { icon: HardHat, title: "Catálogo de EPIs", desc: "Cadastre todos os equipamentos com CA, periodicidade e controle de validade." },
-  { icon: Users, title: "Gestão de Colaboradores", desc: "Organize sua equipe com status, cargos e encarregados." },
-  { icon: ClipboardList, title: "Registro de Entregas", desc: "Registre cada entrega com cálculo automático de vencimento." },
-  { icon: Bell, title: "Alertas de Vencimento", desc: "Receba avisos visuais de EPIs próximos do vencimento ou vencidos." },
-  { icon: BarChart3, title: "Dashboard Inteligente", desc: "Métricas em tempo real com gráficos de entregas e EPIs." },
-  { icon: Shield, title: "Multi-empresa Seguro", desc: "Dados isolados por empresa com segurança de nível bancário." },
-];
+{ icon: HardHat, title: "Catálogo de EPIs", desc: "Cadastre todos os equipamentos com CA, periodicidade e controle de validade." },
+{ icon: Users, title: "Gestão de Colaboradores", desc: "Organize sua equipe com status, cargos e encarregados." },
+{ icon: ClipboardList, title: "Registro de Entregas", desc: "Registre cada entrega com cálculo automático de vencimento." },
+{ icon: Bell, title: "Alertas de Vencimento", desc: "Receba avisos visuais de EPIs próximos do vencimento ou vencidos." },
+{ icon: BarChart3, title: "Dashboard Inteligente", desc: "Métricas em tempo real com gráficos de entregas e EPIs." },
+{ icon: Shield, title: "Multi-empresa Seguro", desc: "Dados isolados por empresa com segurança de nível bancário." }];
+
 
 const LandingPage = () => {
   return (
@@ -22,7 +22,7 @@ const LandingPage = () => {
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <HardHat className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">SafeEPI</span>
+            <span className="text-xl font-bold text-foreground">Safe Solution</span>
           </div>
           <Link to="/auth">
             <Button>Entrar</Button>
@@ -55,8 +55,8 @@ const LandingPage = () => {
           Tudo que você precisa para gerenciar EPIs
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f) => (
-            <Card key={f.title} className="shadow-sm">
+          {features.map((f) =>
+          <Card key={f.title} className="shadow-sm">
               <CardContent className="p-6">
                 <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <f.icon className="w-6 h-6 text-primary" />
@@ -65,7 +65,7 @@ const LandingPage = () => {
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
       </section>
 
@@ -92,8 +92,8 @@ const LandingPage = () => {
           © {new Date().getFullYear()} SafeEPI. Todos os direitos reservados.
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LandingPage;
