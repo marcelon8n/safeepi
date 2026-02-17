@@ -6,12 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/AppLayout";
 import { format, subMonths, addDays } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const COLORS = ["hsl(215, 70%, 45%)", "hsl(142, 60%, 40%)", "hsl(38, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(280, 60%, 50%)", "hsl(190, 70%, 45%)"];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { data: colaboradores } = useQuery({
     queryKey: ["colaboradores-count"],
     queryFn: async () => {
@@ -86,10 +88,10 @@ const Dashboard = () => {
   const trendUp = thisCount >= lastCount;
 
   const stats = [
-    { label: "Colaboradores", value: colaboradores ?? 0, icon: Users, color: "text-primary" },
-    { label: "EPIs Cadastrados", value: totalEpis ?? 0, icon: HardHat, color: "text-success" },
-    { label: "Entregas Realizadas", value: totalEntregas ?? 0, icon: ClipboardList, color: "text-primary" },
-    { label: "EPIs Vencidos", value: vencidos.length, icon: AlertTriangle, color: "text-destructive" },
+    { label: "Colaboradores", value: colaboradores ?? 0, icon: Users, color: "text-primary", href: "/colaboradores" },
+    { label: "EPIs Cadastrados", value: totalEpis ?? 0, icon: HardHat, color: "text-success", href: "/catalogo-epis" },
+    { label: "Entregas Realizadas", value: totalEntregas ?? 0, icon: ClipboardList, color: "text-primary", href: "/registro-entregas" },
+    { label: "EPIs Vencidos", value: vencidos.length, icon: AlertTriangle, color: "text-destructive", href: "/registro-entregas" },
   ];
 
   return (
@@ -97,7 +99,11 @@ const Dashboard = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {stats.map((stat) => (
-          <Card key={stat.label} className="shadow-sm">
+          <Card
+            key={stat.label}
+            className="shadow-sm cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]"
+            onClick={() => navigate(stat.href)}
+          >
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
