@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Equipe from "./pages/Equipe";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/precos" element={<Pricing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

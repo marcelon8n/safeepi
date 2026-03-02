@@ -24,9 +24,14 @@ const LandingPage = () => {
             </div>
             <span className="text-xl font-bold text-foreground">Safe Solution</span>
           </div>
-          <Link to="/auth">
-            <Button>Entrar</Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/precos" className="text-sm font-medium text-foreground hover:underline hidden sm:inline">
+              Preços
+            </Link>
+            <Link to="/auth">
+              <Button>Entrar</Button>
+            </Link>
+          </div>
         </div>
       </header>
 
