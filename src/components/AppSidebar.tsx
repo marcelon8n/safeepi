@@ -25,7 +25,8 @@ const AppSidebar = () => {
   { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
   { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: true },
   { to: "/equipe", label: "Equipe", icon: UserCog, show: canWrite },
-  { to: "/admin", label: "Administração Geral", icon: Shield, show: isSuperAdmin }];
+  { to: "/admin", label: "Administração Geral", icon: Shield, show: isSuperAdmin },
+  ];
 
   const obrasSubItems = [
     { to: "/obras", label: "Dashboard de Obras", icon: Building2 },
@@ -73,8 +74,8 @@ const AppSidebar = () => {
             </Link>);
         })}
 
-        {/* Gestão de Obras collapsible section */}
-        {permiteObras && (
+        {/* Gestão de Obras collapsible section - always visible */}
+        {(
           <Collapsible open={obrasOpen} onOpenChange={setObrasOpen}>
             <CollapsibleTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <HardHat className="w-5 h-5" />
