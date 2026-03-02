@@ -73,10 +73,12 @@ const Dashboard = () => {
   const in15 = format(addDays(new Date(), 15), "yyyy-MM-dd");
   const in30 = format(addDays(new Date(), 30), "yyyy-MM-dd");
 
-  const vencidos = allEntregas?.filter((e) => e.data_vencimento < today) ?? [];
-  const vencendo7 = allEntregas?.filter((e) => e.data_vencimento >= today && e.data_vencimento <= in7) ?? [];
-  const vencendo15 = allEntregas?.filter((e) => e.data_vencimento > in7 && e.data_vencimento <= in15) ?? [];
-  const vencendo30 = allEntregas?.filter((e) => e.data_vencimento > in15 && e.data_vencimento <= in30) ?? [];
+  // Only active deliveries count for alerts/metrics
+  const ativas = allEntregas?.filter((e) => e.status === "ativa") ?? [];
+  const vencidos = ativas.filter((e) => e.data_vencimento < today);
+  const vencendo7 = ativas.filter((e) => e.data_vencimento >= today && e.data_vencimento <= in7);
+  const vencendo15 = ativas.filter((e) => e.data_vencimento > in7 && e.data_vencimento <= in15);
+  const vencendo30 = ativas.filter((e) => e.data_vencimento > in15 && e.data_vencimento <= in30);
 
   // Conformidade metrics
   const episVencidosCount = vencidos.length;

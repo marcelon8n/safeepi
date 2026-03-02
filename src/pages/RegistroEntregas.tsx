@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ClipboardList, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ClipboardList, AlertTriangle, ArchiveRestore } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -29,6 +30,14 @@ const MOTIVOS: { value: MotivoEntrega; label: string }[] = [
   { value: "ajuste", label: "Ajuste de Tamanho" },
 ];
 
+const MOTIVO_LABELS: Record<string, string> = {
+  entrega_inicial: "Entrega Inicial",
+  vencimento: "Vencimento",
+  dano_desgaste: "Dano / Desgaste",
+  extravio: "Extravio",
+  ajuste: "Ajuste",
+};
+
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
@@ -38,6 +47,7 @@ const RegistroEntregas = () => {
   const [dataVencimento, setDataVencimento] = useState("");
   const [motivoEntrega, setMotivoEntrega] = useState<MotivoEntrega>("entrega_inicial");
   const [observacoes, setObservacoes] = useState("");
+  const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
 
   const { data: colaboradores } = useQuery({
     queryKey: ["colaboradores"],
@@ -66,7 +76,6 @@ const RegistroEntregas = () => {
     },
   });
 
-  // Check CA validity for selected EPI
   const selectedEpi = epis?.find((e) => e.id === epiId);
   const today = new Date().toISOString().split("T")[0];
   const caVencido = selectedEpi?.data_validade_ca ? selectedEpi.data_validade_ca < today : false;
@@ -90,8 +99,43 @@ const RegistroEntregas = () => {
     }
   };
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["entregas"] });
+    queryClient.invalidateQueries({ queryKey: ["vencidos"] });
+    queryClient.invalidateQueries({ queryKey: ["entregas-count"] });
+    queryClient.invalidateQueries({ queryKey: ["entregas-all"] });
+  };
+
+  // Mutation: dar baixa (devolução)
+  const devolverMutation = useMutation({
+    mutationFn: async (entregaId: string) => {
+      const { error } = await supabase
+        .from("entregas_epi")
+        .update({ status: "inativa", status_troca: "concluida" })
+        .eq("id", entregaId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateAll();
+      toast.success("Baixa registrada com sucesso!");
+      setDevolucaoId(null);
+    },
+    onError: () => toast.error("Erro ao registrar baixa."),
+  });
+
+  // Mutation: registrar nova entrega (com baixa automática para vencimento/dano)
   const registrar = useMutation({
     mutationFn: async () => {
+      // Auto-deactivate previous active delivery for same colaborador+epi when replacing
+      if (motivoEntrega === "vencimento" || motivoEntrega === "dano_desgaste") {
+        await supabase
+          .from("entregas_epi")
+          .update({ status: "inativa", status_troca: "concluida" })
+          .eq("colaborador_id", colaboradorId)
+          .eq("epi_id", epiId)
+          .eq("status", "ativa");
+      }
+
       const { error } = await supabase.from("entregas_epi").insert({
         colaborador_id: colaboradorId,
         epi_id: epiId,
@@ -104,9 +148,7 @@ const RegistroEntregas = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["entregas"] });
-      queryClient.invalidateQueries({ queryKey: ["vencidos"] });
-      queryClient.invalidateQueries({ queryKey: ["entregas-count"] });
+      invalidateAll();
       toast.success("Entrega registrada com sucesso!");
       setColaboradorId("");
       setEpiId("");
@@ -118,16 +160,30 @@ const RegistroEntregas = () => {
     onError: () => toast.error("Erro ao registrar entrega."),
   });
 
-  const MOTIVO_LABELS: Record<string, string> = {
-    entrega_inicial: "Entrega Inicial",
-    vencimento: "Vencimento",
-    dano_desgaste: "Dano / Desgaste",
-    extravio: "Extravio",
-    ajuste: "Ajuste",
-  };
-
   return (
     <AppLayout title="Registro de Entregas" description="Registre a entrega de EPIs aos colaboradores">
+      {/* Dialog de confirmação de devolução */}
+      <Dialog open={!!devolucaoId} onOpenChange={(open) => !open && setDevolucaoId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Devolução / Baixa</DialogTitle>
+            <DialogDescription>
+              Confirmar a devolução/baixa deste EPI? O status será alterado para inativo e a troca será marcada como concluída.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDevolucaoId(null)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => devolucaoId && devolverMutation.mutate(devolucaoId)}
+              disabled={devolverMutation.isPending}
+            >
+              {devolverMutation.isPending ? "Processando..." : "Confirmar Baixa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <RoleGate allowWrite>
         <Card className="shadow-sm">
@@ -163,7 +219,6 @@ const RegistroEntregas = () => {
               </Select>
             </div>
 
-            {/* CA Vencido Alert */}
             {caVencido && (
               <Alert variant="destructive" className="border-destructive bg-destructive/10">
                 <AlertTriangle className="h-4 w-4" />
@@ -232,18 +287,20 @@ const RegistroEntregas = () => {
                     <TableHead>Entrega</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
                   ) : entregas?.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma entrega registrada.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma entrega registrada.</TableCell></TableRow>
                   ) : (
                     entregas?.map((e) => {
-                      const vencido = e.data_vencimento < today;
+                      const isAtiva = e.status === "ativa";
+                      const vencido = isAtiva && e.data_vencimento < today;
                       return (
-                        <TableRow key={e.id}>
+                        <TableRow key={e.id} className={!isAtiva ? "opacity-60" : ""}>
                           <TableCell className="font-medium">{(e.colaboradores as any)?.nome_completo ?? "—"}</TableCell>
                           <TableCell>{(e.epis as any)?.nome_epi ?? "—"}</TableCell>
                           <TableCell>
@@ -254,9 +311,25 @@ const RegistroEntregas = () => {
                           <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                           <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                           <TableCell>
-                            <Badge variant={vencido ? "destructive" : "secondary"}>
-                              {vencido ? "Vencido" : "Válido"}
-                            </Badge>
+                            {isAtiva ? (
+                              <Badge variant={vencido ? "destructive" : "secondary"}>
+                                {vencido ? "Vencido" : "Válido"}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground">Inativa</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isAtiva && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Dar baixa / Devolver"
+                                onClick={() => setDevolucaoId(e.id)}
+                              >
+                                <ArchiveRestore className="w-4 h-4" />
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
