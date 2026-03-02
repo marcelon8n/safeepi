@@ -14,7 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Search, MapPin, Calendar, User, AlertTriangle, Building2, ArrowRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Search, MapPin, Calendar, User, AlertTriangle, Building2, ArrowRight, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -35,7 +36,28 @@ const Obras = () => {
   const [form, setForm] = useState({
     nome: "", cliente: "", endereco: "", cidade: "", responsavel: "",
     data_inicio: format(new Date(), "yyyy-MM-dd"), data_prevista_fim: "", status: "ativa",
+    requisitos_obrigatorios: [] as string[],
   });
+
+  const REQUISITOS_PADRAO = [
+    { value: "ASO", label: "ASO (Atestado de Saúde Ocupacional)", group: "Saúde" },
+    { value: "NR-01", label: "NR-01 (Integração)", group: "Treinamentos" },
+    { value: "NR-10", label: "NR-10 (Elétrica)", group: "Treinamentos" },
+    { value: "NR-12", label: "NR-12 (Máquinas)", group: "Treinamentos" },
+    { value: "NR-18", label: "NR-18 (Construção Civil)", group: "Treinamentos" },
+    { value: "NR-33", label: "NR-33 (Espaço Confinado)", group: "Treinamentos" },
+    { value: "NR-35", label: "NR-35 (Trabalho em Altura)", group: "Treinamentos" },
+    { value: "Ficha de EPI", label: "Ficha de EPI Atualizada (NR-06)", group: "Equipamentos" },
+  ];
+
+  const toggleRequisito = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      requisitos_obrigatorios: prev.requisitos_obrigatorios.includes(value)
+        ? prev.requisitos_obrigatorios.filter((r) => r !== value)
+        : [...prev.requisitos_obrigatorios, value],
+    }));
+  };
   const [alvaraFile, setAlvaraFile] = useState<File | null>(null);
 
   const { data: limiteObras } = useQuery({
@@ -91,6 +113,7 @@ const Obras = () => {
         cidade: form.cidade || null, responsavel: form.responsavel || null,
         data_inicio: form.data_inicio, data_prevista_fim: form.data_prevista_fim || null,
         status: form.status, empresa_id: empresaId,
+        requisitos_obrigatorios: form.requisitos_obrigatorios,
       };
       if (alvara_url) payload.alvara_url = alvara_url;
       const { error } = await supabase.from("obras").insert(payload);
@@ -108,7 +131,7 @@ const Obras = () => {
   const closeDialog = () => {
     setOpen(false);
     setAlvaraFile(null);
-    setForm({ nome: "", cliente: "", endereco: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), data_prevista_fim: "", status: "ativa" });
+    setForm({ nome: "", cliente: "", endereco: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), data_prevista_fim: "", status: "ativa", requisitos_obrigatorios: [] });
   };
 
   const filtered = obras?.filter((o) =>
@@ -185,6 +208,26 @@ const Obras = () => {
                 <div><Label>Previsão de Término</Label><Input type="date" value={form.data_prevista_fim} onChange={(e) => setForm({ ...form, data_prevista_fim: e.target.value })} /></div>
               </div>
               <div><Label>Engenheiro Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
+              <div>
+                <Label className="mb-2 block flex items-center gap-2"><ShieldCheck className="w-4 h-4" />Requisitos de Acesso</Label>
+                <p className="text-xs text-muted-foreground mb-3">Selecione os documentos obrigatórios para alocação nesta obra.</p>
+                {["Saúde", "Treinamentos", "Equipamentos"].map((group) => (
+                  <div key={group} className="mb-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{group}</p>
+                    <div className="space-y-1.5">
+                      {REQUISITOS_PADRAO.filter((r) => r.group === group).map((r) => (
+                        <label key={r.value} className="flex items-center gap-2 cursor-pointer text-sm hover:bg-muted/50 rounded px-2 py-1 transition-colors">
+                          <Checkbox
+                            checked={form.requisitos_obrigatorios.includes(r.value)}
+                            onCheckedChange={() => toggleRequisito(r.value)}
+                          />
+                          {r.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div>
                 <Label>Alvará / Documento</Label>
                 <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setAlvaraFile(e.target.files?.[0] ?? null)} />
