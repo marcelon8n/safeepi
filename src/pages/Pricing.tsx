@@ -171,7 +171,7 @@ const Pricing = () => {
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-6 text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} SafeEPI. Todos os direitos reservados.
+          © {new Date().getFullYear()} Safe Solutions. Todos os direitos reservados.
         </div>
       </footer>
     </div>

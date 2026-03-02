@@ -94,7 +94,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="max-w-6xl mx-auto px-6 py-6 text-center text-sm text-muted-foreground shadow-none">
-          © {new Date().getFullYear()} SafeEPI. Todos os direitos reservados.
+          © {new Date().getFullYear()} Safe Solutions. Todos os direitos reservados.
         </div>
       </footer>
     </div>);

@@ -65,7 +65,7 @@ const Auth = () => {
           <div className="mx-auto w-14 h-14 rounded-2xl bg-primary flex items-center justify-center">
             <HardHat className="w-7 h-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">SafeEPI</CardTitle>
+          <CardTitle className="text-2xl font-bold">Safe Solutions</CardTitle>
           <CardDescription>
             {isLogin ? "Entre na sua conta para continuar" : "Crie sua conta para começar"}
           </CardDescription>
