@@ -166,24 +166,41 @@ export type Database = {
       }
       empresas: {
         Row: {
+          asaas_customer_id: string | null
           cnpj: string
           created_at: string | null
           id: string
           nome_fantasia: string
+          plano_id: string | null
+          status_assinatura: string | null
         }
         Insert: {
+          asaas_customer_id?: string | null
           cnpj: string
           created_at?: string | null
           id?: string
           nome_fantasia: string
+          plano_id?: string | null
+          status_assinatura?: string | null
         }
         Update: {
+          asaas_customer_id?: string | null
           cnpj?: string
           created_at?: string | null
           id?: string
           nome_fantasia?: string
+          plano_id?: string | null
+          status_assinatura?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "empresas_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       entregas_epi: {
         Row: {
@@ -370,6 +387,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      planos: {
+        Row: {
+          id: string
+          limite_colaboradores: number
+          nome: string
+          permite_obras: boolean | null
+          slug: string
+          valor_mensal: number | null
+        }
+        Insert: {
+          id?: string
+          limite_colaboradores: number
+          nome: string
+          permite_obras?: boolean | null
+          slug: string
+          valor_mensal?: number | null
+        }
+        Update: {
+          id?: string
+          limite_colaboradores?: number
+          nome?: string
+          permite_obras?: boolean | null
+          slug?: string
+          valor_mensal?: number | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
