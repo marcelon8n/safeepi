@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
@@ -24,6 +25,7 @@ type Setor = Tables<"setores">;
 
 // ── Obras ──
 const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Obra | null>(null);
@@ -88,8 +90,9 @@ const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
       {!podeCriar && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Você atingiu o limite de {limiteObras?.total_atual} obras do plano atual. Faça upgrade para o plano Gestão Avançada para obras ilimitadas.
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span>Você atingiu o limite de {limiteObras?.total_atual} obras do plano atual. Faça upgrade para o plano Gestão Avançada para obras ilimitadas.</span>
+            <Button size="sm" variant="outline" onClick={() => navigate("/precos")}>Ver planos</Button>
           </AlertDescription>
         </Alert>
       )}
