@@ -142,9 +142,10 @@ const Pricing = () => {
                   "bg-[#1e3a5f] hover:bg-[#152d4a] text-white" :
                   "bg-white text-[#1e3a5f] border border-[#1e3a5f] hover:bg-[#1e3a5f]/5"}`
                   }
-                  variant={plan.highlight ? "default" : "outline"}>
+                  variant={plan.highlight ? "default" : "outline"}
+                  disabled={plan.price === "Em breve"}>
                   
-                    Assinar Plano
+                    {plan.price === "Em breve" ? "Em breve" : "Assinar Plano"}
                   </Button>
                 </a>
               </CardContent>
