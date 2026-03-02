@@ -27,6 +27,7 @@ const AlocacaoEquipe = () => {
       const { data, error } = await supabase
         .from("obras")
         .select("id, nome, status, requisitos_obrigatorios")
+        .eq("empresa_id", empresaId!)
         .eq("status", "ativa")
         .order("nome");
       if (error) throw error;
@@ -45,6 +46,7 @@ const AlocacaoEquipe = () => {
       const { data, error } = await supabase
         .from("colaboradores")
         .select("id, nome_completo, cargo, status")
+        .eq("empresa_id", empresaId!)
         .eq("status", "ativo")
         .order("nome_completo");
       if (error) throw error;
@@ -53,7 +55,7 @@ const AlocacaoEquipe = () => {
     enabled: !!empresaId,
   });
 
-  // Fetch requisitos de todos os colaboradores
+  // Fetch requisitos de todos os colaboradores (via RLS + join on colaboradores.empresa_id)
   const { data: requisitosColab } = useQuery({
     queryKey: ["requisitos-colaboradores", empresaId],
     queryFn: async () => {
@@ -61,7 +63,7 @@ const AlocacaoEquipe = () => {
         .from("requisitos_colaboradores")
         .select("colaborador_id, tipo_requisito, data_validade, status_verificado");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
     enabled: !!empresaId,
   });
@@ -73,9 +75,10 @@ const AlocacaoEquipe = () => {
       const { data, error } = await supabase
         .from("entregas_epi")
         .select("colaborador_id, status, data_vencimento")
+        .eq("empresa_id", empresaId!)
         .eq("status", "ativa");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
     enabled: !!empresaId,
   });
@@ -254,6 +257,11 @@ const AlocacaoEquipe = () => {
                             <div>
                               <p className="font-medium text-sm">{c.nome_completo}</p>
                               <p className="text-xs text-muted-foreground sm:hidden">{c.cargo ?? "—"}</p>
+                              {!apto && pendentes.length > 0 && (
+                                <p className="text-[11px] text-destructive mt-0.5">
+                                  Pendências: {pendentes.join(", ")}
+                                </p>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
