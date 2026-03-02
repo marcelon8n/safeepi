@@ -197,7 +197,11 @@ export type Database = {
           hash_registro: string | null
           id: string
           ip_registro: string | null
+          motivo_entrega:
+            | Database["public"]["Enums"]["motivo_entrega_tipo"]
+            | null
           notificado_em: string | null
+          observacoes: string | null
           responsavel_id: string | null
           status: string | null
           status_troca: string | null
@@ -214,7 +218,11 @@ export type Database = {
           hash_registro?: string | null
           id?: string
           ip_registro?: string | null
+          motivo_entrega?:
+            | Database["public"]["Enums"]["motivo_entrega_tipo"]
+            | null
           notificado_em?: string | null
+          observacoes?: string | null
           responsavel_id?: string | null
           status?: string | null
           status_troca?: string | null
@@ -231,7 +239,11 @@ export type Database = {
           hash_registro?: string | null
           id?: string
           ip_registro?: string | null
+          motivo_entrega?:
+            | Database["public"]["Enums"]["motivo_entrega_tipo"]
+            | null
           notificado_em?: string | null
+          observacoes?: string | null
           responsavel_id?: string | null
           status?: string | null
           status_troca?: string | null
@@ -272,7 +284,9 @@ export type Database = {
         Row: {
           ca_numero: string | null
           created_at: string | null
+          data_validade_ca: string | null
           empresa_id: string
+          fabricante: string | null
           id: string
           nome_epi: string
           periodicidade_dias: number
@@ -280,7 +294,9 @@ export type Database = {
         Insert: {
           ca_numero?: string | null
           created_at?: string | null
+          data_validade_ca?: string | null
           empresa_id: string
+          fabricante?: string | null
           id?: string
           nome_epi: string
           periodicidade_dias: number
@@ -288,7 +304,9 @@ export type Database = {
         Update: {
           ca_numero?: string | null
           created_at?: string | null
+          data_validade_ca?: string | null
           empresa_id?: string
+          fabricante?: string | null
           id?: string
           nome_epi?: string
           periodicidade_dias?: number
@@ -443,6 +461,23 @@ export type Database = {
           },
         ]
       }
+      view_dashboard_conformidade: {
+        Row: {
+          cas_vencidos: number | null
+          colaboradores_irregulares: number | null
+          empresa_id: string | null
+          epis_vencidos: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_epis_para_escalacao: {
         Row: {
           data_vencimento: string | null
@@ -533,6 +568,12 @@ export type Database = {
       get_user_empresa_id: { Args: never; Returns: string }
     }
     Enums: {
+      motivo_entrega_tipo:
+        | "entrega_inicial"
+        | "vencimento"
+        | "dano_desgaste"
+        | "extravio"
+        | "ajuste"
       user_role: "super_admin" | "admin" | "viewer"
     }
     CompositeTypes: {
@@ -661,6 +702,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      motivo_entrega_tipo: [
+        "entrega_inicial",
+        "vencimento",
+        "dano_desgaste",
+        "extravio",
+        "ajuste",
+      ],
       user_role: ["super_admin", "admin", "viewer"],
     },
   },

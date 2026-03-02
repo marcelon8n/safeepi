@@ -7,14 +7,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ClipboardList, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
+import type { Database } from "@/integrations/supabase/types";
+
+type MotivoEntrega = Database["public"]["Enums"]["motivo_entrega_tipo"];
+
+const MOTIVOS: { value: MotivoEntrega; label: string }[] = [
+  { value: "entrega_inicial", label: "Entrega Inicial" },
+  { value: "vencimento", label: "Vencimento" },
+  { value: "dano_desgaste", label: "Dano / Desgaste" },
+  { value: "extravio", label: "Extravio" },
+  { value: "ajuste", label: "Ajuste de Tamanho" },
+];
 
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
@@ -23,6 +36,8 @@ const RegistroEntregas = () => {
   const [epiId, setEpiId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(format(new Date(), "yyyy-MM-dd"));
   const [dataVencimento, setDataVencimento] = useState("");
+  const [motivoEntrega, setMotivoEntrega] = useState<MotivoEntrega>("entrega_inicial");
+  const [observacoes, setObservacoes] = useState("");
 
   const { data: colaboradores } = useQuery({
     queryKey: ["colaboradores"],
@@ -51,6 +66,12 @@ const RegistroEntregas = () => {
     },
   });
 
+  // Check CA validity for selected EPI
+  const selectedEpi = epis?.find((e) => e.id === epiId);
+  const today = new Date().toISOString().split("T")[0];
+  const caVencido = selectedEpi?.data_validade_ca ? selectedEpi.data_validade_ca < today : false;
+  const showObservacoes = motivoEntrega === "dano_desgaste" || motivoEntrega === "extravio";
+
   const handleEpiChange = (id: string) => {
     setEpiId(id);
     const epi = epis?.find((e) => e.id === id);
@@ -77,6 +98,8 @@ const RegistroEntregas = () => {
         data_entrega: dataEntrega,
         data_vencimento: dataVencimento,
         empresa_id: empresaId,
+        motivo_entrega: motivoEntrega,
+        observacoes: observacoes || null,
       });
       if (error) throw error;
     },
@@ -89,11 +112,19 @@ const RegistroEntregas = () => {
       setEpiId("");
       setDataEntrega(format(new Date(), "yyyy-MM-dd"));
       setDataVencimento("");
+      setMotivoEntrega("entrega_inicial");
+      setObservacoes("");
     },
     onError: () => toast.error("Erro ao registrar entrega."),
   });
 
-  const today = new Date().toISOString().split("T")[0];
+  const MOTIVO_LABELS: Record<string, string> = {
+    entrega_inicial: "Entrega Inicial",
+    vencimento: "Vencimento",
+    dano_desgaste: "Dano / Desgaste",
+    extravio: "Extravio",
+    ajuste: "Ajuste",
+  };
 
   return (
     <AppLayout title="Registro de Entregas" description="Registre a entrega de EPIs aos colaboradores">
@@ -124,11 +155,49 @@ const RegistroEntregas = () => {
                 <SelectTrigger><SelectValue placeholder="Selecione o EPI" /></SelectTrigger>
                 <SelectContent>
                   {epis?.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.nome_epi}</SelectItem>
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.nome_epi} {e.ca_numero ? `(CA: ${e.ca_numero})` : ""}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* CA Vencido Alert */}
+            {caVencido && (
+              <Alert variant="destructive" className="border-destructive bg-destructive/10">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="font-semibold">
+                  ⚠️ O CA deste EPI está vencido ({selectedEpi?.data_validade_ca ? format(new Date(selectedEpi.data_validade_ca), "dd/MM/yyyy") : ""}). 
+                  Entrega bloqueada por irregularidade jurídica.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div>
+              <Label>Motivo da Entrega *</Label>
+              <Select value={motivoEntrega} onValueChange={(v) => setMotivoEntrega(v as MotivoEntrega)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MOTIVOS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {showObservacoes && (
+              <div>
+                <Label>Observações</Label>
+                <Textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  placeholder="Descreva o ocorrido..."
+                  rows={3}
+                />
+              </div>
+            )}
+
             <div>
               <Label>Data de Entrega *</Label>
               <Input type="date" value={dataEntrega} onChange={(e) => handleDataChange(e.target.value)} />
@@ -140,7 +209,7 @@ const RegistroEntregas = () => {
             <Button
               className="w-full"
               onClick={() => registrar.mutate()}
-              disabled={!colaboradorId || !epiId || !dataEntrega || !dataVencimento || registrar.isPending}
+              disabled={!colaboradorId || !epiId || !dataEntrega || !dataVencimento || caVencido || registrar.isPending}
             >
               {registrar.isPending ? "Registrando..." : "Registrar Entrega"}
             </Button>
@@ -159,6 +228,7 @@ const RegistroEntregas = () => {
                   <TableRow>
                     <TableHead>Colaborador</TableHead>
                     <TableHead>EPI</TableHead>
+                    <TableHead>Motivo</TableHead>
                     <TableHead>Entrega</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Status</TableHead>
@@ -166,9 +236,9 @@ const RegistroEntregas = () => {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
                   ) : entregas?.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma entrega registrada.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma entrega registrada.</TableCell></TableRow>
                   ) : (
                     entregas?.map((e) => {
                       const vencido = e.data_vencimento < today;
@@ -176,6 +246,11 @@ const RegistroEntregas = () => {
                         <TableRow key={e.id}>
                           <TableCell className="font-medium">{(e.colaboradores as any)?.nome_completo ?? "—"}</TableCell>
                           <TableCell>{(e.epis as any)?.nome_epi ?? "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {MOTIVO_LABELS[e.motivo_entrega ?? ""] ?? "—"}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                           <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                           <TableCell>

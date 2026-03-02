@@ -7,10 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
@@ -22,7 +24,9 @@ const CatalogoEpis = () => {
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
-  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+
+  const today = new Date().toISOString().split("T")[0];
 
   const { data: epis, isLoading } = useQuery({
     queryKey: ["epis"],
@@ -39,6 +43,8 @@ const CatalogoEpis = () => {
         nome_epi: form.nome_epi,
         ca_numero: form.ca_numero || null,
         periodicidade_dias: parseInt(form.periodicidade_dias),
+        fabricante: form.fabricante || null,
+        data_validade_ca: form.data_validade_ca || null,
       };
       if (editing) {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
@@ -70,14 +76,29 @@ const CatalogoEpis = () => {
 
   const openEdit = (e: Epi) => {
     setEditing(e);
-    setForm({ nome_epi: e.nome_epi, ca_numero: e.ca_numero ?? "", periodicidade_dias: String(e.periodicidade_dias) });
+    setForm({
+      nome_epi: e.nome_epi,
+      ca_numero: e.ca_numero ?? "",
+      periodicidade_dias: String(e.periodicidade_dias),
+      fabricante: e.fabricante ?? "",
+      data_validade_ca: e.data_validade_ca ?? "",
+    });
     setOpen(true);
   };
 
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+  };
+
+  const getCaStatus = (e: Epi) => {
+    if (!e.data_validade_ca) return null;
+    if (e.data_validade_ca < today) return "vencido";
+    const in30 = new Date();
+    in30.setDate(in30.getDate() + 30);
+    if (e.data_validade_ca <= format(in30, "yyyy-MM-dd")) return "proximo";
+    return "valido";
   };
 
   return (
@@ -97,9 +118,19 @@ const CatalogoEpis = () => {
                 <Label>Nome do EPI *</Label>
                 <Input value={form.nome_epi} onChange={(e) => setForm({ ...form, nome_epi: e.target.value })} />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Número do CA</Label>
+                  <Input value={form.ca_numero} onChange={(e) => setForm({ ...form, ca_numero: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Validade do CA</Label>
+                  <Input type="date" value={form.data_validade_ca} onChange={(e) => setForm({ ...form, data_validade_ca: e.target.value })} />
+                </div>
+              </div>
               <div>
-                <Label>Número do CA</Label>
-                <Input value={form.ca_numero} onChange={(e) => setForm({ ...form, ca_numero: e.target.value })} />
+                <Label>Fabricante</Label>
+                <Input value={form.fabricante} onChange={(e) => setForm({ ...form, fabricante: e.target.value })} placeholder="Ex: 3M, Honeywell..." />
               </div>
               <div>
                 <Label>Periodicidade (dias) *</Label>
@@ -124,51 +155,65 @@ const CatalogoEpis = () => {
               <TableRow>
                 <TableHead>Nome do EPI</TableHead>
                 <TableHead>CA</TableHead>
-                <TableHead>Periodicidade (dias)</TableHead>
+                <TableHead>Validade CA</TableHead>
+                <TableHead>Fabricante</TableHead>
+                <TableHead>Periodicidade</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
               ) : epis?.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum EPI cadastrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum EPI cadastrado.</TableCell></TableRow>
               ) : (
-                epis?.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="font-medium">{e.nome_epi}</TableCell>
-                    <TableCell>{e.ca_numero ?? "—"}</TableCell>
-                    <TableCell>{e.periodicidade_dias} dias</TableCell>
-                    <TableCell>
-                      <RoleGate allowWrite>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(e)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir EPI</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir "{e.nome_epi}"? Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => remove.mutate(e.id)}>Excluir</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                      </RoleGate>
-                    </TableCell>
-                  </TableRow>
-                ))
+                epis?.map((e) => {
+                  const caStatus = getCaStatus(e);
+                  return (
+                    <TableRow key={e.id}>
+                      <TableCell className="font-medium">{e.nome_epi}</TableCell>
+                      <TableCell>{e.ca_numero ?? "—"}</TableCell>
+                      <TableCell>
+                        {e.data_validade_ca ? (
+                          <Badge variant={caStatus === "vencido" ? "destructive" : caStatus === "proximo" ? "outline" : "secondary"}
+                            className={caStatus === "proximo" ? "border-warning text-warning" : ""}>
+                            {format(new Date(e.data_validade_ca), "dd/MM/yyyy")}
+                          </Badge>
+                        ) : "—"}
+                      </TableCell>
+                      <TableCell>{e.fabricante ?? "—"}</TableCell>
+                      <TableCell>{e.periodicidade_dias} dias</TableCell>
+                      <TableCell>
+                        <RoleGate allowWrite>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(e)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir EPI</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir "{e.nome_epi}"? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => remove.mutate(e.id)}>Excluir</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                        </RoleGate>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
