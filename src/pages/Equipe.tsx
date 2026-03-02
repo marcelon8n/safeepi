@@ -7,9 +7,11 @@ import AdminUsers from "@/components/admin/AdminUsers";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import { ObrasSection, SetoresSection } from "@/components/admin/AdminStructure";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
+import { useRole } from "@/hooks/useRole";
 
 const Equipe = () => {
   const { empresaId } = useEmpresaId();
+  const { isSuperAdmin } = useRole();
 
   return (
     <AppLayout title="Administração Geral" description="Painel de gestão centralizada da empresa">
@@ -23,10 +25,12 @@ const Equipe = () => {
             <HardHat className="w-4 h-4" />
             Catálogo de EPIs
           </TabsTrigger>
-          <TabsTrigger value="obras" className="gap-2">
-            <Building2 className="w-4 h-4" />
-            Obras
-          </TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="obras" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              Obras
+            </TabsTrigger>
+          )}
           <TabsTrigger value="setores" className="gap-2">
             <Layers className="w-4 h-4" />
             Setores
