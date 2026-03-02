@@ -1,11 +1,22 @@
 
-## Correção dos Links dos Cards do Dashboard
 
-**Problema:** Os cards do Dashboard apontam para rotas inexistentes (`/catalogo-epis` e `/registro-entregas`), enquanto as rotas reais são `/epis` e `/entregas`.
+## Correção: Permitir alterar status do Colaborador (Ativo/Inativo)
 
-**Correção:** Atualizar os `href` no array `stats` em `Dashboard.tsx` (linhas 92-94):
+**Problema:** O formulário de edição do colaborador não inclui o campo `status`, então não há como alterá-lo.
 
-- `"/catalogo-epis"` → `"/epis"`
-- `"/registro-entregas"` → `"/entregas"` (ambos os cards)
+**Solução:** Adicionar um campo `Select` de status no formulário de criação/edição do colaborador.
 
-Alteração em um único arquivo, 3 valores de string.
+### Alterações em `src/pages/Colaboradores.tsx`:
+
+1. **Adicionar `status` ao estado do formulário** (linha 180): incluir `status: "ativo"` no objeto inicial.
+
+2. **Incluir `status` no payload de save** (linhas 205-209): enviar `status: form.status` junto com os outros campos.
+
+3. **Preencher `status` ao abrir edição** (linhas 240-244): carregar `c.status ?? "ativo"` no form.
+
+4. **Resetar `status` ao fechar** (linha 251): voltar para `"ativo"`.
+
+5. **Adicionar campo Select no formulário** (após o campo Setor, ~linha 289): um `Select` com opções "Ativo" e "Inativo".
+
+Alteração em um único arquivo, sem mudanças no banco de dados.
+
