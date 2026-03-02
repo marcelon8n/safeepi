@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -28,6 +29,19 @@ const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
   const [editing, setEditing] = useState<Obra | null>(null);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ nome: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), status: "ativa" });
+
+  const { data: limiteObras } = useQuery({
+    queryKey: ["limite-obras", empresaId],
+    queryFn: async () => {
+      if (!empresaId) return null;
+      const { data, error } = await supabase.rpc("verificar_limite_obras", { empresa_uuid: empresaId });
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+    enabled: !!empresaId,
+  });
+
+  const podeCriar = limiteObras?.pode_criar ?? true;
 
   const { data: obras, isLoading } = useQuery({
     queryKey: ["admin-obras"],
@@ -51,13 +65,13 @@ const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-obras"] }); toast.success(editing ? "Obra atualizada!" : "Obra cadastrada!"); closeDialog(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-obras"] }); qc.invalidateQueries({ queryKey: ["limite-obras"] }); toast.success(editing ? "Obra atualizada!" : "Obra cadastrada!"); closeDialog(); },
     onError: () => toast.error("Erro ao salvar obra."),
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("obras").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-obras"] }); toast.success("Obra removida!"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-obras"] }); qc.invalidateQueries({ queryKey: ["limite-obras"] }); toast.success("Obra removida!"); },
     onError: () => toast.error("Erro ao remover obra."),
   });
 
@@ -71,13 +85,21 @@ const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
 
   return (
     <div className="space-y-4">
+      {!podeCriar && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Você atingiu o limite de {limiteObras?.total_atual} obras do plano atual. Faça upgrade para o plano Gestão Avançada para obras ilimitadas.
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar obra..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Nova Obra</Button></DialogTrigger>
+          <DialogTrigger asChild><Button disabled={!podeCriar}><Plus className="w-4 h-4 mr-2" />Nova Obra</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "Editar Obra" : "Nova Obra"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">

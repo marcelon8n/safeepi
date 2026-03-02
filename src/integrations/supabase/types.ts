@@ -392,6 +392,7 @@ export type Database = {
         Row: {
           id: string
           limite_colaboradores: number
+          limite_obras: number | null
           nome: string
           permite_obras: boolean | null
           slug: string
@@ -400,6 +401,7 @@ export type Database = {
         Insert: {
           id?: string
           limite_colaboradores: number
+          limite_obras?: number | null
           nome: string
           permite_obras?: boolean | null
           slug: string
@@ -408,6 +410,7 @@ export type Database = {
         Update: {
           id?: string
           limite_colaboradores?: number
+          limite_obras?: number | null
           nome?: string
           permite_obras?: boolean | null
           slug?: string
@@ -610,6 +613,14 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_empresa_id: { Args: never; Returns: string }
+      verificar_limite_obras: {
+        Args: { empresa_uuid: string }
+        Returns: {
+          limite_maximo: number
+          pode_criar: boolean
+          total_atual: number
+        }[]
+      }
     }
     Enums: {
       motivo_entrega_tipo:
