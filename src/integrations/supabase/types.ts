@@ -14,6 +14,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      alocacoes_obras: {
+        Row: {
+          ativo: boolean | null
+          colaborador_id: string | null
+          data_alocacao: string | null
+          id: string
+          obra_id: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          colaborador_id?: string | null
+          data_alocacao?: string | null
+          id?: string
+          obra_id?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          colaborador_id?: string | null
+          data_alocacao?: string | null
+          id?: string
+          obra_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
+          },
+          {
+            foreignKeyName: "alocacoes_obras_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auditoria: {
         Row: {
           acao: string
@@ -147,6 +193,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "colaboradores"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
           },
           {
             foreignKeyName: "colaboradores_obras_empresa_id_fkey"
@@ -318,6 +371,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "colaboradores"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
           },
           {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
@@ -510,6 +570,54 @@ export type Database = {
           },
         ]
       }
+      requisitos_colaboradores: {
+        Row: {
+          colaborador_id: string | null
+          data_emissao: string | null
+          data_validade: string | null
+          documento_url: string | null
+          id: string
+          status_verificado: boolean | null
+          tipo_requisito: string
+          updated_at: string | null
+        }
+        Insert: {
+          colaborador_id?: string | null
+          data_emissao?: string | null
+          data_validade?: string | null
+          documento_url?: string | null
+          id?: string
+          status_verificado?: boolean | null
+          tipo_requisito: string
+          updated_at?: string | null
+        }
+        Update: {
+          colaborador_id?: string | null
+          data_emissao?: string | null
+          data_validade?: string | null
+          documento_url?: string | null
+          id?: string
+          status_verificado?: boolean | null
+          tipo_requisito?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           created_at: string | null
@@ -561,6 +669,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      view_conformidade_colaboradores: {
+        Row: {
+          cargo: string | null
+          colaborador_id: string | null
+          integracao_concluida: boolean | null
+          nome_colaborador: string | null
+          possui_epis: boolean | null
+          status_colaborador: string | null
+          validade_aso: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          colaborador_id?: string | null
+          integracao_concluida?: never
+          nome_colaborador?: string | null
+          possui_epis?: never
+          status_colaborador?: string | null
+          validade_aso?: never
+        }
+        Update: {
+          cargo?: string | null
+          colaborador_id?: string | null
+          integracao_concluida?: never
+          nome_colaborador?: string | null
+          possui_epis?: never
+          status_colaborador?: string | null
+          validade_aso?: never
+        }
+        Relationships: []
       }
       view_dashboard_conformidade: {
         Row: {
