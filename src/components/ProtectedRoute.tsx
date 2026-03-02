@@ -6,9 +6,10 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   writeOnly?: boolean;
   requireObras?: boolean;
+  requireSuperAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, writeOnly, requireObras }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, writeOnly, requireObras, requireSuperAdmin }: ProtectedRouteProps) => {
   const { session, loading, role, roleLoading } = useAuth();
   const { empresaId, isLoading: loadingPlan, isBlocked, permiteObras } = useEmpresaPlan();
 
@@ -38,6 +39,10 @@ const ProtectedRoute = ({ children, writeOnly, requireObras }: ProtectedRoutePro
 
   if (requireObras && !permiteObras) {
     return <Navigate to="/upgrade" replace />;
+  }
+
+  if (requireSuperAdmin && role !== "super_admin") {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
