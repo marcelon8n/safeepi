@@ -14,14 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      auditoria: {
+        Row: {
+          acao: string
+          created_at: string | null
+          detalhes: Json | null
+          empresa_id: string | null
+          id: string
+          registro_id: string
+          tabela: string
+          usuario_id: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          detalhes?: Json | null
+          empresa_id?: string | null
+          id?: string
+          registro_id: string
+          tabela: string
+          usuario_id?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          detalhes?: Json | null
+          empresa_id?: string | null
+          id?: string
+          registro_id?: string
+          tabela?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditoria_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       colaboradores: {
         Row: {
           cargo: string | null
           created_at: string | null
           email_encarregado: string | null
-          empresa_id: string | null
+          empresa_id: string
           id: string
           nome_completo: string
+          onboarding_completo: boolean | null
           setor_id: string | null
           status: string | null
         }
@@ -29,9 +71,10 @@ export type Database = {
           cargo?: string | null
           created_at?: string | null
           email_encarregado?: string | null
-          empresa_id?: string | null
+          empresa_id: string
           id?: string
           nome_completo: string
+          onboarding_completo?: boolean | null
           setor_id?: string | null
           status?: string | null
         }
@@ -39,9 +82,10 @@ export type Database = {
           cargo?: string | null
           created_at?: string | null
           email_encarregado?: string | null
-          empresa_id?: string | null
+          empresa_id?: string
           id?: string
           nome_completo?: string
+          onboarding_completo?: boolean | null
           setor_id?: string | null
           status?: string | null
         }
@@ -62,37 +106,60 @@ export type Database = {
           },
         ]
       }
-      convites: {
+      colaboradores_obras: {
         Row: {
-          created_at: string
-          created_by: string
-          email: string
+          ativo: boolean | null
+          colaborador_id: string
+          created_at: string | null
+          data_fim: string | null
+          data_inicio: string
           empresa_id: string
           id: string
-          status: string
+          motivo_movimentacao: string | null
+          obra_id: string
         }
         Insert: {
-          created_at?: string
-          created_by: string
-          email: string
+          ativo?: boolean | null
+          colaborador_id: string
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio: string
           empresa_id: string
           id?: string
-          status?: string
+          motivo_movimentacao?: string | null
+          obra_id: string
         }
         Update: {
-          created_at?: string
-          created_by?: string
-          email?: string
+          ativo?: boolean | null
+          colaborador_id?: string
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string
           empresa_id?: string
           id?: string
-          status?: string
+          motivo_movimentacao?: string | null
+          obra_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "convites_empresa_id_fkey"
+            foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_obras_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
             referencedColumns: ["id"]
           },
         ]
@@ -124,30 +191,51 @@ export type Database = {
           created_at: string | null
           data_entrega: string
           data_vencimento: string
-          empresa_id: string | null
+          dispositivo: string | null
+          empresa_id: string
           epi_id: string | null
+          hash_registro: string | null
           id: string
+          ip_registro: string | null
+          notificado_em: string | null
+          responsavel_id: string | null
+          status: string | null
           status_troca: string | null
+          tipo_validacao: string | null
         }
         Insert: {
           colaborador_id?: string | null
           created_at?: string | null
           data_entrega?: string
           data_vencimento: string
-          empresa_id?: string | null
+          dispositivo?: string | null
+          empresa_id: string
           epi_id?: string | null
+          hash_registro?: string | null
           id?: string
+          ip_registro?: string | null
+          notificado_em?: string | null
+          responsavel_id?: string | null
+          status?: string | null
           status_troca?: string | null
+          tipo_validacao?: string | null
         }
         Update: {
           colaborador_id?: string | null
           created_at?: string | null
           data_entrega?: string
           data_vencimento?: string
-          empresa_id?: string | null
+          dispositivo?: string | null
+          empresa_id?: string
           epi_id?: string | null
+          hash_registro?: string | null
           id?: string
+          ip_registro?: string | null
+          notificado_em?: string | null
+          responsavel_id?: string | null
+          status?: string | null
           status_troca?: string | null
+          tipo_validacao?: string | null
         }
         Relationships: [
           {
@@ -171,13 +259,20 @@ export type Database = {
             referencedRelation: "epis"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "entregas_epi_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       epis: {
         Row: {
           ca_numero: string | null
           created_at: string | null
-          empresa_id: string | null
+          empresa_id: string
           id: string
           nome_epi: string
           periodicidade_dias: number
@@ -185,7 +280,7 @@ export type Database = {
         Insert: {
           ca_numero?: string | null
           created_at?: string | null
-          empresa_id?: string | null
+          empresa_id: string
           id?: string
           nome_epi: string
           periodicidade_dias: number
@@ -193,7 +288,7 @@ export type Database = {
         Update: {
           ca_numero?: string | null
           created_at?: string | null
-          empresa_id?: string | null
+          empresa_id?: string
           id?: string
           nome_epi?: string
           periodicidade_dias?: number
@@ -208,11 +303,61 @@ export type Database = {
           },
         ]
       }
+      obras: {
+        Row: {
+          cidade: string | null
+          created_at: string | null
+          data_fim_real: string | null
+          data_inicio: string
+          data_prevista_fim: string | null
+          empresa_id: string
+          id: string
+          nome: string
+          responsavel: string | null
+          status: string | null
+          tipo: string | null
+        }
+        Insert: {
+          cidade?: string | null
+          created_at?: string | null
+          data_fim_real?: string | null
+          data_inicio: string
+          data_prevista_fim?: string | null
+          empresa_id: string
+          id?: string
+          nome: string
+          responsavel?: string | null
+          status?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          cidade?: string | null
+          created_at?: string | null
+          data_fim_real?: string | null
+          data_inicio?: string
+          data_prevista_fim?: string | null
+          empresa_id?: string
+          id?: string
+          nome?: string
+          responsavel?: string | null
+          status?: string | null
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_obras_empresa"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
           email: string | null
-          empresa_id: string | null
+          empresa_id: string
           id: string
           nome: string | null
           role: Database["public"]["Enums"]["user_role"] | null
@@ -221,7 +366,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email?: string | null
-          empresa_id?: string | null
+          empresa_id: string
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -230,7 +375,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           email?: string | null
-          empresa_id?: string | null
+          empresa_id?: string
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -250,21 +395,21 @@ export type Database = {
         Row: {
           created_at: string | null
           email_encarregado: string | null
-          empresa_id: string | null
+          empresa_id: string
           id: string
           nome: string
         }
         Insert: {
           created_at?: string | null
           email_encarregado?: string | null
-          empresa_id?: string | null
+          empresa_id: string
           id?: string
           nome: string
         }
         Update: {
           created_at?: string | null
           email_encarregado?: string | null
-          empresa_id?: string | null
+          empresa_id?: string
           id?: string
           nome?: string
         }
@@ -286,9 +431,7 @@ export type Database = {
           data_vencimento: string | null
           email_encarregado: string | null
           empresa_id: string | null
-          entrega_id: string | null
-          epi_id: string | null
-          setor_nome: string | null
+          epi_nome: string | null
         }
         Relationships: [
           {
@@ -298,11 +441,80 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      vw_epis_para_escalacao: {
+        Row: {
+          data_vencimento: string | null
+          dias_atraso: number | null
+          empresa_id: string | null
+          entrega_id: string | null
+          nome_completo: string | null
+          nome_epi: string | null
+          nome_fantasia: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "entregas_epi_epi_id_fkey"
-            columns: ["epi_id"]
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "epis"
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_epis_vencendo_7_dias: {
+        Row: {
+          email_notificacao: string | null
+          empresa_id: string | null
+          empresa_nome: string | null
+          lista_epis: Json | null
+          total_epis: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_epis_vencidos: {
+        Row: {
+          data_vencimento: string | null
+          email_notificacao: string | null
+          empresa_id: string | null
+          empresa_nome: string | null
+          entrega_id: string | null
+          nome_completo: string | null
+          nome_epi: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_relatorio_mensal_resumo: {
+        Row: {
+          empresa_id: string | null
+          nome_fantasia: string | null
+          total_entregues_mes: number | null
+          total_pendentes: number | null
+          total_vencidos: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
         ]

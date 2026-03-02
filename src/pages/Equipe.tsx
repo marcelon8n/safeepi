@@ -39,7 +39,7 @@ const Equipe = () => {
   const { data: convites = [], isLoading: loadingConvites } = useQuery({
     queryKey: ["convites", empresaId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("convites")
         .select("*")
         .eq("empresa_id", empresaId!)
@@ -52,7 +52,7 @@ const Equipe = () => {
 
   const enviarConvite = useMutation({
     mutationFn: async (email: string) => {
-      const { error } = await supabase.from("convites").insert({
+      const { error } = await (supabase as any).from("convites").insert({
         empresa_id: empresaId!,
         email: email.toLowerCase().trim(),
         created_by: user!.id,
@@ -75,7 +75,7 @@ const Equipe = () => {
 
   const excluirConvite = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("convites").delete().eq("id", id);
+      const { error } = await (supabase as any).from("convites").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

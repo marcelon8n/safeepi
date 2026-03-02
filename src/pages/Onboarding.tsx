@@ -25,7 +25,7 @@ const Onboarding = () => {
     queryKey: ["convites-pendentes", user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("convites")
         .select("id, empresa_id, email, status")
         .eq("email", user.email.toLowerCase())

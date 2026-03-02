@@ -89,9 +89,9 @@ const Dashboard = () => {
 
   const stats = [
     { label: "Colaboradores", value: colaboradores ?? 0, icon: Users, color: "text-primary", href: "/colaboradores" },
-    { label: "EPIs Cadastrados", value: totalEpis ?? 0, icon: HardHat, color: "text-success", href: "/catalogo-epis" },
-    { label: "Entregas Realizadas", value: totalEntregas ?? 0, icon: ClipboardList, color: "text-primary", href: "/registro-entregas" },
-    { label: "EPIs Vencidos", value: vencidos.length, icon: AlertTriangle, color: "text-destructive", href: "/registro-entregas" },
+  { label: "EPIs Cadastrados", value: totalEpis ?? 0, icon: HardHat, color: "text-success", href: "/epis" },
+    { label: "Entregas Realizadas", value: totalEntregas ?? 0, icon: ClipboardList, color: "text-primary", href: "/entregas" },
+    { label: "EPIs Vencidos", value: vencidos.length, icon: AlertTriangle, color: "text-destructive", href: "/entregas" },
   ];
 
   return (
