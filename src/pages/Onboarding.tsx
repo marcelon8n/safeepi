@@ -98,7 +98,7 @@ const Onboarding = () => {
             <div className="mx-auto w-14 h-14 rounded-2xl bg-primary flex items-center justify-center">
               <Building2 className="w-7 h-7 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl">Bem-vindo ao SafeEPI</CardTitle>
+            <CardTitle className="text-2xl">Bem-vindo ao Safe Solutions</CardTitle>
             <CardDescription>
               Como deseja começar?
             </CardDescription>
@@ -156,7 +156,7 @@ const Onboarding = () => {
           </div>
           <CardTitle className="text-2xl">Cadastre sua Empresa</CardTitle>
           <CardDescription>
-            Para começar a usar o SafeEPI, precisamos dos dados da sua empresa.
+            Para começar a usar o Safe Solutions, precisamos dos dados da sua empresa.
           </CardDescription>
         </CardHeader>
         <CardContent>

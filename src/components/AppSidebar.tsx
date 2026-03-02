@@ -35,7 +35,7 @@ const AppSidebar = () => {
             <HardHat className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-sidebar-primary-foreground">Safe Soultuions</h1>
+            <h1 className="text-base font-bold text-sidebar-primary-foreground">Safe Solutions</h1>
             <p className="text-xs text-sidebar-foreground/60">Gestão de EPIs</p>
           </div>
         </div>
