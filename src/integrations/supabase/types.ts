@@ -164,6 +164,51 @@ export type Database = {
           },
         ]
       }
+      diario_obra: {
+        Row: {
+          autor_id: string | null
+          created_at: string
+          descricao: string
+          empresa_id: string
+          foto_url: string | null
+          id: string
+          obra_id: string
+        }
+        Insert: {
+          autor_id?: string | null
+          created_at?: string
+          descricao: string
+          empresa_id: string
+          foto_url?: string | null
+          id?: string
+          obra_id: string
+        }
+        Update: {
+          autor_id?: string | null
+          created_at?: string
+          descricao?: string
+          empresa_id?: string
+          foto_url?: string | null
+          id?: string
+          obra_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diario_obra_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diario_obra_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           asaas_customer_id: string | null
@@ -340,12 +385,15 @@ export type Database = {
       }
       obras: {
         Row: {
+          alvara_url: string | null
           cidade: string | null
+          cliente: string | null
           created_at: string | null
           data_fim_real: string | null
           data_inicio: string
           data_prevista_fim: string | null
           empresa_id: string
+          endereco: string | null
           id: string
           nome: string
           responsavel: string | null
@@ -353,12 +401,15 @@ export type Database = {
           tipo: string | null
         }
         Insert: {
+          alvara_url?: string | null
           cidade?: string | null
+          cliente?: string | null
           created_at?: string | null
           data_fim_real?: string | null
           data_inicio: string
           data_prevista_fim?: string | null
           empresa_id: string
+          endereco?: string | null
           id?: string
           nome: string
           responsavel?: string | null
@@ -366,12 +417,15 @@ export type Database = {
           tipo?: string | null
         }
         Update: {
+          alvara_url?: string | null
           cidade?: string | null
+          cliente?: string | null
           created_at?: string | null
           data_fim_real?: string | null
           data_inicio?: string
           data_prevista_fim?: string | null
           empresa_id?: string
+          endereco?: string | null
           id?: string
           nome?: string
           responsavel?: string | null

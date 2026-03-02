@@ -17,6 +17,8 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Upsell from "./pages/Upsell";
 import Blocked from "./pages/Blocked";
+import Obras from "./pages/Obras";
+import ObraDetalhe from "./pages/ObraDetalhe";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/epis" element={<ProtectedRoute><CatalogoEpis /></ProtectedRoute>} />
             <Route path="/entregas" element={<ProtectedRoute><RegistroEntregas /></ProtectedRoute>} />
+            <Route path="/obras" element={<ProtectedRoute><Obras /></ProtectedRoute>} />
+            <Route path="/obras/:id" element={<ProtectedRoute><ObraDetalhe /></ProtectedRoute>} />
             <Route path="/equipe" element={<ProtectedRoute writeOnly><Equipe /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
