@@ -456,6 +456,7 @@ export type Database = {
           endereco: string | null
           id: string
           nome: string
+          requisitos_obrigatorios: string[] | null
           responsavel: string | null
           status: string | null
           tipo: string | null
@@ -472,6 +473,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome: string
+          requisitos_obrigatorios?: string[] | null
           responsavel?: string | null
           status?: string | null
           tipo?: string | null
@@ -488,6 +490,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome?: string
+          requisitos_obrigatorios?: string[] | null
           responsavel?: string | null
           status?: string | null
           tipo?: string | null
