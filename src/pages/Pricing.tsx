@@ -33,7 +33,7 @@ const plans = [
 },
 {
   name: "Gestão de Obras",
-  price: "349",
+  price: "Em breve",
   icon: Building2,
   features: ["Até 100 colaboradores", "Até 2 obras simultâneas", "Alocação de colaboradores", "Controle por obra", "Dashboard completo", "Relatórios por obra"],
   href: "#",
@@ -41,7 +41,7 @@ const plans = [
 },
 {
   name: "Gestão Avançada",
-  price: "599",
+  price: "Em breve",
   icon: HardHat,
   features: ["Colaboradores ilimitados", "Obras ilimitadas", "Alocação de colaboradores", "Controle por obra", "Dashboard de conformidade", "Relatórios avançados", "Auditoria completa", "Suporte prioritário"],
   href: "#",
@@ -116,8 +116,14 @@ const Pricing = () => {
                 </div>
                 <CardTitle className="text-lg text-[#1e3a5f]">{plan.name}</CardTitle>
                 <div className="mt-2">
-                  <span className="text-3xl font-bold text-[#1e3a5f]">R$ {plan.price}</span>
-                  <span className="text-sm text-gray-500"></span>
+                  {plan.price === "Em breve" ? (
+                    <span className="text-3xl font-bold text-[#1e3a5f]">Em breve</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-bold text-[#1e3a5f]">R$ {plan.price}</span>
+                      <span className="text-sm text-gray-500">/mês</span>
+                    </>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col flex-1 pt-2">
