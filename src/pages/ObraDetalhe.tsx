@@ -270,7 +270,7 @@ const EquipeTab = ({ obraId, empresaId }: { obraId: string; empresaId: string | 
                   <TableRow key={a.id}>
                     <TableCell className="font-medium">{(a as any).colaboradores?.nome_completo ?? "—"}</TableCell>
                     <TableCell>{(a as any).colaboradores?.cargo ?? "—"}</TableCell>
-                    <TableCell>{format(new Date(a.data_inicio + "T12:00:00"), "dd/MM/yy")}</TableCell>
+                    <TableCell>{a.data_inicio ? format(new Date(a.data_inicio + "T12:00:00"), "dd/MM/yy") : "—"}</TableCell>
                     <TableCell>
                       <AlertDialog>
                         <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button></AlertDialogTrigger>
