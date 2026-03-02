@@ -24,7 +24,7 @@ type Obra = Tables<"obras">;
 type Setor = Tables<"setores">;
 
 // ── Obras ──
-const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
+export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -167,7 +167,7 @@ const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
 };
 
 // ── Setores ──
-const SetoresSection = ({ empresaId }: { empresaId: string | null }) => {
+export const SetoresSection = ({ empresaId }: { empresaId: string | null }) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Setor | null>(null);
