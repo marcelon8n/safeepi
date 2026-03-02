@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Search, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, AlertTriangle, Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
@@ -30,7 +31,7 @@ export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Obra | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nome: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), status: "ativa" });
+  const [form, setForm] = useState({ nome: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), status: "ativa", requisitos_obrigatorios: [] as string[] });
 
   const { data: limiteObras } = useQuery({
     queryKey: ["limite-obras", empresaId],
@@ -58,7 +59,7 @@ export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
 
   const save = useMutation({
     mutationFn: async () => {
-      const payload = { nome: form.nome, cidade: form.cidade || null, responsavel: form.responsavel || null, data_inicio: form.data_inicio, status: form.status };
+      const payload = { nome: form.nome, cidade: form.cidade || null, responsavel: form.responsavel || null, data_inicio: form.data_inicio, status: form.status, requisitos_obrigatorios: form.requisitos_obrigatorios };
       if (editing) {
         const { error } = await supabase.from("obras").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -79,11 +80,31 @@ export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
 
   const openEdit = (o: Obra) => {
     setEditing(o);
-    setForm({ nome: o.nome, cidade: o.cidade ?? "", responsavel: o.responsavel ?? "", data_inicio: o.data_inicio, status: o.status ?? "ativa" });
+    setForm({ nome: o.nome, cidade: o.cidade ?? "", responsavel: o.responsavel ?? "", data_inicio: o.data_inicio, status: o.status ?? "ativa", requisitos_obrigatorios: o.requisitos_obrigatorios ?? [] });
     setOpen(true);
   };
 
-  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), status: "ativa" }); };
+  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", cidade: "", responsavel: "", data_inicio: format(new Date(), "yyyy-MM-dd"), status: "ativa", requisitos_obrigatorios: [] }); };
+
+  const REQUISITOS_PADRAO = [
+    { value: "ASO", label: "ASO (Atestado de Saúde Ocupacional)", group: "Saúde" },
+    { value: "NR-01", label: "NR-01 (Integração)", group: "Treinamentos" },
+    { value: "NR-10", label: "NR-10 (Elétrica)", group: "Treinamentos" },
+    { value: "NR-12", label: "NR-12 (Máquinas)", group: "Treinamentos" },
+    { value: "NR-18", label: "NR-18 (Construção Civil)", group: "Treinamentos" },
+    { value: "NR-33", label: "NR-33 (Espaço Confinado)", group: "Treinamentos" },
+    { value: "NR-35", label: "NR-35 (Trabalho em Altura)", group: "Treinamentos" },
+    { value: "Ficha de EPI", label: "Ficha de EPI Atualizada (NR-06)", group: "Equipamentos" },
+  ];
+
+  const toggleRequisito = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      requisitos_obrigatorios: prev.requisitos_obrigatorios.includes(value)
+        ? prev.requisitos_obrigatorios.filter((r) => r !== value)
+        : [...prev.requisitos_obrigatorios, value],
+    }));
+  };
 
   return (
     <div className="space-y-4">
@@ -105,11 +126,31 @@ export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
           <DialogTrigger asChild><Button disabled={!podeCriar}><Plus className="w-4 h-4 mr-2" />Nova Obra</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{editing ? "Editar Obra" : "Nova Obra"}</DialogTitle></DialogHeader>
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 py-2 max-h-[70vh] overflow-y-auto">
               <div><Label>Nome *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
               <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} /></div>
               <div><Label>Responsável</Label><Input value={form.responsavel} onChange={(e) => setForm({ ...form, responsavel: e.target.value })} /></div>
               <div><Label>Data de Início *</Label><Input type="date" value={form.data_inicio} onChange={(e) => setForm({ ...form, data_inicio: e.target.value })} /></div>
+              <div>
+                <Label className="mb-2 block">Requisitos de Acesso</Label>
+                <p className="text-xs text-muted-foreground mb-3">Selecione os documentos obrigatórios para alocação nesta obra.</p>
+                {["Saúde", "Treinamentos", "Equipamentos"].map((group) => (
+                  <div key={group} className="mb-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{group}</p>
+                    <div className="space-y-1.5">
+                      {REQUISITOS_PADRAO.filter((r) => r.group === group).map((r) => (
+                        <label key={r.value} className="flex items-center gap-2 cursor-pointer text-sm hover:bg-muted/50 rounded px-2 py-1 transition-colors">
+                          <Checkbox
+                            checked={form.requisitos_obrigatorios.includes(r.value)}
+                            onCheckedChange={() => toggleRequisito(r.value)}
+                          />
+                          {r.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>

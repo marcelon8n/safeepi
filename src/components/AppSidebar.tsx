@@ -29,9 +29,8 @@ const AppSidebar = () => {
   ];
 
   const obrasSubItems = [
-    { to: "/obras", label: "Dashboard de Obras", icon: Building2 },
+    { to: "/obras", label: "Obras", icon: Building2 },
     { to: "/alocacao-equipe", label: "Alocação de Equipe", icon: UserPlus },
-    { to: "/gestao-documentos", label: "Gestão de Documentos", icon: FileText },
   ];
 
 
