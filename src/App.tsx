@@ -19,6 +19,8 @@ import Upsell from "./pages/Upsell";
 import Blocked from "./pages/Blocked";
 import Obras from "./pages/Obras";
 import ObraDetalhe from "./pages/ObraDetalhe";
+import AlocacaoEquipe from "./pages/AlocacaoEquipe";
+import GestaoDocumentos from "./pages/GestaoDocumentos";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="/entregas" element={<ProtectedRoute><RegistroEntregas /></ProtectedRoute>} />
             <Route path="/obras" element={<ProtectedRoute><Obras /></ProtectedRoute>} />
             <Route path="/obras/:id" element={<ProtectedRoute><ObraDetalhe /></ProtectedRoute>} />
+            <Route path="/alocacao-equipe" element={<ProtectedRoute><AlocacaoEquipe /></ProtectedRoute>} />
+            <Route path="/gestao-documentos" element={<ProtectedRoute><GestaoDocumentos /></ProtectedRoute>} />
             <Route path="/equipe" element={<ProtectedRoute writeOnly><Equipe /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute writeOnly><Equipe /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
