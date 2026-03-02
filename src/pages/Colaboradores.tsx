@@ -11,11 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
+import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import RoleGate from "@/components/RoleGate";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Colaborador = Tables<"colaboradores">;
 type Setor = Tables<"setores">;
@@ -174,6 +176,7 @@ const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
 // ── Colaboradores Tab ────────────────────────────────────────────────────────
 
 const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
+  const { limiteColaboradores } = useEmpresaPlan();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
@@ -253,13 +256,24 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
 
+  const totalColaboradores = colaboradores?.length ?? 0;
+  const limitReached = !editing && limiteColaboradores !== null && totalColaboradores >= limiteColaboradores;
+
   return (
     <>
+      {limitReached && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Limite de colaboradores atingido para o seu plano atual ({totalColaboradores}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
+          </AlertDescription>
+        </Alert>
+      )}
       <RoleGate allowWrite>
       <div className="flex justify-end mb-4">
         <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" />Novo Colaborador</Button>
+            <Button disabled={limitReached}><Plus className="w-4 h-4 mr-2" />Novo Colaborador</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -290,7 +304,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
-              <Button onClick={() => save.mutate()} disabled={!form.nome_completo || save.isPending}>
+              <Button onClick={() => save.mutate()} disabled={!form.nome_completo || save.isPending || limitReached}>
                 {save.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </DialogFooter>

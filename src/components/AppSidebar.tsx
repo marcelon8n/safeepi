@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, UserCog, Shield } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, UserCog, Shield, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
+import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -10,6 +11,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { canWrite, isSuperAdmin } = useRole();
+  const { permiteObras } = useEmpresaPlan();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -18,6 +20,7 @@ const AppSidebar = () => {
   { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
   { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
   { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: true },
+  { to: "/obras", label: "Obras", icon: Building2, show: permiteObras },
   { to: "/equipe", label: "Equipe", icon: UserCog, show: canWrite },
   { to: "/admin", label: "Administração Geral", icon: Shield, show: isSuperAdmin }];
 

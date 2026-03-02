@@ -15,6 +15,8 @@ import Onboarding from "./pages/Onboarding";
 import Equipe from "./pages/Equipe";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
+import Upsell from "./pages/Upsell";
+import Blocked from "./pages/Blocked";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/precos" element={<Pricing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/upgrade" element={<Upsell />} />
+            <Route path="/blocked" element={<Blocked />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/epis" element={<ProtectedRoute><CatalogoEpis /></ProtectedRoute>} />
