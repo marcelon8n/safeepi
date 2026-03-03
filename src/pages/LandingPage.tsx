@@ -22,7 +22,7 @@ const LandingPage = () => {
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <HardHat className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">Safe Solution</span>
+            <span className="text-xl font-bold text-foreground">Safe Solutions</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/precos" className="text-sm font-medium text-foreground hover:underline hidden sm:inline">
