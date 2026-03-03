@@ -8,7 +8,7 @@ import { Check, HardHat, Building2, Crown, Users, Shield } from "lucide-react";
 const plans = [
 {
   name: "EPI Essencial",
-  price: "129",
+  price: "159",
   icon: Shield,
   features: ["Até 30 colaboradores", "Catálogo de EPIs ilimitado", "Registro de entregas", "Alertas de vencimento", "Dashboard básico", "Sem gestão de obras"],
   href: "#",
@@ -16,7 +16,7 @@ const plans = [
 },
 {
   name: "EPI Profissional",
-  price: "249",
+  price: "297",
   icon: Users,
   features: ["Até 100 colaboradores", "Catálogo de EPIs ilimitado", "Registro de entregas", "Alertas de vencimento", "Dashboard completo", "Relatórios mensais", "Sem gestão de obras"],
   href: "#",
@@ -24,7 +24,7 @@ const plans = [
 },
 {
   name: "EPI Corporativo",
-  price: "397",
+  price: "497",
   icon: Crown,
   features: ["Colaboradores ilimitados", "Catálogo de EPIs ilimitado", "Registro de entregas", "Alertas de vencimento", "Dashboard de conformidade", "Relatórios avançados", "Auditoria completa", "Sem gestão de obras"],
   href: "#",
