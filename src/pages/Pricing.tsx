@@ -68,7 +68,7 @@ const Pricing = () => {
             <div className="w-9 h-9 rounded-lg bg-[#1e3a5f] flex items-center justify-center">
               <HardHat className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-[#1e3a5f]">Safe Solution</span>
+            <span className="text-xl font-bold text-[#1e3a5f]">Safe Solutions</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/precos" className="text-sm font-medium text-[#1e3a5f] hover:underline hidden sm:inline">
@@ -116,14 +116,14 @@ const Pricing = () => {
                 </div>
                 <CardTitle className="text-lg text-[#1e3a5f]">{plan.name}</CardTitle>
                 <div className="mt-2">
-                  {plan.price === "Em breve" ? (
-                    <span className="text-3xl font-bold text-[#1e3a5f]">Em breve</span>
-                  ) : (
-                    <>
+                  {plan.price === "Em breve" ?
+                <span className="text-3xl font-bold text-[#1e3a5f]">Em breve</span> :
+
+                <>
                       <span className="text-3xl font-bold text-[#1e3a5f]">R$ {plan.price}</span>
                       <span className="text-sm text-gray-500">/mês</span>
                     </>
-                  )}
+                }
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col flex-1 pt-2">
