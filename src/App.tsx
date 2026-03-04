@@ -13,6 +13,7 @@ import RegistroEntregas from "./pages/RegistroEntregas";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Equipe from "./pages/Equipe";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Upsell from "./pages/Upsell";
@@ -47,7 +48,7 @@ const App = () => (
             <Route path="/alocacao-equipe" element={<ProtectedRoute ownerOnly><AlocacaoEquipe /></ProtectedRoute>} />
             <Route path="/gestao-documentos" element={<ProtectedRoute ownerOnly><GestaoDocumentos /></ProtectedRoute>} />
             <Route path="/equipe" element={<ProtectedRoute editOnly><Equipe /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute ownerOnly><Equipe /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute ownerOnly><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

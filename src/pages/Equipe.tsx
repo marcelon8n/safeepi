@@ -1,56 +1,52 @@
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, HardHat, Building2, Users, ScrollText, Layers } from "lucide-react";
-import AdminDashboard from "@/components/admin/AdminDashboard";
-import AdminEpisCatalog from "@/components/admin/AdminEpisCatalog";
-import AdminUsers from "@/components/admin/AdminUsers";
-import AdminAuditLog from "@/components/admin/AdminAuditLog";
-import { ObrasSection, SetoresSection } from "@/components/admin/AdminStructure";
+import { Users, Layers, FileText, UserPlus } from "lucide-react";
+import { SetoresSection } from "@/components/admin/AdminStructure";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { useRole } from "@/hooks/useRole";
+import RoleGate from "@/components/RoleGate";
+import EquipeColaboradores from "@/components/equipe/EquipeColaboradores";
+import EquipeDocumentos from "@/components/equipe/EquipeDocumentos";
+import EquipeAlocacoes from "@/components/equipe/EquipeAlocacoes";
 
 const Equipe = () => {
   const { empresaId } = useEmpresaId();
-  const { isSuperAdmin } = useRole();
+  const { isViewer, canEditData } = useRole();
 
   return (
-    <AppLayout title="Administração Geral" description="Painel de gestão centralizada da empresa">
-      <Tabs defaultValue="dashboard" className="w-full">
+    <AppLayout title="Gestão Operacional" description="Gerencie seus colaboradores e conformidades documentais.">
+      <Tabs defaultValue="colaboradores" className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
-          <TabsTrigger value="dashboard" className="gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Visão Geral
+          <TabsTrigger value="colaboradores" className="gap-2">
+            <Users className="w-4 h-4" />
+            Colaboradores
           </TabsTrigger>
-          <TabsTrigger value="epis" className="gap-2">
-            <HardHat className="w-4 h-4" />
-            Catálogo de EPIs
-          </TabsTrigger>
-          {isSuperAdmin && (
-            <TabsTrigger value="obras" className="gap-2">
-              <Building2 className="w-4 h-4" />
-              Obras
-            </TabsTrigger>
-          )}
           <TabsTrigger value="setores" className="gap-2">
             <Layers className="w-4 h-4" />
             Setores
           </TabsTrigger>
-          <TabsTrigger value="usuarios" className="gap-2">
-            <Users className="w-4 h-4" />
-            Usuários
+          <TabsTrigger value="documentos" className="gap-2">
+            <FileText className="w-4 h-4" />
+            Documentos & ASO
           </TabsTrigger>
-          <TabsTrigger value="auditoria" className="gap-2">
-            <ScrollText className="w-4 h-4" />
-            Auditoria
+          <TabsTrigger value="alocacoes" className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            Alocações
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard"><AdminDashboard /></TabsContent>
-        <TabsContent value="epis"><AdminEpisCatalog /></TabsContent>
-        <TabsContent value="obras"><ObrasSection empresaId={empresaId} /></TabsContent>
-        <TabsContent value="setores"><SetoresSection empresaId={empresaId} /></TabsContent>
-        <TabsContent value="usuarios"><AdminUsers /></TabsContent>
-        <TabsContent value="auditoria"><AdminAuditLog /></TabsContent>
+        <TabsContent value="colaboradores">
+          <EquipeColaboradores canEdit={canEditData} />
+        </TabsContent>
+        <TabsContent value="setores">
+          <SetoresSection empresaId={empresaId} canEdit={canEditData} />
+        </TabsContent>
+        <TabsContent value="documentos">
+          <EquipeDocumentos canEdit={canEditData} />
+        </TabsContent>
+        <TabsContent value="alocacoes">
+          <EquipeAlocacoes canEdit={canEditData} />
+        </TabsContent>
       </Tabs>
     </AppLayout>
   );

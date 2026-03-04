@@ -208,7 +208,7 @@ export const ObrasSection = ({ empresaId }: { empresaId: string | null }) => {
 };
 
 // ── Setores ──
-export const SetoresSection = ({ empresaId }: { empresaId: string | null }) => {
+export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: string | null; canEdit?: boolean }) => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Setor | null>(null);
