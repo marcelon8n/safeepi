@@ -273,8 +273,8 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
 
-  const totalColaboradores = colaboradores?.length ?? 0;
-  const limitReached = !editing && limiteColaboradores !== null && totalColaboradores >= limiteColaboradores;
+  const totalAtivos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
+  const limitReached = !editing && limiteColaboradores !== null && totalAtivos >= limiteColaboradores;
 
   return (
     <>
