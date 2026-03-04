@@ -375,23 +375,6 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                     <TableCell>
                       <RoleGate allowWrite>
                       <div className="flex gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => toggleStatus.mutate(c)}
-                                disabled={toggleStatus.isPending}
-                              >
-                                <Power className={`w-4 h-4 ${c.status === "ativo" ? "text-success" : "text-muted-foreground"}`} />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {c.status === "ativo" ? "Inativar colaborador" : "Ativar colaborador"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
