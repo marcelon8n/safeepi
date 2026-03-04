@@ -302,9 +302,11 @@ export type Database = {
       }
       entregas_epi: {
         Row: {
+          ca_numero_entregue: string | null
           colaborador_id: string | null
           created_at: string | null
           data_entrega: string
+          data_validade_ca_entregue: string | null
           data_vencimento: string
           dispositivo: string | null
           empresa_id: string
@@ -323,9 +325,11 @@ export type Database = {
           tipo_validacao: string | null
         }
         Insert: {
+          ca_numero_entregue?: string | null
           colaborador_id?: string | null
           created_at?: string | null
           data_entrega?: string
+          data_validade_ca_entregue?: string | null
           data_vencimento: string
           dispositivo?: string | null
           empresa_id: string
@@ -344,9 +348,11 @@ export type Database = {
           tipo_validacao?: string | null
         }
         Update: {
+          ca_numero_entregue?: string | null
           colaborador_id?: string | null
           created_at?: string | null
           data_entrega?: string
+          data_validade_ca_entregue?: string | null
           data_vencimento?: string
           dispositivo?: string | null
           empresa_id?: string

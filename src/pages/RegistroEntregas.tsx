@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ClipboardList, AlertTriangle, ArchiveRestore } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ClipboardList, AlertTriangle, ArchiveRestore, Info } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -144,6 +145,8 @@ const RegistroEntregas = () => {
         empresa_id: empresaId,
         motivo_entrega: motivoEntrega,
         observacoes: observacoes || null,
+        ca_numero_entregue: selectedEpi?.ca_numero ?? null,
+        data_validade_ca_entregue: selectedEpi?.data_validade_ca ?? null,
       });
       if (error) throw error;
     },
@@ -302,7 +305,28 @@ const RegistroEntregas = () => {
                       return (
                         <TableRow key={e.id} className={!isAtiva ? "opacity-60" : ""}>
                           <TableCell className="font-medium">{(e.colaboradores as any)?.nome_completo ?? "—"}</TableCell>
-                          <TableCell>{(e.epis as any)?.nome_epi ?? "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              {(e.epis as any)?.nome_epi ?? "—"}
+                              {(e as any).ca_numero_entregue && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="font-medium">CA na entrega: {(e as any).ca_numero_entregue}</p>
+                                      {(e as any).data_validade_ca_entregue && (
+                                        <p className="text-xs text-muted-foreground">
+                                          Validade CA: {format(new Date((e as any).data_validade_ca_entregue), "dd/MM/yyyy")}
+                                        </p>
+                                      )}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
                               {MOTIVO_LABELS[e.motivo_entrega ?? ""] ?? "—"}
