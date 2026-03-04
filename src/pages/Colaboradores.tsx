@@ -260,6 +260,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
+      status: c.status ?? "ativo",
     });
     setOpen(true);
   };
