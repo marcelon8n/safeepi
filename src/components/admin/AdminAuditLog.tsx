@@ -24,40 +24,19 @@ const TABELA_LABELS: Record<string, string> = {
   obras: "Obras",
 };
 
-const formatDetailsSummary = (tabela: string, acao: string, detalhes: any): string => {
+const getResumo = (detalhes: any): string => {
   if (!detalhes) return "—";
-
   const d = typeof detalhes === "string" ? tryParse(detalhes) : detalhes;
-  if (!d) return "—";
-
-  const acaoLabel = ACAO_LABELS[acao] || acao;
-
-  if (tabela === "entregas_epi") {
-    const nomeEpi = d.nome_epi || d.new?.nome_epi;
-    const nomeColab = d.nome_colaborador || d.new?.nome_colaborador;
-    if (nomeEpi && nomeColab) {
-      if (acao === "INSERT") return `Entrega de ${nomeEpi} para ${nomeColab}`;
-      if (acao === "UPDATE") return `Atualização de entrega de ${nomeEpi} para ${nomeColab}`;
-      if (acao === "DELETE") return `Exclusão de entrega de ${nomeEpi} para ${nomeColab}`;
-    }
-  }
-
-  if (tabela === "colaboradores") {
-    const nome = d.nome_colaborador || d.nome_completo || d.new?.nome_completo;
-    if (nome) return `${acaoLabel} do colaborador ${nome}`;
-  }
-
-  if (tabela === "epis") {
-    const nome = d.nome_epi || d.new?.nome_epi;
-    if (nome) return `${acaoLabel} do EPI ${nome}`;
-  }
-
-  if (tabela === "obras") {
-    const nome = d.nome || d.new?.nome;
-    if (nome) return `${acaoLabel} da obra ${nome}`;
-  }
-
-  return acaoLabel;
+  if (d?._resumo) return d._resumo;
+  // Fallback for old records
+  const nomeEpi = d?.nome_epi || d?.new?.nome_epi;
+  const nomeColab = d?.nome_colaborador || d?.new?.nome_colaborador || d?.new?.nome_completo;
+  if (nomeEpi && nomeColab) return `Entrega de ${nomeEpi} para ${nomeColab}`;
+  if (nomeColab) return `Colaborador ${nomeColab}`;
+  if (nomeEpi) return `EPI ${nomeEpi}`;
+  const nome = d?.nome || d?.new?.nome;
+  if (nome) return `Obra ${nome}`;
+  return "—";
 };
 
 const tryParse = (str: string) => {
@@ -91,7 +70,7 @@ const AdminAuditLog = () => {
 
   const filtered = logs?.filter((l) => {
     const q = search.toLowerCase();
-    const summary = formatDetailsSummary(l.tabela, l.acao, l.detalhes).toLowerCase();
+    const summary = getResumo(l.detalhes).toLowerCase();
     const userName = (getUserName(l.detalhes) || "").toLowerCase();
     return (
       l.acao.toLowerCase().includes(q) ||
@@ -153,7 +132,7 @@ const AdminAuditLog = () => {
                   <TableCell className="font-medium text-sm">{ACAO_LABELS[l.acao] || l.acao}</TableCell>
                   <TableCell className="text-sm">{TABELA_LABELS[l.tabela] || l.tabela}</TableCell>
                   <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
-                    {formatDetailsSummary(l.tabela, l.acao, l.detalhes)}
+                    {getResumo(l.detalhes)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -184,7 +163,7 @@ const AdminAuditLog = () => {
               <div><span className="font-medium">Usuário:</span> {getUserName(selectedLog.detalhes) || selectedLog.usuario_id || "Sistema"}</div>
               <div><span className="font-medium">Ação:</span> {ACAO_LABELS[selectedLog.acao] || selectedLog.acao}</div>
               <div><span className="font-medium">Tabela:</span> {TABELA_LABELS[selectedLog.tabela] || selectedLog.tabela}</div>
-              <div><span className="font-medium">Resumo:</span> {formatDetailsSummary(selectedLog.tabela, selectedLog.acao, selectedLog.detalhes)}</div>
+              <div><span className="font-medium">Resumo:</span> {getResumo(selectedLog.detalhes)}</div>
               <div>
                 <span className="font-medium">Dados completos:</span>
                 <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto whitespace-pre-wrap break-all max-h-[400px]">
