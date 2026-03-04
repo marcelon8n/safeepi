@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO } from "date-fns";
@@ -90,14 +91,22 @@ const RegistroEntregas = () => {
   const { data: totalCount } = useQuery({
     queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
     queryFn: async () => {
+      const hasColabFilter = !!filtroColaborador;
+      const hasEpiFilter = !!filtroEpi;
+
+      // Only use inner joins when filters require them to avoid excluding records
+      const selectParts = ["id"];
+      if (hasColabFilter) selectParts.push("colaboradores!inner(nome_completo)");
+      if (hasEpiFilter) selectParts.push("epis!inner(nome_epi)");
+
       let query = supabase
         .from("entregas_epi")
-        .select("id, colaboradores!inner(nome_completo), epis!inner(nome_epi)", { count: "exact", head: true });
+        .select(selectParts.join(", "), { count: "exact", head: true });
 
-      if (filtroColaborador) {
+      if (hasColabFilter) {
         query = query.ilike("colaboradores.nome_completo", `%${filtroColaborador}%`);
       }
-      if (filtroEpi) {
+      if (hasEpiFilter) {
         query = query.ilike("epis.nome_epi", `%${filtroEpi}%`);
       }
       if (filtroDataInicio) {
@@ -395,7 +404,13 @@ const RegistroEntregas = () => {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 8 }).map((_, j) => (
+                          <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                        ))}
+                      </TableRow>
+                    ))
                   ) : entregas?.length === 0 ? (
                     <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma entrega encontrada.</TableCell></TableRow>
                   ) : (
@@ -465,32 +480,32 @@ const RegistroEntregas = () => {
                 </TableBody>
               </Table>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t">
-                  <span className="text-xs text-muted-foreground">
-                    Página {page + 1} de {totalPages} ({totalCount} registros)
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page === 0}
-                      onClick={() => setPage((p) => p - 1)}
-                    >
-                      <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= totalPages - 1}
-                      onClick={() => setPage((p) => p + 1)}
-                    >
-                      Próximo <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
+              {/* Pagination - always visible */}
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <span className="text-xs text-muted-foreground">
+                  {totalCount != null
+                    ? `Página ${page + 1} de ${Math.max(totalPages, 1)} (${totalCount} registros)`
+                    : "Carregando..."}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= totalPages - 1 || totalPages <= 1}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Próximo <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </div>
