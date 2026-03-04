@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle, Power } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
@@ -180,7 +181,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
-  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "" });
+  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
 
   const { data: setores } = useQuery({
     queryKey: ["setores"],
@@ -209,6 +210,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         nome_completo: form.nome_completo,
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
+        status: form.status,
       };
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
@@ -238,12 +240,27 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
     onError: () => toast.error("Erro ao remover colaborador."),
   });
 
+  const toggleStatus = useMutation({
+    mutationFn: async (c: Colaborador) => {
+      const newStatus = c.status === "ativo" ? "inativo" : "ativo";
+      const { error } = await supabase.from("colaboradores").update({ status: newStatus }).eq("id", c.id);
+      if (error) throw error;
+      return newStatus;
+    },
+    onSuccess: (newStatus) => {
+      queryClient.invalidateQueries({ queryKey: ["colaboradores"] });
+      toast.success(`Colaborador ${newStatus === "ativo" ? "ativado" : "inativado"}!`);
+    },
+    onError: () => toast.error("Erro ao alterar status."),
+  });
+
   const openEdit = (c: Colaborador) => {
     setEditing(c);
     setForm({
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
+      status: c.status ?? "ativo",
     });
     setOpen(true);
   };
@@ -251,7 +268,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_completo: "", cargo: "", setor_id: "" });
+    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
   };
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
@@ -301,6 +318,20 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                   </SelectContent>
                 </Select>
               </div>
+              {editing && (
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
@@ -332,7 +363,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum colaborador cadastrado.</TableCell></TableRow>
               ) : (
                 colaboradores?.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} className={c.status === "inativo" ? "opacity-50" : ""}>
                     <TableCell className="font-medium">{c.nome_completo}</TableCell>
                     <TableCell>{c.cargo ?? "—"}</TableCell>
                     <TableCell>{getSetorNome(c)}</TableCell>
@@ -344,6 +375,23 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                     <TableCell>
                       <RoleGate allowWrite>
                       <div className="flex gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => toggleStatus.mutate(c)}
+                                disabled={toggleStatus.isPending}
+                              >
+                                <Power className={`w-4 h-4 ${c.status === "ativo" ? "text-success" : "text-muted-foreground"}`} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {c.status === "ativo" ? "Inativar colaborador" : "Ativar colaborador"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
