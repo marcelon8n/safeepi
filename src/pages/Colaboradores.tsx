@@ -260,6 +260,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const toggleStatus = useMutation({
     mutationFn: async (c: Colaborador) => {
       const newStatus = c.status === "ativo" ? "inativo" : "ativo";
+
+      // Guard reactivation against plan limit
+      if (newStatus === "ativo") {
+        const ativos = colaboradores?.filter((x) => x.status === "ativo").length ?? 0;
+        if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
+          throw new Error("LIMITE_ATINGIDO");
+        }
+      }
+
       const { error } = await supabase.from("colaboradores").update({ status: newStatus }).eq("id", c.id);
       if (error) throw error;
       return newStatus;
@@ -268,7 +277,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
       queryClient.invalidateQueries({ queryKey: ["colaboradores"] });
       toast.success(`Colaborador ${newStatus === "ativo" ? "ativado" : "inativado"}!`);
     },
-    onError: () => toast.error("Erro ao alterar status."),
+    onError: (err: Error) => {
+      if (err.message === "LIMITE_ATINGIDO") {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
+          action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
+        });
+      } else {
+        toast.error("Erro ao alterar status.");
+      }
+    },
   });
 
   const openEdit = (c: Colaborador) => {
