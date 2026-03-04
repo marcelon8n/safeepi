@@ -181,7 +181,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
-  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "" });
+  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
 
   const { data: setores } = useQuery({
     queryKey: ["setores"],
