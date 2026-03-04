@@ -240,6 +240,20 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
     onError: () => toast.error("Erro ao remover colaborador."),
   });
 
+  const toggleStatus = useMutation({
+    mutationFn: async (c: Colaborador) => {
+      const newStatus = c.status === "ativo" ? "inativo" : "ativo";
+      const { error } = await supabase.from("colaboradores").update({ status: newStatus }).eq("id", c.id);
+      if (error) throw error;
+      return newStatus;
+    },
+    onSuccess: (newStatus) => {
+      queryClient.invalidateQueries({ queryKey: ["colaboradores"] });
+      toast.success(`Colaborador ${newStatus === "ativo" ? "ativado" : "inativado"}!`);
+    },
+    onError: () => toast.error("Erro ao alterar status."),
+  });
+
   const openEdit = (c: Colaborador) => {
     setEditing(c);
     setForm({
