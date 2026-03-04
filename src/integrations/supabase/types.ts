@@ -217,6 +217,44 @@ export type Database = {
           },
         ]
       }
+      convites: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string
+          empresa_id: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email: string
+          empresa_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string
+          empresa_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diario_obra: {
         Row: {
           autor_id: string | null
