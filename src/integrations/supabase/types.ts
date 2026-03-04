@@ -814,6 +814,14 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_empresa_id: { Args: never; Returns: string }
+      verificar_limite_colaboradores: {
+        Args: { empresa_uuid: string }
+        Returns: {
+          limite_maximo: number
+          pode_ativar: boolean
+          total_ativos: number
+        }[]
+      }
       verificar_limite_obras: {
         Args: { empresa_uuid: string }
         Returns: {

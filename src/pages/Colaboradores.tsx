@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, AlertTriangle, Power } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
@@ -212,6 +212,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         setor_id: form.setor_id || null,
         status: form.status,
       };
+
+      // Guard: if activating via edit and limit reached
+      if (editing && form.status === "ativo" && editing.status !== "ativo") {
+        const ativos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
+        if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
+          throw new Error("LIMITE_ATINGIDO");
+        }
+      }
+
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -225,7 +234,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
       toast.success(editing ? "Colaborador atualizado!" : "Colaborador cadastrado!");
       closeDialog();
     },
-    onError: () => toast.error("Erro ao salvar colaborador."),
+    onError: (err: Error) => {
+      if (err.message === "LIMITE_ATINGIDO") {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
+          action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
+        });
+      } else {
+        toast.error("Erro ao salvar colaborador.");
+      }
+    },
   });
 
   const remove = useMutation({
@@ -243,6 +260,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const toggleStatus = useMutation({
     mutationFn: async (c: Colaborador) => {
       const newStatus = c.status === "ativo" ? "inativo" : "ativo";
+
+      // Guard reactivation against plan limit
+      if (newStatus === "ativo") {
+        const ativos = colaboradores?.filter((x) => x.status === "ativo").length ?? 0;
+        if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
+          throw new Error("LIMITE_ATINGIDO");
+        }
+      }
+
       const { error } = await supabase.from("colaboradores").update({ status: newStatus }).eq("id", c.id);
       if (error) throw error;
       return newStatus;
@@ -251,7 +277,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
       queryClient.invalidateQueries({ queryKey: ["colaboradores"] });
       toast.success(`Colaborador ${newStatus === "ativo" ? "ativado" : "inativado"}!`);
     },
-    onError: () => toast.error("Erro ao alterar status."),
+    onError: (err: Error) => {
+      if (err.message === "LIMITE_ATINGIDO") {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
+          action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
+        });
+      } else {
+        toast.error("Erro ao alterar status.");
+      }
+    },
   });
 
   const openEdit = (c: Colaborador) => {
@@ -273,8 +307,8 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
 
-  const totalColaboradores = colaboradores?.length ?? 0;
-  const limitReached = !editing && limiteColaboradores !== null && totalColaboradores >= limiteColaboradores;
+  const totalAtivos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
+  const limitReached = !editing && limiteColaboradores !== null && totalAtivos >= limiteColaboradores;
 
   return (
     <>
@@ -282,7 +316,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Limite de colaboradores atingido para o seu plano atual ({totalColaboradores}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
+            Limite de colaboradores ativos atingido para o seu plano atual ({totalAtivos}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
           </AlertDescription>
         </Alert>
       )}
