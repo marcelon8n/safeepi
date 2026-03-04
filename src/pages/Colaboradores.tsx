@@ -212,6 +212,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         setor_id: form.setor_id || null,
         status: form.status,
       };
+
+      // Guard: if activating via edit and limit reached
+      if (editing && form.status === "ativo" && editing.status !== "ativo") {
+        const ativos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
+        if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
+          throw new Error("LIMITE_ATINGIDO");
+        }
+      }
+
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -225,7 +234,15 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
       toast.success(editing ? "Colaborador atualizado!" : "Colaborador cadastrado!");
       closeDialog();
     },
-    onError: () => toast.error("Erro ao salvar colaborador."),
+    onError: (err: Error) => {
+      if (err.message === "LIMITE_ATINGIDO") {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
+          action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
+        });
+      } else {
+        toast.error("Erro ao salvar colaborador.");
+      }
+    },
   });
 
   const remove = useMutation({
