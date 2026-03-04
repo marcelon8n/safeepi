@@ -14,12 +14,16 @@ import { ptBR } from "date-fns/locale";
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
+  owner: "Proprietário",
+  editor: "Editor",
   admin: "Administrador",
   viewer: "Visualizador",
 };
 
 const ROLE_VARIANTS: Record<string, "default" | "secondary" | "destructive"> = {
   super_admin: "destructive",
+  owner: "destructive",
+  editor: "default",
   admin: "default",
   viewer: "secondary",
 };
@@ -28,7 +32,7 @@ const AdminUsers = () => {
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
   const { user } = useAuth();
-  const { isSuperAdmin } = useRole();
+  const { isSuperAdmin, isOwner } = useRole();
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin-profiles", empresaId],
@@ -58,10 +62,29 @@ const AdminUsers = () => {
     onError: () => toast.error("Erro ao atualizar permissão."),
   });
 
+  // Determine which roles the current user can assign
+  const canChangeRoles = isSuperAdmin || isOwner;
+  const assignableRoles = isSuperAdmin
+    ? [
+        { value: "super_admin", label: "Super Admin" },
+        { value: "owner", label: "Proprietário" },
+        { value: "editor", label: "Editor" },
+        { value: "viewer", label: "Visualizador" },
+      ]
+    : [
+        { value: "editor", label: "Editor" },
+        { value: "viewer", label: "Visualizador" },
+      ];
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Gerencie os usuários com acesso ao sistema. {isSuperAdmin ? "Como Super Admin, você pode alterar as permissões." : "Apenas Super Admins podem alterar permissões."}
+        Gerencie os usuários com acesso ao sistema.{" "}
+        {canChangeRoles
+          ? isSuperAdmin
+            ? "Como Super Admin, você pode alterar todas as permissões."
+            : "Como Proprietário, você pode atribuir funções de Editor ou Visualizador."
+          : "Apenas Proprietários podem alterar permissões."}
       </p>
 
       <Card className="shadow-sm">
@@ -76,39 +99,59 @@ const AdminUsers = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>{Array.from({ length: 4 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>)}</TableRow>
-              )) : profiles?.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum usuário encontrado.</TableCell></TableRow>
-              ) : profiles?.map((p) => {
-                const isOwnUser = p.user_id === user?.id;
-                const role = (p.role as string) ?? "viewer";
-                return (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.nome || "Sem nome"}{isOwnUser && <span className="text-xs text-muted-foreground ml-2">(você)</span>}</TableCell>
-                    <TableCell className="text-muted-foreground">{p.email ?? "—"}</TableCell>
-                    <TableCell>
-                      {isSuperAdmin && !isOwnUser ? (
-                        <Select value={role} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
-                          <SelectTrigger className="w-[160px] h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="super_admin">Super Admin</SelectItem>
-                            <SelectItem value="admin">Administrador</SelectItem>
-                            <SelectItem value="viewer">Visualizador</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Badge variant={ROLE_VARIANTS[role] ?? "secondary"}>
-                          {ROLE_LABELS[role] ?? role}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{p.created_at ? format(new Date(p.created_at), "dd/MM/yyyy", { locale: ptBR }) : "—"}</TableCell>
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>
+                    ))}
                   </TableRow>
-                );
-              })}
+                ))
+              ) : profiles?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Nenhum usuário encontrado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                profiles?.map((p) => {
+                  const isOwnUser = p.user_id === user?.id;
+                  const role = (p.role as string) ?? "viewer";
+                  const isProtectedRole = role === "super_admin" || role === "owner";
+                  const canEdit = canChangeRoles && !isOwnUser && (!isProtectedRole || isSuperAdmin);
+
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium">
+                        {p.nome || "Sem nome"}
+                        {isOwnUser && <span className="text-xs text-muted-foreground ml-2">(você)</span>}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{p.email ?? "—"}</TableCell>
+                      <TableCell>
+                        {canEdit ? (
+                          <Select value={role} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
+                            <SelectTrigger className="w-[160px] h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {assignableRoles.map((r) => (
+                                <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant={ROLE_VARIANTS[role] ?? "secondary"}>
+                            {ROLE_LABELS[role] ?? role}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {p.created_at ? format(new Date(p.created_at), "dd/MM/yyyy", { locale: ptBR }) : "—"}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>

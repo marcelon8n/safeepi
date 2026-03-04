@@ -1,13 +1,28 @@
 import { useAuth } from "@/hooks/useAuth";
 
-type UserRole = "super_admin" | "admin" | "viewer";
+type UserRole = "super_admin" | "owner" | "editor" | "viewer";
 
 export const useRole = () => {
   const { role, roleLoading } = useAuth();
 
-  const canWrite = role === "super_admin" || role === "admin";
   const isSuperAdmin = role === "super_admin";
-  const isViewer = role === "viewer";
+  const isOwner = role === "owner" || isSuperAdmin;
+  const isEditor = role === "editor" || isOwner;
+  const isViewer = true; // everyone can read
 
-  return { role, roleLoading, canWrite, isSuperAdmin, isViewer };
+  const canManageBilling = isOwner;
+  const canEditData = isEditor;
+  const canWrite = isEditor; // backwards compat
+
+  return {
+    role,
+    roleLoading,
+    isSuperAdmin,
+    isOwner,
+    isEditor,
+    isViewer,
+    canManageBilling,
+    canEditData,
+    canWrite,
+  };
 };

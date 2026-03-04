@@ -42,12 +42,12 @@ const App = () => (
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/epis" element={<ProtectedRoute><CatalogoEpis /></ProtectedRoute>} />
             <Route path="/entregas" element={<ProtectedRoute><RegistroEntregas /></ProtectedRoute>} />
-            <Route path="/obras" element={<ProtectedRoute requireSuperAdmin><Obras /></ProtectedRoute>} />
-            <Route path="/obras/:id" element={<ProtectedRoute requireSuperAdmin><ObraDetalhe /></ProtectedRoute>} />
-            <Route path="/alocacao-equipe" element={<ProtectedRoute requireSuperAdmin><AlocacaoEquipe /></ProtectedRoute>} />
-            <Route path="/gestao-documentos" element={<ProtectedRoute requireSuperAdmin><GestaoDocumentos /></ProtectedRoute>} />
-            <Route path="/equipe" element={<ProtectedRoute writeOnly><Equipe /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute writeOnly><Equipe /></ProtectedRoute>} />
+            <Route path="/obras" element={<ProtectedRoute ownerOnly><Obras /></ProtectedRoute>} />
+            <Route path="/obras/:id" element={<ProtectedRoute ownerOnly><ObraDetalhe /></ProtectedRoute>} />
+            <Route path="/alocacao-equipe" element={<ProtectedRoute ownerOnly><AlocacaoEquipe /></ProtectedRoute>} />
+            <Route path="/gestao-documentos" element={<ProtectedRoute ownerOnly><GestaoDocumentos /></ProtectedRoute>} />
+            <Route path="/equipe" element={<ProtectedRoute editOnly><Equipe /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute ownerOnly><Equipe /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
