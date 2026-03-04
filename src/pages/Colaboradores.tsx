@@ -268,7 +268,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_completo: "", cargo: "", setor_id: "" });
+    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
   };
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
