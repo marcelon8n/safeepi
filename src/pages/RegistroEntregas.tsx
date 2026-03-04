@@ -15,8 +15,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ClipboardList, AlertTriangle, ArchiveRestore, Info } from "lucide-react";
 import { toast } from "sonner";
-import { format, addDays } from "date-fns";
+import { format, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+/** Parse a date-only string (yyyy-MM-dd) as local time, not UTC */
+const parseLocalDate = (dateStr: string) => {
+  // Append T12:00:00 so it stays on the correct day in any timezone
+  return parseISO(dateStr + "T12:00:00");
+};
+
+const formatLocalDate = (dateStr: string) =>
+  format(parseLocalDate(dateStr), "dd/MM/yyyy", { locale: ptBR });
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
 import type { Database } from "@/integrations/supabase/types";
@@ -86,7 +95,7 @@ const RegistroEntregas = () => {
     setEpiId(id);
     const epi = epis?.find((e) => e.id === id);
     if (epi && dataEntrega) {
-      const vencimento = addDays(new Date(dataEntrega), epi.periodicidade_dias);
+      const vencimento = addDays(parseLocalDate(dataEntrega), epi.periodicidade_dias);
       setDataVencimento(format(vencimento, "yyyy-MM-dd"));
     }
   };
@@ -95,7 +104,7 @@ const RegistroEntregas = () => {
     setDataEntrega(date);
     const epi = epis?.find((e) => e.id === epiId);
     if (epi && date) {
-      const vencimento = addDays(new Date(date), epi.periodicidade_dias);
+      const vencimento = addDays(parseLocalDate(date), epi.periodicidade_dias);
       setDataVencimento(format(vencimento, "yyyy-MM-dd"));
     }
   };
@@ -226,7 +235,7 @@ const RegistroEntregas = () => {
               <Alert variant="destructive" className="border-destructive bg-destructive/10">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
-                  ⚠️ O CA deste EPI está vencido ({selectedEpi?.data_validade_ca ? format(new Date(selectedEpi.data_validade_ca), "dd/MM/yyyy") : ""}). 
+                  ⚠️ O CA deste EPI está vencido ({selectedEpi?.data_validade_ca ? formatLocalDate(selectedEpi.data_validade_ca) : ""}). 
                   Entrega bloqueada por irregularidade jurídica.
                 </AlertDescription>
               </Alert>
@@ -318,7 +327,7 @@ const RegistroEntregas = () => {
                                       <p className="font-medium">CA na entrega: {(e as any).ca_numero_entregue}</p>
                                       {(e as any).data_validade_ca_entregue && (
                                         <p className="text-xs text-muted-foreground">
-                                          Validade CA: {format(new Date((e as any).data_validade_ca_entregue), "dd/MM/yyyy")}
+                                          Validade CA: {formatLocalDate((e as any).data_validade_ca_entregue)}
                                         </p>
                                       )}
                                     </TooltipContent>
@@ -332,8 +341,8 @@ const RegistroEntregas = () => {
                               {MOTIVO_LABELS[e.motivo_entrega ?? ""] ?? "—"}
                             </Badge>
                           </TableCell>
-                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-                          <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                          <TableCell>{formatLocalDate(e.data_entrega)}</TableCell>
+                          <TableCell>{formatLocalDate(e.data_vencimento)}</TableCell>
                           <TableCell>
                             {isAtiva ? (
                               <Badge variant={vencido ? "destructive" : "secondary"}>
