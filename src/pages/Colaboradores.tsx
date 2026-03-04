@@ -282,7 +282,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Limite de colaboradores atingido para o seu plano atual ({totalColaboradores}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
+            Limite de colaboradores ativos atingido para o seu plano atual ({totalAtivos}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
           </AlertDescription>
         </Alert>
       )}
