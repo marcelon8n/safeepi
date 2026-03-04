@@ -210,6 +210,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
         nome_completo: form.nome_completo,
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
+        status: form.status,
       };
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
