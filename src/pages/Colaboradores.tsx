@@ -364,7 +364,7 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum colaborador cadastrado.</TableCell></TableRow>
               ) : (
                 colaboradores?.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} className={c.status === "inativo" ? "opacity-50" : ""}>
                     <TableCell className="font-medium">{c.nome_completo}</TableCell>
                     <TableCell>{c.cargo ?? "—"}</TableCell>
                     <TableCell>{getSetorNome(c)}</TableCell>
@@ -376,6 +376,23 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                     <TableCell>
                       <RoleGate allowWrite>
                       <div className="flex gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => toggleStatus.mutate(c)}
+                                disabled={toggleStatus.isPending}
+                              >
+                                <Power className={`w-4 h-4 ${c.status === "ativo" ? "text-success" : "text-muted-foreground"}`} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {c.status === "ativo" ? "Inativar colaborador" : "Ativar colaborador"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                           <Pencil className="w-4 h-4" />
                         </Button>
