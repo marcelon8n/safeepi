@@ -13,19 +13,19 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ClipboardList, AlertTriangle, ArchiveRestore, Info } from "lucide-react";
+import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 /** Parse a date-only string (yyyy-MM-dd) as local time, not UTC */
 const parseLocalDate = (dateStr: string) => {
-  // Append T12:00:00 so it stays on the correct day in any timezone
   return parseISO(dateStr + "T12:00:00");
 };
 
 const formatLocalDate = (dateStr: string) =>
   format(parseLocalDate(dateStr), "dd/MM/yyyy", { locale: ptBR });
+
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
 import type { Database } from "@/integrations/supabase/types";
@@ -48,6 +48,8 @@ const MOTIVO_LABELS: Record<string, string> = {
   ajuste: "Ajuste",
 };
 
+const PAGE_SIZE = 15;
+
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
@@ -58,6 +60,15 @@ const RegistroEntregas = () => {
   const [motivoEntrega, setMotivoEntrega] = useState<MotivoEntrega>("entrega_inicial");
   const [observacoes, setObservacoes] = useState("");
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
+
+  // Filters
+  const [filtroColaborador, setFiltroColaborador] = useState("");
+  const [filtroEpi, setFiltroEpi] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState("");
+  const [filtroDataFim, setFiltroDataFim] = useState("");
+
+  // Pagination
+  const [page, setPage] = useState(0);
 
   const { data: colaboradores } = useQuery({
     queryKey: ["colaboradores"],
@@ -75,16 +86,60 @@ const RegistroEntregas = () => {
     },
   });
 
-  const { data: entregas, isLoading } = useQuery({
-    queryKey: ["entregas"],
+  // Count query for pagination
+  const { data: totalCount } = useQuery({
+    queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("entregas_epi")
-        .select("*, colaboradores(nome_completo), epis(nome_epi)")
-        .order("data_entrega", { ascending: false });
+        .select("id, colaboradores!inner(nome_completo), epis!inner(nome_epi)", { count: "exact", head: true });
+
+      if (filtroColaborador) {
+        query = query.ilike("colaboradores.nome_completo", `%${filtroColaborador}%`);
+      }
+      if (filtroEpi) {
+        query = query.ilike("epis.nome_epi", `%${filtroEpi}%`);
+      }
+      if (filtroDataInicio) {
+        query = query.gte("data_entrega", filtroDataInicio);
+      }
+      if (filtroDataFim) {
+        query = query.lte("data_entrega", filtroDataFim);
+      }
+
+      const { count } = await query;
+      return count ?? 0;
+    },
+  });
+
+  const { data: entregas, isLoading } = useQuery({
+    queryKey: ["entregas", page, filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
+    queryFn: async () => {
+      let query = supabase
+        .from("entregas_epi")
+        .select("*, colaboradores!inner(nome_completo, setor_id, setores:setor_id(nome)), epis!inner(nome_epi)")
+        .order("data_entrega", { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      if (filtroColaborador) {
+        query = query.ilike("colaboradores.nome_completo", `%${filtroColaborador}%`);
+      }
+      if (filtroEpi) {
+        query = query.ilike("epis.nome_epi", `%${filtroEpi}%`);
+      }
+      if (filtroDataInicio) {
+        query = query.gte("data_entrega", filtroDataInicio);
+      }
+      if (filtroDataFim) {
+        query = query.lte("data_entrega", filtroDataFim);
+      }
+
+      const { data } = await query;
       return data ?? [];
     },
   });
+
+  const totalPages = Math.ceil((totalCount ?? 0) / PAGE_SIZE);
 
   const selectedEpi = epis?.find((e) => e.id === epiId);
   const today = new Date().toISOString().split("T")[0];
@@ -111,12 +166,11 @@ const RegistroEntregas = () => {
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ["entregas"] });
-    queryClient.invalidateQueries({ queryKey: ["vencidos"] });
     queryClient.invalidateQueries({ queryKey: ["entregas-count"] });
+    queryClient.invalidateQueries({ queryKey: ["vencidos"] });
     queryClient.invalidateQueries({ queryKey: ["entregas-all"] });
   };
 
-  // Mutation: dar baixa (devolução)
   const devolverMutation = useMutation({
     mutationFn: async (entregaId: string) => {
       const { error } = await supabase
@@ -133,10 +187,8 @@ const RegistroEntregas = () => {
     onError: () => toast.error("Erro ao registrar baixa."),
   });
 
-  // Mutation: registrar nova entrega (com baixa automática para vencimento/dano)
   const registrar = useMutation({
     mutationFn: async () => {
-      // Auto-deactivate previous active delivery for same colaborador+epi when replacing
       if (motivoEntrega === "vencimento" || motivoEntrega === "dano_desgaste") {
         await supabase
           .from("entregas_epi")
@@ -161,6 +213,7 @@ const RegistroEntregas = () => {
     },
     onSuccess: () => {
       invalidateAll();
+      setPage(0);
       toast.success("Entrega registrada com sucesso!");
       setColaboradorId("");
       setEpiId("");
@@ -172,9 +225,14 @@ const RegistroEntregas = () => {
     onError: () => toast.error("Erro ao registrar entrega."),
   });
 
+  // Reset page when filters change
+  const applyFilter = (setter: (v: string) => void, value: string) => {
+    setter(value);
+    setPage(0);
+  };
+
   return (
     <AppLayout title="Registro de Entregas" description="Registre a entrega de EPIs aos colaboradores">
-      {/* Dialog de confirmação de devolução */}
       <Dialog open={!!devolucaoId} onOpenChange={(open) => !open && setDevolucaoId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -290,10 +348,43 @@ const RegistroEntregas = () => {
               <CardTitle className="text-lg">Entregas Recentes</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
+              {/* Filters row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 pb-3">
+                <Input
+                  placeholder="Filtrar colaborador..."
+                  value={filtroColaborador}
+                  onChange={(e) => applyFilter(setFiltroColaborador, e.target.value)}
+                  className="h-8 text-xs"
+                />
+                <Input
+                  placeholder="Filtrar EPI..."
+                  value={filtroEpi}
+                  onChange={(e) => applyFilter(setFiltroEpi, e.target.value)}
+                  className="h-8 text-xs"
+                />
+                <Input
+                  type="date"
+                  placeholder="Data início"
+                  value={filtroDataInicio}
+                  onChange={(e) => applyFilter(setFiltroDataInicio, e.target.value)}
+                  className="h-8 text-xs"
+                  title="Data início"
+                />
+                <Input
+                  type="date"
+                  placeholder="Data fim"
+                  value={filtroDataFim}
+                  onChange={(e) => applyFilter(setFiltroDataFim, e.target.value)}
+                  className="h-8 text-xs"
+                  title="Data fim"
+                />
+              </div>
+
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Colaborador</TableHead>
+                    <TableHead>Setor</TableHead>
                     <TableHead>EPI</TableHead>
                     <TableHead>Motivo</TableHead>
                     <TableHead>Entrega</TableHead>
@@ -304,16 +395,19 @@ const RegistroEntregas = () => {
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
                   ) : entregas?.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma entrega registrada.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma entrega encontrada.</TableCell></TableRow>
                   ) : (
                     entregas?.map((e) => {
                       const isAtiva = e.status === "ativa";
                       const vencido = isAtiva && e.data_vencimento < today;
+                      const colab = e.colaboradores as any;
+                      const setorNome = colab?.setores?.nome ?? "—";
                       return (
                         <TableRow key={e.id} className={!isAtiva ? "opacity-60" : ""}>
-                          <TableCell className="font-medium">{(e.colaboradores as any)?.nome_completo ?? "—"}</TableCell>
+                          <TableCell className="font-medium">{colab?.nome_completo ?? "—"}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{setorNome}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               {(e.epis as any)?.nome_epi ?? "—"}
@@ -370,6 +464,33 @@ const RegistroEntregas = () => {
                   )}
                 </TableBody>
               </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t">
+                  <span className="text-xs text-muted-foreground">
+                    Página {page + 1} de {totalPages} ({totalCount} registros)
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page === 0}
+                      onClick={() => setPage((p) => p - 1)}
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages - 1}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Próximo <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
