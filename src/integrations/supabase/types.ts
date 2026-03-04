@@ -838,7 +838,7 @@ export type Database = {
         | "dano_desgaste"
         | "extravio"
         | "ajuste"
-      user_role: "super_admin" | "admin" | "viewer"
+      user_role: "super_admin" | "admin" | "viewer" | "owner" | "editor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -973,7 +973,7 @@ export const Constants = {
         "extravio",
         "ajuste",
       ],
-      user_role: ["super_admin", "admin", "viewer"],
+      user_role: ["super_admin", "admin", "viewer", "owner", "editor"],
     },
   },
 } as const

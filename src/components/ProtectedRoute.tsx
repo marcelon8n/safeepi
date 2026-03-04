@@ -1,17 +1,22 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
+import { useRole } from "@/hooks/useRole";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  writeOnly?: boolean;
+  /** Requires editor+ (editor, owner, super_admin) */
+  editOnly?: boolean;
+  /** Requires owner+ (owner, super_admin) */
+  ownerOnly?: boolean;
   requireObras?: boolean;
   requireSuperAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, writeOnly, requireObras, requireSuperAdmin }: ProtectedRouteProps) => {
-  const { session, loading, role, roleLoading } = useAuth();
+const ProtectedRoute = ({ children, editOnly, ownerOnly, requireObras, requireSuperAdmin }: ProtectedRouteProps) => {
+  const { session, loading, roleLoading } = useAuth();
   const { empresaId, isLoading: loadingPlan, isBlocked, permiteObras } = useEmpresaPlan();
+  const { isEditor, isOwner, isSuperAdmin } = useRole();
 
   if (loading || loadingPlan || roleLoading) {
     return (
@@ -21,29 +26,14 @@ const ProtectedRoute = ({ children, writeOnly, requireObras, requireSuperAdmin }
     );
   }
 
-  if (!session) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!session) return <Navigate to="/auth" replace />;
+  if (!empresaId) return <Navigate to="/onboarding" replace />;
+  if (isBlocked) return <Navigate to="/blocked" replace />;
 
-  if (!empresaId) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  if (isBlocked) {
-    return <Navigate to="/blocked" replace />;
-  }
-
-  if (writeOnly && role === "viewer") {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  if (requireObras && !permiteObras) {
-    return <Navigate to="/upgrade" replace />;
-  }
-
-  if (requireSuperAdmin && role !== "super_admin") {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (requireSuperAdmin && !isSuperAdmin) return <Navigate to="/dashboard" replace />;
+  if (ownerOnly && !isOwner) return <Navigate to="/dashboard" replace />;
+  if (editOnly && !isEditor) return <Navigate to="/dashboard" replace />;
+  if (requireObras && !permiteObras) return <Navigate to="/upgrade" replace />;
 
   return <>{children}</>;
 };
