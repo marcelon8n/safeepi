@@ -332,7 +332,6 @@ const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
                 </Select>
               </div>
               )}
-              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
