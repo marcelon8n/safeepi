@@ -7,12 +7,73 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const ACAO_LABELS: Record<string, string> = {
+  INSERT: "Criação",
+  UPDATE: "Atualização",
+  DELETE: "Exclusão",
+};
+
+const TABELA_LABELS: Record<string, string> = {
+  colaboradores: "Colaboradores",
+  epis: "EPIs",
+  entregas_epi: "Entregas de EPI",
+  obras: "Obras",
+};
+
+const formatDetailsSummary = (tabela: string, acao: string, detalhes: any): string => {
+  if (!detalhes) return "—";
+
+  const d = typeof detalhes === "string" ? tryParse(detalhes) : detalhes;
+  if (!d) return "—";
+
+  const acaoLabel = ACAO_LABELS[acao] || acao;
+
+  if (tabela === "entregas_epi") {
+    const nomeEpi = d.nome_epi || d.new?.nome_epi;
+    const nomeColab = d.nome_colaborador || d.new?.nome_colaborador;
+    if (nomeEpi && nomeColab) {
+      if (acao === "INSERT") return `Entrega de ${nomeEpi} para ${nomeColab}`;
+      if (acao === "UPDATE") return `Atualização de entrega de ${nomeEpi} para ${nomeColab}`;
+      if (acao === "DELETE") return `Exclusão de entrega de ${nomeEpi} para ${nomeColab}`;
+    }
+  }
+
+  if (tabela === "colaboradores") {
+    const nome = d.nome_colaborador || d.nome_completo || d.new?.nome_completo;
+    if (nome) return `${acaoLabel} do colaborador ${nome}`;
+  }
+
+  if (tabela === "epis") {
+    const nome = d.nome_epi || d.new?.nome_epi;
+    if (nome) return `${acaoLabel} do EPI ${nome}`;
+  }
+
+  if (tabela === "obras") {
+    const nome = d.nome || d.new?.nome;
+    if (nome) return `${acaoLabel} da obra ${nome}`;
+  }
+
+  return acaoLabel;
+};
+
+const tryParse = (str: string) => {
+  try { return JSON.parse(str); } catch { return null; }
+};
+
+const getUserName = (detalhes: any): string | null => {
+  if (!detalhes) return null;
+  const d = typeof detalhes === "string" ? tryParse(detalhes) : detalhes;
+  return d?._usuario_nome || null;
+};
 
 const AdminAuditLog = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [selectedLog, setSelectedLog] = useState<any>(null);
   const perPage = 15;
 
   const { data: logs, isLoading } = useQuery({
@@ -28,20 +89,26 @@ const AdminAuditLog = () => {
     },
   });
 
-  const filtered = logs?.filter((l) =>
-    l.acao.toLowerCase().includes(search.toLowerCase()) ||
-    l.tabela.toLowerCase().includes(search.toLowerCase()) ||
-    (typeof l.detalhes === "string" && l.detalhes.toLowerCase().includes(search.toLowerCase()))
-  ) ?? [];
+  const filtered = logs?.filter((l) => {
+    const q = search.toLowerCase();
+    const summary = formatDetailsSummary(l.tabela, l.acao, l.detalhes).toLowerCase();
+    const userName = (getUserName(l.detalhes) || "").toLowerCase();
+    return (
+      l.acao.toLowerCase().includes(q) ||
+      l.tabela.toLowerCase().includes(q) ||
+      summary.includes(q) ||
+      userName.includes(q)
+    );
+  }) ?? [];
 
   const paginated = filtered.slice(page * perPage, (page + 1) * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
 
-  const formatDetails = (detalhes: any): string => {
-    if (!detalhes) return "—";
-    if (typeof detalhes === "string") return detalhes;
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "—";
     try {
-      return JSON.stringify(detalhes, null, 0).slice(0, 100);
+      const date = parseISO(dateStr);
+      return format(date, "dd/MM/yyyy HH:mm", { locale: ptBR });
     } catch {
       return "—";
     }
@@ -55,7 +122,7 @@ const AdminAuditLog = () => {
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por ação ou tabela..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} className="pl-9" />
+        <Input placeholder="Buscar por ação, tabela ou usuário..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} className="pl-9" />
       </div>
 
       <Card className="shadow-sm">
@@ -76,14 +143,18 @@ const AdminAuditLog = () => {
               )) : paginated.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum registro de auditoria encontrado.</TableCell></TableRow>
               ) : paginated.map((l) => (
-                <TableRow key={l.id}>
+                <TableRow key={l.id} className="cursor-pointer" onClick={() => setSelectedLog(l)}>
                   <TableCell className="whitespace-nowrap text-sm">
-                    {l.created_at ? format(new Date(l.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "—"}
+                    {formatDate(l.created_at)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{l.usuario_id?.slice(0, 8) ?? "Sistema"}</TableCell>
-                  <TableCell className="font-medium text-sm">{l.acao}</TableCell>
-                  <TableCell className="text-sm">{l.tabela}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{formatDetails(l.detalhes)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {getUserName(l.detalhes) || l.usuario_id?.slice(0, 8) || "Sistema"}
+                  </TableCell>
+                  <TableCell className="font-medium text-sm">{ACAO_LABELS[l.acao] || l.acao}</TableCell>
+                  <TableCell className="text-sm">{TABELA_LABELS[l.tabela] || l.tabela}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
+                    {formatDetailsSummary(l.tabela, l.acao, l.detalhes)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -101,6 +172,29 @@ const AdminAuditLog = () => {
           </div>
         </div>
       )}
+
+      <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Auditoria</DialogTitle>
+          </DialogHeader>
+          {selectedLog && (
+            <div className="space-y-3 text-sm">
+              <div><span className="font-medium">Data:</span> {formatDate(selectedLog.created_at)}</div>
+              <div><span className="font-medium">Usuário:</span> {getUserName(selectedLog.detalhes) || selectedLog.usuario_id || "Sistema"}</div>
+              <div><span className="font-medium">Ação:</span> {ACAO_LABELS[selectedLog.acao] || selectedLog.acao}</div>
+              <div><span className="font-medium">Tabela:</span> {TABELA_LABELS[selectedLog.tabela] || selectedLog.tabela}</div>
+              <div><span className="font-medium">Resumo:</span> {formatDetailsSummary(selectedLog.tabela, selectedLog.acao, selectedLog.detalhes)}</div>
+              <div>
+                <span className="font-medium">Dados completos:</span>
+                <pre className="mt-2 p-3 bg-muted rounded-md text-xs overflow-auto whitespace-pre-wrap break-all max-h-[400px]">
+                  {JSON.stringify(selectedLog.detalhes, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
