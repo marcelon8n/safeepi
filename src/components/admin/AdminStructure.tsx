@@ -263,7 +263,8 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
             <DialogHeader><DialogTitle>{editing ? "Editar Setor" : "Novo Setor"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <div><Label>Nome do Setor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>Email do Encarregado</Label><Input type="email" value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} placeholder="Essencial para notificações automáticas" /></div>
+              <div><Label>Nome do Encarregado</Label><Input value={form.encarregado_nome} onChange={(e) => setForm({ ...form, encarregado_nome: e.target.value })} placeholder="Ex: João Silva" /></div>
+              <div><Label>E-mail do Encarregado</Label><Input type="email" value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} placeholder="Essencial para notificações automáticas" /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
