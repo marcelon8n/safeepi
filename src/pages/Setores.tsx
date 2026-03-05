@@ -99,7 +99,7 @@ const Setores = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["setores"] });
+      qc.invalidateQueries({ queryKey: ["setores-list"] });
       toast.success("Setor removido!");
     },
     onError: () => toast.error("Erro ao remover setor. Verifique se existem colaboradores vinculados."),
