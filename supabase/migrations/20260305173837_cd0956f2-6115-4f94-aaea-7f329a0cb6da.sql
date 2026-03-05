@@ -1,0 +1,1 @@
+ALTER TABLE public.setores ADD COLUMN encarregado_nome text;
