@@ -112,7 +112,7 @@ const Setores = () => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome: "", email_encarregado: "", observacoes: "" });
+    setForm({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
     setEmailError("");
   };
 
