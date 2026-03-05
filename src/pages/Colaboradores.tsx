@@ -7,15 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, AlertTriangle, Search, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
@@ -23,87 +21,166 @@ import RoleGate from "@/components/RoleGate";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Colaborador = Tables<"colaboradores">;
+type Setor = Tables<"setores">;
 
-// ── EPI History Modal ────────────────────────────────────────────────────────
-const HistoricoEpisModal = ({ colaboradorId, nome }: { colaboradorId: string; nome: string }) => {
+// ── Setores Tab ──────────────────────────────────────────────────────────────
+
+const SetoresTab = ({ empresaId }: { empresaId: string | null }) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Setor | null>(null);
+  const [form, setForm] = useState({ nome: "", email_encarregado: "" });
 
-  const { data: entregas, isLoading } = useQuery({
-    queryKey: ["historico-epis", colaboradorId],
+  const { data: setores, isLoading } = useQuery({
+    queryKey: ["setores"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("entregas_epi")
-        .select("*, epis(nome_epi)")
-        .eq("colaborador_id", colaboradorId)
-        .order("data_entrega", { ascending: false });
+      const { data, error } = await supabase.from("setores").select("*").order("nome");
       if (error) throw error;
       return data;
     },
-    enabled: open,
   });
 
+  const save = useMutation({
+    mutationFn: async () => {
+      if (editing) {
+        const { error } = await supabase.from("setores").update(form).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("setores").insert({ ...form, empresa_id: empresaId } as TablesInsert<"setores">);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["setores"] });
+      toast.success(editing ? "Setor atualizado!" : "Setor cadastrado!");
+      closeDialog();
+    },
+    onError: () => toast.error("Erro ao salvar setor."),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("setores").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["setores"] });
+      toast.success("Setor removido!");
+    },
+    onError: () => toast.error("Erro ao remover setor."),
+  });
+
+  const openEdit = (s: Setor) => {
+    setEditing(s);
+    setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "" });
+    setOpen(true);
+  };
+
+  const closeDialog = () => {
+    setOpen(false);
+    setEditing(null);
+    setForm({ nome: "", email_encarregado: "" });
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" title="Ver histórico de EPIs">
-          <Eye className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Histórico de EPIs — {nome}</DialogTitle>
-        </DialogHeader>
-        <div className="max-h-[50vh] overflow-y-auto">
-          {isLoading ? (
-            <div className="space-y-2 py-4">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+    <>
+      <RoleGate allowWrite>
+      <div className="flex justify-end mb-4">
+        <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
+          <DialogTrigger asChild>
+            <Button><Plus className="w-4 h-4 mr-2" />Novo Setor</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editing ? "Editar Setor" : "Novo Setor"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Nome do Setor *</Label>
+                <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+              </div>
+              <div>
+                <Label>Email do Encarregado</Label>
+                <Input value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} />
+              </div>
             </div>
-          ) : !entregas?.length ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Nenhum EPI registado para este colaborador.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>EPI</TableHead>
-                  <TableHead>Entrega</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entregas.map((e) => {
-                  const vencido = new Date(e.data_vencimento) < new Date();
-                  return (
-                    <TableRow key={e.id}>
-                      <TableCell className="font-medium text-sm">{(e as any).epis?.nome_epi ?? "—"}</TableCell>
-                      <TableCell className="text-sm">{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                      <TableCell className="text-sm">{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
-                      <TableCell>
-                        <Badge variant={vencido ? "destructive" : "default"}>
-                          {vencido ? "Vencido" : e.status ?? "ativa"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
+              <Button onClick={() => save.mutate()} disabled={!form.nome || save.isPending}>
+                {save.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      </RoleGate>
+
+      <Card className="shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Email Encarregado</TableHead>
+                <TableHead className="w-24">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+              ) : setores?.length === 0 ? (
+                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Nenhum setor cadastrado.</TableCell></TableRow>
+              ) : (
+                setores?.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.nome}</TableCell>
+                    <TableCell>{s.email_encarregado ?? "—"}</TableCell>
+                    <TableCell>
+                      <RoleGate allowWrite>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir setor</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o setor "{s.nome}"? Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => remove.mutate(s.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                      </RoleGate>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
-// ── Main Page ────────────────────────────────────────────────────────────────
-const Colaboradores = () => {
-  const { empresaId } = useEmpresaId();
+// ── Colaboradores Tab ────────────────────────────────────────────────────────
+
+const ColaboradoresTab = ({ empresaId }: { empresaId: string | null }) => {
   const { limiteColaboradores } = useEmpresaPlan();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
 
   const { data: setores } = useQuery({
@@ -130,17 +207,20 @@ const Colaboradores = () => {
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
-        nome_completo: form.nome_completo.trim(),
-        cargo: form.cargo.trim() || null,
+        nome_completo: form.nome_completo,
+        cargo: form.cargo || null,
         setor_id: form.setor_id || null,
         status: form.status,
       };
+
+      // Guard: if activating via edit and limit reached
       if (editing && form.status === "ativo" && editing.status !== "ativo") {
         const ativos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
         if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
           throw new Error("LIMITE_ATINGIDO");
         }
       }
+
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -156,7 +236,7 @@ const Colaboradores = () => {
     },
     onError: (err: Error) => {
       if (err.message === "LIMITE_ATINGIDO") {
-        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano.", {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
           action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
         });
       } else {
@@ -180,12 +260,15 @@ const Colaboradores = () => {
   const toggleStatus = useMutation({
     mutationFn: async (c: Colaborador) => {
       const newStatus = c.status === "ativo" ? "inativo" : "ativo";
+
+      // Guard reactivation against plan limit
       if (newStatus === "ativo") {
         const ativos = colaboradores?.filter((x) => x.status === "ativo").length ?? 0;
         if (limiteColaboradores !== null && ativos >= limiteColaboradores) {
           throw new Error("LIMITE_ATINGIDO");
         }
       }
+
       const { error } = await supabase.from("colaboradores").update({ status: newStatus }).eq("id", c.id);
       if (error) throw error;
       return newStatus;
@@ -196,7 +279,7 @@ const Colaboradores = () => {
     },
     onError: (err: Error) => {
       if (err.message === "LIMITE_ATINGIDO") {
-        toast.error("Limite de colaboradores ativos atingido.", {
+        toast.error("Limite de colaboradores ativos atingido. Faça o upgrade do plano para reativar.", {
           action: { label: "Ver planos", onClick: () => window.location.href = "/precos" },
         });
       } else {
@@ -210,7 +293,7 @@ const Colaboradores = () => {
     setForm({
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
-      setor_id: c.setor_id ?? "",
+      setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
     });
     setOpen(true);
@@ -227,125 +310,93 @@ const Colaboradores = () => {
   const totalAtivos = colaboradores?.filter((c) => c.status === "ativo").length ?? 0;
   const limitReached = !editing && limiteColaboradores !== null && totalAtivos >= limiteColaboradores;
 
-  const filtered = colaboradores?.filter((c) => {
-    const matchSearch = c.nome_completo.toLowerCase().includes(search.toLowerCase()) ||
-      (c.cargo ?? "").toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "todos" || c.status === statusFilter;
-    return matchSearch && matchStatus;
-  }) ?? [];
-
   return (
-    <AppLayout title="Colaboradores" description="Gestão de pessoas — cadastro, status e histórico de EPIs.">
-      <div className="space-y-4">
-        {limitReached && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Limite de colaboradores ativos atingido ({totalAtivos}/{limiteColaboradores}).{" "}
-              <a href="/precos" className="underline font-medium">Faça o upgrade</a>.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou cargo..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="ativo">Ativos</SelectItem>
-                <SelectItem value="inativo">Inativos</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <RoleGate allowWrite>
-            <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
-              <DialogTrigger asChild>
-                <Button disabled={limitReached}><Plus className="w-4 h-4 mr-2" />Novo Colaborador</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editing ? "Editar Colaborador" : "Novo Colaborador"}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-2">
-                  <div>
-                    <Label>Nome Completo *</Label>
-                    <Input value={form.nome_completo} onChange={(e) => setForm({ ...form, nome_completo: e.target.value })} maxLength={100} />
-                  </div>
-                  <div>
-                    <Label>Cargo</Label>
-                    <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} maxLength={100} />
-                  </div>
-                  <div>
-                    <Label>Setor</Label>
-                    <Select value={form.setor_id} onValueChange={(v) => setForm({ ...form, setor_id: v })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um setor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {setores?.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {editing && (
-                    <div>
-                      <Label>Status</Label>
-                      <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ativo">Ativo</SelectItem>
-                          <SelectItem value="inativo">Inativo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
-                  <Button onClick={() => save.mutate()} disabled={!form.nome_completo.trim() || save.isPending || limitReached}>
-                    {save.isPending ? "Salvando..." : "Salvar"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </RoleGate>
-        </div>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Setor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-32">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>
+    <>
+      {limitReached && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Limite de colaboradores ativos atingido para o seu plano atual ({totalAtivos}/{limiteColaboradores}). <a href="/precos" className="underline font-medium">Faça o upgrade para continuar</a>.
+          </AlertDescription>
+        </Alert>
+      )}
+      <RoleGate allowWrite>
+      <div className="flex justify-end mb-4">
+        <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
+          <DialogTrigger asChild>
+            <Button disabled={limitReached}><Plus className="w-4 h-4 mr-2" />Novo Colaborador</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editing ? "Editar Colaborador" : "Novo Colaborador"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Nome Completo *</Label>
+                <Input value={form.nome_completo} onChange={(e) => setForm({ ...form, nome_completo: e.target.value })} />
+              </div>
+              <div>
+                <Label>Cargo</Label>
+                <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} />
+              </div>
+              <div>
+                <Label>Setor</Label>
+                <Select value={form.setor_id} onValueChange={(v) => setForm({ ...form, setor_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {setores?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
                     ))}
-                  </TableRow>
-                )) : filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      Nenhum colaborador encontrado.
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.map((c) => (
+                  </SelectContent>
+                </Select>
+              </div>
+              {editing && (
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
+              <Button onClick={() => save.mutate()} disabled={!form.nome_completo || save.isPending || limitReached}>
+                {save.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      </RoleGate>
+
+      <Card className="shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Cargo</TableHead>
+                <TableHead>Setor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-24">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+              ) : colaboradores?.length === 0 ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum colaborador cadastrado.</TableCell></TableRow>
+              ) : (
+                colaboradores?.map((c) => (
                   <TableRow key={c.id} className={c.status === "inativo" ? "opacity-50" : ""}>
                     <TableCell className="font-medium">{c.nome_completo}</TableCell>
                     <TableCell>{c.cargo ?? "—"}</TableCell>
@@ -356,43 +407,63 @@ const Colaboradores = () => {
                       </span>
                     </TableCell>
                     <TableCell>
+                      <RoleGate allowWrite>
                       <div className="flex gap-1">
-                        <HistoricoEpisModal colaboradorId={c.id} nome={c.nome_completo} />
-                        <RoleGate allowWrite>
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                        </RoleGate>
-                        <RoleGate allowDelete>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="w-4 h-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir colaborador</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir "{c.nome_completo}"? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => remove.mutate(c.id)}>Excluir</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </RoleGate>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir colaborador</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir "{c.nome_completo}"? Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => remove.mutate(c.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
+                      </RoleGate>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
+  );
+};
+
+// ── Main Page ────────────────────────────────────────────────────────────────
+
+const Colaboradores = () => {
+  const { empresaId } = useEmpresaId();
+
+  return (
+    <AppLayout title="Colaboradores" description="Gerencie setores e colaboradores da empresa">
+      <Tabs defaultValue="setores" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="setores">Gestão de Setores</TabsTrigger>
+          <TabsTrigger value="colaboradores">Colaboradores</TabsTrigger>
+        </TabsList>
+        <TabsContent value="setores">
+          <SetoresTab empresaId={empresaId} />
+        </TabsContent>
+        <TabsContent value="colaboradores">
+          <ColaboradoresTab empresaId={empresaId} />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 };
