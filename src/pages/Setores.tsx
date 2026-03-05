@@ -207,7 +207,7 @@ const Setores = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>E-mail Encarregado</TableHead>
+                  <TableHead>Encarregado</TableHead>
                   <TableHead>Colaboradores</TableHead>
                   <TableHead className="w-24">Ações</TableHead>
                 </TableRow>
