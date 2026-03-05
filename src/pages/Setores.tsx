@@ -151,6 +151,14 @@ const Setores = () => {
                     />
                   </div>
                   <div>
+                    <Label>Nome do Encarregado</Label>
+                    <Input
+                      value={form.encarregado_nome}
+                      onChange={(e) => setForm({ ...form, encarregado_nome: e.target.value })}
+                      placeholder="Ex: João Silva"
+                    />
+                  </div>
+                  <div>
                     <Label>E-mail do Encarregado</Label>
                     <Input
                       type="email"
