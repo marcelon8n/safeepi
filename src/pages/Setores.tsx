@@ -29,7 +29,7 @@ const Setores = () => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Setor | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nome: "", email_encarregado: "", observacoes: "" });
+  const [form, setForm] = useState({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
   const [emailError, setEmailError] = useState("");
 
   const { data: setores, isLoading } = useQuery({
