@@ -211,6 +211,7 @@ const Setores = () => {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Encarregado</TableHead>
+                  <TableHead>E-mail</TableHead>
                   <TableHead>Colaboradores</TableHead>
                   <TableHead className="w-24">Ações</TableHead>
                 </TableRow>
@@ -219,14 +220,14 @@ const Setores = () => {
                 {isLoading ? (
                   Array.from({ length: 3 }).map((_, i) => (
                     <TableRow key={i}>
-                      {Array.from({ length: 4 }).map((_, j) => (
+                      {Array.from({ length: 5 }).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Nenhum setor encontrado.
                     </TableCell>
                   </TableRow>
@@ -240,17 +241,17 @@ const Setores = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {s.encarregado_nome || s.email_encarregado ? (
-                          <div className="flex flex-col">
-                            {s.encarregado_nome && (
-                              <span className="font-medium">{s.encarregado_nome}</span>
-                            )}
-                            {s.email_encarregado && (
-                              <span className="text-xs text-muted-foreground">{s.email_encarregado}</span>
-                            )}
-                          </div>
+                        {s.encarregado_nome ? (
+                          <span className="font-medium">{s.encarregado_nome}</span>
                         ) : (
-                          <span className="text-muted-foreground italic">Não configurado</span>
+                          <span className="text-muted-foreground italic">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {s.email_encarregado ? (
+                          <span className="text-sm text-muted-foreground">{s.email_encarregado}</span>
+                        ) : (
+                          <span className="text-muted-foreground italic">—</span>
                         )}
                       </TableCell>
                       <TableCell>
