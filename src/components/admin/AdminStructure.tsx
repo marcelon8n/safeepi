@@ -247,8 +247,8 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
     onError: () => toast.error("Erro ao remover setor."),
   });
 
-  const openEdit = (s: Setor) => { setEditing(s); setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "" }); setOpen(true); };
-  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", email_encarregado: "" }); };
+  const openEdit = (s: Setor) => { setEditing(s); setForm({ nome: s.nome, encarregado_nome: s.encarregado_nome ?? "", email_encarregado: s.email_encarregado ?? "" }); setOpen(true); };
+  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", encarregado_nome: "", email_encarregado: "" }); };
 
   return (
     <div className="space-y-4">
