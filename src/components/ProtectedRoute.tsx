@@ -5,18 +5,20 @@ import { useRole } from "@/hooks/useRole";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  /** Requires editor+ (editor, owner, super_admin) */
+  /** Requires editor+ (editor, admin, owner, super_admin) */
   editOnly?: boolean;
+  /** Requires admin+ (admin, owner, super_admin) */
+  adminOnly?: boolean;
   /** Requires owner+ (owner, super_admin) */
   ownerOnly?: boolean;
   requireObras?: boolean;
   requireSuperAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, editOnly, ownerOnly, requireObras, requireSuperAdmin }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, editOnly, adminOnly, ownerOnly, requireObras, requireSuperAdmin }: ProtectedRouteProps) => {
   const { session, loading, roleLoading } = useAuth();
   const { empresaId, isLoading: loadingPlan, isBlocked, permiteObras } = useEmpresaPlan();
-  const { isEditor, isOwner, isSuperAdmin } = useRole();
+  const { isEditor, isAdmin, isOwner, isSuperAdmin } = useRole();
 
   if (loading || loadingPlan || roleLoading) {
     return (
@@ -32,6 +34,7 @@ const ProtectedRoute = ({ children, editOnly, ownerOnly, requireObras, requireSu
 
   if (requireSuperAdmin && !isSuperAdmin) return <Navigate to="/dashboard" replace />;
   if (ownerOnly && !isOwner) return <Navigate to="/dashboard" replace />;
+  if (adminOnly && !isAdmin) return <Navigate to="/dashboard" replace />;
   if (editOnly && !isEditor) return <Navigate to="/dashboard" replace />;
   if (requireObras && !permiteObras) return <Navigate to="/upgrade" replace />;
 

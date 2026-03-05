@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 const AppSidebar = () => {
   const location = useLocation();
   const { signOut, user } = useAuth();
-  const { isEditor, isOwner, isSuperAdmin } = useRole();
+  const { isEditor, isAdmin, isOwner, isSuperAdmin } = useRole();
   const { permiteObras } = useEmpresaPlan();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -22,9 +22,9 @@ const AppSidebar = () => {
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
     { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
-    { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
-    { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: true },
-    { to: "/equipe", label: "Equipe", icon: Users2, show: isEditor },
+    { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: isAdmin },
+    { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
+    { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
     { to: "/admin", label: "Administração", icon: ShieldCheck, show: isOwner },
   ];
 
