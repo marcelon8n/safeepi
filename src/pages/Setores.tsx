@@ -33,9 +33,12 @@ const Setores = () => {
   const [emailError, setEmailError] = useState("");
 
   const { data: setores, isLoading } = useQuery({
-    queryKey: ["setores"],
+    queryKey: ["setores-list"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("setores").select("*").order("nome");
+      const { data, error } = await supabase
+        .from("setores")
+        .select("id, nome, encarregado_nome, email_encarregado, empresa_id, created_at")
+        .order("nome");
       if (error) throw error;
       return data;
     },
