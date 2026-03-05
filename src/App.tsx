@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import Colaboradores from "./pages/Colaboradores";
+import Setores from "./pages/Setores";
 import CatalogoEpis from "./pages/CatalogoEpis";
 import RegistroEntregas from "./pages/RegistroEntregas";
 import Auth from "./pages/Auth";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/blocked" element={<Blocked />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
+            <Route path="/setores" element={<ProtectedRoute><Setores /></ProtectedRoute>} />
             <Route path="/epis" element={<ProtectedRoute><CatalogoEpis /></ProtectedRoute>} />
             <Route path="/entregas" element={<ProtectedRoute><RegistroEntregas /></ProtectedRoute>} />
             <Route path="/obras" element={<ProtectedRoute ownerOnly><Obras /></ProtectedRoute>} />
