@@ -70,7 +70,7 @@ const Setores = () => {
   const save = useMutation({
     mutationFn: async () => {
       if (!validateEmail(form.email_encarregado)) throw new Error("EMAIL_INVALIDO");
-      const payload = { nome: form.nome, email_encarregado: form.email_encarregado || null };
+      const payload = { nome: form.nome, encarregado_nome: form.encarregado_nome || null, email_encarregado: form.email_encarregado || null };
       if (editing) {
         const { error } = await supabase.from("setores").update(payload).eq("id", editing.id);
         if (error) throw error;
