@@ -237,7 +237,16 @@ const Setores = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {s.email_encarregado ?? (
+                        {(s as any).encarregado_nome || s.email_encarregado ? (
+                          <div className="flex flex-col">
+                            {(s as any).encarregado_nome && (
+                              <span className="font-medium">{(s as any).encarregado_nome}</span>
+                            )}
+                            {s.email_encarregado && (
+                              <span className="text-xs text-muted-foreground">{s.email_encarregado}</span>
+                            )}
+                          </div>
+                        ) : (
                           <span className="text-muted-foreground italic">Não configurado</span>
                         )}
                       </TableCell>
