@@ -228,11 +228,12 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
 
   const save = useMutation({
     mutationFn: async () => {
+      const payload = { nome: form.nome, encarregado_nome: form.encarregado_nome || null, email_encarregado: form.email_encarregado || null };
       if (editing) {
-        const { error } = await supabase.from("setores").update(form).eq("id", editing.id);
+        const { error } = await supabase.from("setores").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("setores").insert({ ...form, empresa_id: empresaId } as TablesInsert<"setores">);
+        const { error } = await supabase.from("setores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"setores">);
         if (error) throw error;
       }
     },
