@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown, Network } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
