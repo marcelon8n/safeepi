@@ -29,7 +29,7 @@ const Setores = () => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Setor | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nome: "", email_encarregado: "", observacoes: "" });
+  const [form, setForm] = useState({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
   const [emailError, setEmailError] = useState("");
 
   const { data: setores, isLoading } = useQuery({
@@ -70,7 +70,7 @@ const Setores = () => {
   const save = useMutation({
     mutationFn: async () => {
       if (!validateEmail(form.email_encarregado)) throw new Error("EMAIL_INVALIDO");
-      const payload = { nome: form.nome, email_encarregado: form.email_encarregado || null };
+      const payload = { nome: form.nome, encarregado_nome: form.encarregado_nome || null, email_encarregado: form.email_encarregado || null };
       if (editing) {
         const { error } = await supabase.from("setores").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -104,7 +104,7 @@ const Setores = () => {
 
   const openEdit = (s: Setor) => {
     setEditing(s);
-    setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "", observacoes: "" });
+    setForm({ nome: s.nome, encarregado_nome: (s as any).encarregado_nome ?? "", email_encarregado: s.email_encarregado ?? "", observacoes: "" });
     setEmailError("");
     setOpen(true);
   };
@@ -112,7 +112,7 @@ const Setores = () => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome: "", email_encarregado: "", observacoes: "" });
+    setForm({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
     setEmailError("");
   };
 
@@ -148,6 +148,14 @@ const Setores = () => {
                       value={form.nome}
                       onChange={(e) => setForm({ ...form, nome: e.target.value })}
                       placeholder="Ex: Engenharia, Segurança do Trabalho"
+                    />
+                  </div>
+                  <div>
+                    <Label>Nome do Encarregado</Label>
+                    <Input
+                      value={form.encarregado_nome}
+                      onChange={(e) => setForm({ ...form, encarregado_nome: e.target.value })}
+                      placeholder="Ex: João Silva"
                     />
                   </div>
                   <div>
@@ -199,7 +207,7 @@ const Setores = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>E-mail Encarregado</TableHead>
+                  <TableHead>Encarregado</TableHead>
                   <TableHead>Colaboradores</TableHead>
                   <TableHead className="w-24">Ações</TableHead>
                 </TableRow>
@@ -229,7 +237,16 @@ const Setores = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {s.email_encarregado ?? (
+                        {(s as any).encarregado_nome || s.email_encarregado ? (
+                          <div className="flex flex-col">
+                            {(s as any).encarregado_nome && (
+                              <span className="font-medium">{(s as any).encarregado_nome}</span>
+                            )}
+                            {s.email_encarregado && (
+                              <span className="text-xs text-muted-foreground">{s.email_encarregado}</span>
+                            )}
+                          </div>
+                        ) : (
                           <span className="text-muted-foreground italic">Não configurado</span>
                         )}
                       </TableCell>
