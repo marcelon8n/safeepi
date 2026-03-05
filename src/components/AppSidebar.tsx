@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown, Layers } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
@@ -22,9 +22,10 @@ const AppSidebar = () => {
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
     { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
+    { to: "/setores", label: "Setores", icon: Layers, show: isAdmin },
     { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: isAdmin },
     { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
-    { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
+    { to: "/equipe", label: "Equipe", icon: Users2, show: isEditor },
     { to: "/admin", label: "Administração", icon: ShieldCheck, show: isOwner },
   ];
 
