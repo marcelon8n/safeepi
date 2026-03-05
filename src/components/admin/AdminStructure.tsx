@@ -280,19 +280,21 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>Email Encarregado</TableHead>
+                <TableHead>Encarregado</TableHead>
+                <TableHead>E-mail</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>{Array.from({ length: 3 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>)}</TableRow>
+                <TableRow key={i}>{Array.from({ length: 4 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>)}</TableRow>
               )) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Nenhum setor encontrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum setor encontrado.</TableCell></TableRow>
               ) : filtered.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">{s.nome}</TableCell>
-                  <TableCell>{s.email_encarregado ?? <span className="text-muted-foreground italic">Não configurado</span>}</TableCell>
+                  <TableCell>{s.encarregado_nome ? <span className="font-medium">{s.encarregado_nome}</span> : <span className="text-muted-foreground italic">—</span>}</TableCell>
+                  <TableCell>{s.email_encarregado ? <span className="text-sm text-muted-foreground">{s.email_encarregado}</span> : <span className="text-muted-foreground italic">—</span>}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(s)}><Pencil className="w-4 h-4" /></Button>
