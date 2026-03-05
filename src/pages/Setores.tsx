@@ -33,9 +33,12 @@ const Setores = () => {
   const [emailError, setEmailError] = useState("");
 
   const { data: setores, isLoading } = useQuery({
-    queryKey: ["setores"],
+    queryKey: ["setores-list"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("setores").select("*").order("nome");
+      const { data, error } = await supabase
+        .from("setores")
+        .select("id, nome, encarregado_nome, email_encarregado, empresa_id, created_at")
+        .order("nome");
       if (error) throw error;
       return data;
     },
@@ -80,7 +83,7 @@ const Setores = () => {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["setores"] });
+      qc.invalidateQueries({ queryKey: ["setores-list"] });
       toast.success(editing ? "Setor atualizado!" : "Setor cadastrado!");
       closeDialog();
     },
@@ -96,7 +99,7 @@ const Setores = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["setores"] });
+      qc.invalidateQueries({ queryKey: ["setores-list"] });
       toast.success("Setor removido!");
     },
     onError: () => toast.error("Erro ao remover setor. Verifique se existem colaboradores vinculados."),
