@@ -22,21 +22,22 @@ import { UserPlus, Trash2, Mail, Clock } from "lucide-react";
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
   owner: "Proprietário",
-  editor: "Editor",
-  admin: "Administrador",
+  admin: "Administrador (SESMT)",
+  editor: "Editor (Encarregado)",
   viewer: "Visualizador",
 };
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
-  editor: "Pode gerir colaboradores, EPIs e registar entregas.",
+  admin: "Gestão completa: colaboradores, EPIs, setores e exclusões.",
+  editor: "Operação de campo: registar entregas, assinaturas e dados de contato.",
   viewer: "Apenas visualização de dashboards e relatórios.",
 };
 
 const ROLE_VARIANTS: Record<string, "default" | "secondary" | "destructive"> = {
   super_admin: "destructive",
   owner: "destructive",
-  editor: "default",
   admin: "default",
+  editor: "default",
   viewer: "secondary",
 };
 
@@ -56,7 +57,6 @@ const AdminUsers = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<string>("viewer");
 
-  // Fetch profiles
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin-profiles", empresaId],
     queryFn: async () => {
@@ -70,7 +70,6 @@ const AdminUsers = () => {
     enabled: !!empresaId,
   });
 
-  // Fetch pending invites
   const { data: convites, isLoading: convitesLoading } = useQuery({
     queryKey: ["admin-convites", empresaId],
     queryFn: async () => {
@@ -86,7 +85,6 @@ const AdminUsers = () => {
     enabled: !!empresaId,
   });
 
-  // Update role mutation
   const updateRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { error } = await supabase
@@ -102,11 +100,6 @@ const AdminUsers = () => {
     onError: () => toast.error("Erro ao atualizar permissão."),
   });
 
-  // Remove user (unlink from company by setting empresa_id to null - not possible with NOT NULL, so we change role to viewer and let owner decide)
-  // Actually, we can't remove empresa_id (NOT NULL). Instead we'll just note this limitation.
-  // For now, we remove the profile row or just change role. Let's use a soft approach: set role to viewer as "deactivation"
-
-  // Send invite mutation
   const sendInvite = useMutation({
     mutationFn: async () => {
       const email = inviteEmail.trim().toLowerCase();
@@ -135,7 +128,6 @@ const AdminUsers = () => {
     onError: (err: any) => toast.error(err.message || "Erro ao enviar convite."),
   });
 
-  // Cancel invite
   const cancelInvite = useMutation({
     mutationFn: async (conviteId: string) => {
       const { error } = await (supabase as any)
@@ -156,11 +148,13 @@ const AdminUsers = () => {
     ? [
         { value: "super_admin", label: "Super Admin" },
         { value: "owner", label: "Proprietário" },
-        { value: "editor", label: "Editor" },
+        { value: "admin", label: "Administrador (SESMT)" },
+        { value: "editor", label: "Editor (Encarregado)" },
         { value: "viewer", label: "Visualizador" },
       ]
     : [
-        { value: "editor", label: "Editor" },
+        { value: "admin", label: "Administrador (SESMT)" },
+        { value: "editor", label: "Editor (Encarregado)" },
         { value: "viewer", label: "Visualizador" },
       ];
 
@@ -172,7 +166,7 @@ const AdminUsers = () => {
           {canChangeRoles
             ? isSuperAdmin
               ? "Como Super Admin, você pode alterar todas as permissões."
-              : "Como Proprietário, você pode convidar e atribuir funções de Editor ou Visualizador."
+              : "Como Proprietário, você pode convidar e atribuir funções."
             : "Apenas Proprietários podem alterar permissões."}
         </p>
 
@@ -342,7 +336,7 @@ const AdminUsers = () => {
                       <TableCell>
                         {canEdit ? (
                           <Select value={role} onValueChange={(v) => updateRole.mutate({ userId: p.user_id, role: v })}>
-                            <SelectTrigger className="w-[160px] h-8">
+                            <SelectTrigger className="w-[200px] h-8">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

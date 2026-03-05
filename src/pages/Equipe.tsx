@@ -11,7 +11,7 @@ import EquipeAlocacoes from "@/components/equipe/EquipeAlocacoes";
 
 const Equipe = () => {
   const { empresaId } = useEmpresaId();
-  const { isViewer, canEditData } = useRole();
+  const { canEditData, canWrite } = useRole();
 
   return (
     <AppLayout title="Gestão Operacional" description="Gerencie seus colaboradores e conformidades documentais.">
@@ -42,10 +42,10 @@ const Equipe = () => {
           <SetoresSection empresaId={empresaId} canEdit={canEditData} />
         </TabsContent>
         <TabsContent value="documentos">
-          <EquipeDocumentos canEdit={canEditData} />
+          <EquipeDocumentos canEdit={canWrite} />
         </TabsContent>
         <TabsContent value="alocacoes">
-          <EquipeAlocacoes canEdit={canEditData} />
+          <EquipeAlocacoes canEdit={canWrite} />
         </TabsContent>
       </Tabs>
     </AppLayout>
