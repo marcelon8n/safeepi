@@ -213,7 +213,7 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Setor | null>(null);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ nome: "", email_encarregado: "" });
+  const [form, setForm] = useState({ nome: "", encarregado_nome: "", email_encarregado: "" });
 
   const { data: setores, isLoading } = useQuery({
     queryKey: ["admin-setores"],
@@ -228,11 +228,12 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
 
   const save = useMutation({
     mutationFn: async () => {
+      const payload = { nome: form.nome, encarregado_nome: form.encarregado_nome || null, email_encarregado: form.email_encarregado || null };
       if (editing) {
-        const { error } = await supabase.from("setores").update(form).eq("id", editing.id);
+        const { error } = await supabase.from("setores").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("setores").insert({ ...form, empresa_id: empresaId } as TablesInsert<"setores">);
+        const { error } = await supabase.from("setores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"setores">);
         if (error) throw error;
       }
     },
@@ -246,8 +247,8 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
     onError: () => toast.error("Erro ao remover setor."),
   });
 
-  const openEdit = (s: Setor) => { setEditing(s); setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "" }); setOpen(true); };
-  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", email_encarregado: "" }); };
+  const openEdit = (s: Setor) => { setEditing(s); setForm({ nome: s.nome, encarregado_nome: s.encarregado_nome ?? "", email_encarregado: s.email_encarregado ?? "" }); setOpen(true); };
+  const closeDialog = () => { setOpen(false); setEditing(null); setForm({ nome: "", encarregado_nome: "", email_encarregado: "" }); };
 
   return (
     <div className="space-y-4">
@@ -262,7 +263,8 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
             <DialogHeader><DialogTitle>{editing ? "Editar Setor" : "Novo Setor"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
               <div><Label>Nome do Setor *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
-              <div><Label>Email do Encarregado</Label><Input type="email" value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} placeholder="Essencial para notificações automáticas" /></div>
+              <div><Label>Nome do Encarregado</Label><Input value={form.encarregado_nome} onChange={(e) => setForm({ ...form, encarregado_nome: e.target.value })} placeholder="Ex: João Silva" /></div>
+              <div><Label>E-mail do Encarregado</Label><Input type="email" value={form.email_encarregado} onChange={(e) => setForm({ ...form, email_encarregado: e.target.value })} placeholder="Essencial para notificações automáticas" /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
@@ -278,19 +280,21 @@ export const SetoresSection = ({ empresaId, canEdit = true }: { empresaId: strin
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>Email Encarregado</TableHead>
+                <TableHead>Encarregado</TableHead>
+                <TableHead>E-mail</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>{Array.from({ length: 3 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>)}</TableRow>
+                <TableRow key={i}>{Array.from({ length: 4 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>)}</TableRow>
               )) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Nenhum setor encontrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum setor encontrado.</TableCell></TableRow>
               ) : filtered.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">{s.nome}</TableCell>
-                  <TableCell>{s.email_encarregado ?? <span className="text-muted-foreground italic">Não configurado</span>}</TableCell>
+                  <TableCell>{s.encarregado_nome ? <span className="font-medium">{s.encarregado_nome}</span> : <span className="text-muted-foreground italic">—</span>}</TableCell>
+                  <TableCell>{s.email_encarregado ? <span className="text-sm text-muted-foreground">{s.email_encarregado}</span> : <span className="text-muted-foreground italic">—</span>}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(s)}><Pencil className="w-4 h-4" /></Button>
