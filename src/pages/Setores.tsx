@@ -83,7 +83,7 @@ const Setores = () => {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["setores"] });
+      qc.invalidateQueries({ queryKey: ["setores-list"] });
       toast.success(editing ? "Setor atualizado!" : "Setor cadastrado!");
       closeDialog();
     },
