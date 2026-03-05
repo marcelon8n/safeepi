@@ -104,7 +104,7 @@ const Setores = () => {
 
   const openEdit = (s: Setor) => {
     setEditing(s);
-    setForm({ nome: s.nome, email_encarregado: s.email_encarregado ?? "", observacoes: "" });
+    setForm({ nome: s.nome, encarregado_nome: (s as any).encarregado_nome ?? "", email_encarregado: s.email_encarregado ?? "", observacoes: "" });
     setEmailError("");
     setOpen(true);
   };
