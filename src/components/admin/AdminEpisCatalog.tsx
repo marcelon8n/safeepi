@@ -84,7 +84,7 @@ const AdminEpisCatalog = () => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", custo_estimado: "" });
   };
 
   return (
