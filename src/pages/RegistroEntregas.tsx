@@ -68,6 +68,7 @@ const RegistroEntregas = () => {
   const [filtroEpi, setFiltroEpi] = useState("");
   const [filtroDataInicio, setFiltroDataInicio] = useState("");
   const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativa" | "inativa">("todos");
 
   // Pagination
   const [page, setPage] = useState(0);
