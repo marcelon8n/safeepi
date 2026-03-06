@@ -77,7 +77,7 @@ const AdminEpisCatalog = () => {
 
   const openEdit = (e: Epi) => {
     setEditing(e);
-    setForm({ nome_epi: e.nome_epi, ca_numero: e.ca_numero ?? "", periodicidade_dias: String(e.periodicidade_dias) });
+    setForm({ nome_epi: e.nome_epi, ca_numero: e.ca_numero ?? "", periodicidade_dias: String(e.periodicidade_dias), custo_estimado: e.custo_estimado ? String(e.custo_estimado) : "" });
     setOpen(true);
   };
 
