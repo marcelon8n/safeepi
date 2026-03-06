@@ -166,6 +166,7 @@ const CatalogoEpis = () => {
                 <TableHead>Validade CA</TableHead>
                 <TableHead>Fabricante</TableHead>
                 <TableHead>Periodicidade</TableHead>
+                <TableHead>Custo Est.</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
