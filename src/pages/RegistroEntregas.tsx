@@ -470,11 +470,15 @@ const RegistroEntregas = () => {
                           <TableCell>{formatLocalDate(e.data_vencimento)}</TableCell>
                           <TableCell>
                             {isAtiva ? (
-                              <Badge variant={vencido ? "destructive" : "secondary"}>
-                                {vencido ? "Vencido" : "Válido"}
-                              </Badge>
+                              vencido ? (
+                                <Badge variant="destructive">Vencido</Badge>
+                              ) : (
+                                <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">Ativo</Badge>
+                              )
                             ) : (
-                              <Badge variant="outline" className="text-muted-foreground">Inativa</Badge>
+                              <Badge variant="secondary" className="text-muted-foreground">
+                                {e.status_troca === "substituido" ? "Substituído" : "Inativo"}
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell>
