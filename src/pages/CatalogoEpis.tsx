@@ -83,6 +83,7 @@ const CatalogoEpis = () => {
       periodicidade_dias: String(e.periodicidade_dias),
       fabricante: e.fabricante ?? "",
       data_validade_ca: e.data_validade_ca ?? "",
+      custo_estimado: e.custo_estimado ? String(e.custo_estimado) : "",
     });
     setOpen(true);
   };
