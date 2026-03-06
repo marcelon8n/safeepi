@@ -129,7 +129,7 @@ const Relatorios = () => {
   const isLoading = loadingEntregas || planLoading;
 
   return (
-    <AppLayout>
+    <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
       <div className="space-y-8">
         {/* Header */}
         <div>
