@@ -91,7 +91,7 @@ const CatalogoEpis = () => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
   };
 
   const getCaStatus = (e: Epi) => {
