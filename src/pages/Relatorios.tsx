@@ -102,15 +102,30 @@ const Relatorios = () => {
     return { totalMes, vencidos, aVencer30 };
   }, [entregas]);
 
-  // ---- Previsão financeira (pro) ----
-  const previsaoFinanceira = useMemo(() => {
-    if (!entregas) return 0;
-    return entregas
-      .filter((e) => {
-        const dv = new Date(e.data_vencimento);
-        return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
-      })
-      .reduce((sum, e) => sum + (Number((e as any).epis?.custo_estimado) || 0), 0);
+  const formatBRL = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  // ---- Previsão financeira (pro) com breakdown ----
+  const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; qtd: number; subtotal: number }[] };
+    const aVencer = entregas.filter((e) => {
+      const dv = new Date(e.data_vencimento);
+      return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
+    });
+    const groups: Record<string, { qtd: number; subtotal: number }> = {};
+    let total = 0;
+    aVencer.forEach((e) => {
+      const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
+      const custo = Number((e as any).epis?.custo_estimado) || 0;
+      if (!groups[nome]) groups[nome] = { qtd: 0, subtotal: 0 };
+      groups[nome].qtd += 1;
+      groups[nome].subtotal += custo;
+      total += custo;
+    });
+    const breakdown = Object.entries(groups)
+      .map(([nome, v]) => ({ nome, ...v }))
+      .sort((a, b) => b.subtotal - a.subtotal);
+    return { previsaoFinanceira: total, custoBreakdown: breakdown };
   }, [entregas]);
 
   // ---- Gráfico de motivos ----
