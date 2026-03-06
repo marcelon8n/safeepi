@@ -30,7 +30,7 @@ export function useEmpresaPlan(): EmpresaPlan {
 
       const { data: empresa, error } = await supabase
         .from("empresas")
-        .select("id, status_assinatura, plano_id, planos(nome, limite_colaboradores, permite_obras)")
+        .select("id, status_assinatura, plano_id, planos(nome, slug, limite_colaboradores, permite_obras)")
         .eq("id", profile.empresa_id)
         .maybeSingle();
 
