@@ -126,7 +126,7 @@ const RegistroEntregas = () => {
   });
 
   const { data: entregas, isLoading } = useQuery({
-    queryKey: ["entregas", page, filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
+    queryKey: ["entregas", page, filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim, filtroStatus],
     queryFn: async () => {
       let query = supabase
         .from("entregas_epi")
@@ -145,6 +145,9 @@ const RegistroEntregas = () => {
       }
       if (filtroDataFim) {
         query = query.lte("data_entrega", filtroDataFim);
+      }
+      if (filtroStatus !== "todos") {
+        query = query.eq("status", filtroStatus);
       }
 
       const { data } = await query;
