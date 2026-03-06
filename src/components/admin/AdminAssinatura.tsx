@@ -4,7 +4,10 @@ import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Rocket } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const STATUS_LABELS: Record<string, string> = {
   trial: "Período de Teste",
