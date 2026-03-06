@@ -254,9 +254,28 @@ const Relatorios = () => {
                   {isLoading ? (
                     <Skeleton className="h-10 w-40" />
                   ) : (
-                    <p className="text-3xl font-bold text-primary">
-                      R$ {previsaoFinanceira.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </p>
+                    <div>
+                      <p className="text-3xl font-bold text-primary">
+                        {formatBRL(previsaoFinanceira)}
+                      </p>
+                      {custoBreakdown.length > 0 && (
+                        <>
+                          <Separator className="my-3" />
+                          <ScrollArea className="max-h-[200px]">
+                            <ul className="space-y-2">
+                              {custoBreakdown.map((item) => (
+                                <li key={item.nome} className="flex items-center justify-between text-sm">
+                                  <span className="text-muted-foreground truncate mr-2">
+                                    {item.nome} <span className="text-xs">({item.qtd}x)</span>
+                                  </span>
+                                  <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </ScrollArea>
+                        </>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>
