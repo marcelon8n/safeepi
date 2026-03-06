@@ -18,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const AdminAssinatura = () => {
   const { empresaId } = useEmpresaId();
+  const navigate = useNavigate();
 
   const { data: empresa, isLoading } = useQuery({
     queryKey: ["admin-empresa-assinatura", empresaId],
