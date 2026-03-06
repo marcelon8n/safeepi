@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ const RegistroEntregas = () => {
   const [filtroEpi, setFiltroEpi] = useState("");
   const [filtroDataInicio, setFiltroDataInicio] = useState("");
   const [filtroDataFim, setFiltroDataFim] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativa" | "inativa">("todos");
 
   // Pagination
   const [page, setPage] = useState(0);
@@ -89,12 +91,11 @@ const RegistroEntregas = () => {
 
   // Count query for pagination
   const { data: totalCount } = useQuery({
-    queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
+    queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim, filtroStatus],
     queryFn: async () => {
       const hasColabFilter = !!filtroColaborador;
       const hasEpiFilter = !!filtroEpi;
 
-      // Only use inner joins when filters require them to avoid excluding records
       const selectParts = ["id"];
       if (hasColabFilter) selectParts.push("colaboradores!inner(nome_completo)");
       if (hasEpiFilter) selectParts.push("epis!inner(nome_epi)");
@@ -115,6 +116,9 @@ const RegistroEntregas = () => {
       if (filtroDataFim) {
         query = query.lte("data_entrega", filtroDataFim);
       }
+      if (filtroStatus !== "todos") {
+        query = query.eq("status", filtroStatus);
+      }
 
       const { count } = await query;
       return count ?? 0;
@@ -122,7 +126,7 @@ const RegistroEntregas = () => {
   });
 
   const { data: entregas, isLoading } = useQuery({
-    queryKey: ["entregas", page, filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
+    queryKey: ["entregas", page, filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim, filtroStatus],
     queryFn: async () => {
       let query = supabase
         .from("entregas_epi")
@@ -141,6 +145,9 @@ const RegistroEntregas = () => {
       }
       if (filtroDataFim) {
         query = query.lte("data_entrega", filtroDataFim);
+      }
+      if (filtroStatus !== "todos") {
+        query = query.eq("status", filtroStatus);
       }
 
       const { data } = await query;
@@ -357,36 +364,45 @@ const RegistroEntregas = () => {
               <CardTitle className="text-lg">Entregas Recentes</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {/* Filters row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 pb-3">
-                <Input
-                  placeholder="Filtrar colaborador..."
-                  value={filtroColaborador}
-                  onChange={(e) => applyFilter(setFiltroColaborador, e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <Input
-                  placeholder="Filtrar EPI..."
-                  value={filtroEpi}
-                  onChange={(e) => applyFilter(setFiltroEpi, e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <Input
-                  type="date"
-                  placeholder="Data início"
-                  value={filtroDataInicio}
-                  onChange={(e) => applyFilter(setFiltroDataInicio, e.target.value)}
-                  className="h-8 text-xs"
-                  title="Data início"
-                />
-                <Input
-                  type="date"
-                  placeholder="Data fim"
-                  value={filtroDataFim}
-                  onChange={(e) => applyFilter(setFiltroDataFim, e.target.value)}
-                  className="h-8 text-xs"
-                  title="Data fim"
-                />
+              {/* Status tabs + Filters row */}
+              <div className="px-4 pb-3 space-y-3">
+                <Tabs value={filtroStatus} onValueChange={(v) => { setFiltroStatus(v as any); setPage(0); }}>
+                  <TabsList className="w-full sm:w-auto">
+                    <TabsTrigger value="todos">Todos</TabsTrigger>
+                    <TabsTrigger value="ativa">Ativos</TabsTrigger>
+                    <TabsTrigger value="inativa">Inativos / Histórico</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <Input
+                    placeholder="Filtrar colaborador..."
+                    value={filtroColaborador}
+                    onChange={(e) => applyFilter(setFiltroColaborador, e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    placeholder="Filtrar EPI..."
+                    value={filtroEpi}
+                    onChange={(e) => applyFilter(setFiltroEpi, e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Data início"
+                    value={filtroDataInicio}
+                    onChange={(e) => applyFilter(setFiltroDataInicio, e.target.value)}
+                    className="h-8 text-xs"
+                    title="Data início"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Data fim"
+                    value={filtroDataFim}
+                    onChange={(e) => applyFilter(setFiltroDataFim, e.target.value)}
+                    className="h-8 text-xs"
+                    title="Data fim"
+                  />
+                </div>
               </div>
 
               <Table>
@@ -454,11 +470,15 @@ const RegistroEntregas = () => {
                           <TableCell>{formatLocalDate(e.data_vencimento)}</TableCell>
                           <TableCell>
                             {isAtiva ? (
-                              <Badge variant={vencido ? "destructive" : "secondary"}>
-                                {vencido ? "Vencido" : "Válido"}
-                              </Badge>
+                              vencido ? (
+                                <Badge variant="destructive">Vencido</Badge>
+                              ) : (
+                                <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">Ativo</Badge>
+                              )
                             ) : (
-                              <Badge variant="outline" className="text-muted-foreground">Inativa</Badge>
+                              <Badge variant="secondary" className="text-muted-foreground">
+                                {e.status_troca === "substituido" ? "Substituído" : "Inativo"}
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell>
