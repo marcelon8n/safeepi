@@ -4,7 +4,10 @@ import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Rocket } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const STATUS_LABELS: Record<string, string> = {
   trial: "Período de Teste",
@@ -15,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const AdminAssinatura = () => {
   const { empresaId } = useEmpresaId();
+  const navigate = useNavigate();
 
   const { data: empresa, isLoading } = useQuery({
     queryKey: ["admin-empresa-assinatura", empresaId],
@@ -44,64 +48,78 @@ const AdminAssinatura = () => {
           <Skeleton className="h-40 w-full" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Plano Atual
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Plano</span>
-                <span className="font-medium">{plano?.nome ?? "Não definido"}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Valor Mensal</span>
-                <span className="font-medium">
-                  {plano?.valor_mensal ? `R$ ${Number(plano.valor_mensal).toFixed(2)}` : "Gratuito"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Limite de Colaboradores</span>
-                <span className="font-medium">{plano?.limite_colaboradores ?? "—"}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Limite de Obras</span>
-                <span className="font-medium">{plano?.limite_obras ?? "—"}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Módulo Obras</span>
-                <Badge variant={plano?.permite_obras ? "default" : "secondary"}>
-                  {plano?.permite_obras ? "Habilitado" : "Desabilitado"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Plano Atual
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Plano</span>
+                  <span className="font-medium">{plano?.nome ?? "Não definido"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Valor Mensal</span>
+                  <span className="font-medium">
+                    {plano?.valor_mensal ? `R$ ${Number(plano.valor_mensal).toFixed(2)}` : "Gratuito"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Limite de Colaboradores</span>
+                  <span className="font-medium">{plano?.limite_colaboradores ?? "—"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Limite de Obras</span>
+                  <span className="font-medium">{plano?.limite_obras ?? "—"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Módulo Obras</span>
+                  <Badge variant={plano?.permite_obras ? "default" : "secondary"}>
+                    {plano?.permite_obras ? "Habilitado" : "Desabilitado"}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base">Status da Assinatura</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Status</span>
-                <Badge variant={status === "ativa" ? "default" : status === "trial" ? "secondary" : "destructive"}>
-                  {STATUS_LABELS[status] ?? status}
-                </Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">CNPJ</span>
-                <span className="font-medium">{empresa?.cnpj ?? "—"}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Empresa</span>
-                <span className="font-medium">{empresa?.nome_fantasia ?? "—"}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base">Status da Assinatura</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <Badge variant={status === "ativa" ? "default" : status === "trial" ? "secondary" : "destructive"}>
+                    {STATUS_LABELS[status] ?? status}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">CNPJ</span>
+                  <span className="font-medium">{empresa?.cnpj ?? "—"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Empresa</span>
+                  <span className="font-medium">{empresa?.nome_fantasia ?? "—"}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">
+              Deseja alterar seu plano ou contratar mais recursos?
+            </p>
+            <Button size="lg" className="gap-2" onClick={() => navigate("/precos")}>
+              <Rocket className="w-4 h-4" />
+              Mudar de Plano
+            </Button>
+          </div>
+        </>
       )}
     </div>
   );
