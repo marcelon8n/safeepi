@@ -192,6 +192,7 @@ const CatalogoEpis = () => {
                       </TableCell>
                       <TableCell>{e.fabricante ?? "—"}</TableCell>
                       <TableCell>{e.periodicidade_dias} dias</TableCell>
+                      <TableCell>{e.custo_estimado ? `R$ ${Number(e.custo_estimado).toFixed(2)}` : "—"}</TableCell>
                       <TableCell>
                         <RoleGate allowWrite>
                         <div className="flex gap-1">
