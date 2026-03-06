@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown, Network } from "lucide-react";
+import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown, Network, FileBarChart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
@@ -25,6 +25,7 @@ const AppSidebar = () => {
     { to: "/setores", label: "Setores", icon: Network, show: isAdmin },
     { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: isAdmin },
     { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
+    { to: "/relatorios", label: "Relatórios", icon: FileBarChart, show: isAdmin },
     { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
     { to: "/admin", label: "Administração", icon: ShieldCheck, show: isOwner },
   ];

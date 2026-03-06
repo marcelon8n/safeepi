@@ -450,6 +450,7 @@ export type Database = {
         Row: {
           ca_numero: string | null
           created_at: string | null
+          custo_estimado: number | null
           data_validade_ca: string | null
           empresa_id: string
           fabricante: string | null
@@ -460,6 +461,7 @@ export type Database = {
         Insert: {
           ca_numero?: string | null
           created_at?: string | null
+          custo_estimado?: number | null
           data_validade_ca?: string | null
           empresa_id: string
           fabricante?: string | null
@@ -470,6 +472,7 @@ export type Database = {
         Update: {
           ca_numero?: string | null
           created_at?: string | null
+          custo_estimado?: number | null
           data_validade_ca?: string | null
           empresa_id?: string
           fabricante?: string | null

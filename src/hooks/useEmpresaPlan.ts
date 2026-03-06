@@ -8,6 +8,7 @@ interface EmpresaPlan {
   limiteColaboradores: number | null;
   permiteObras: boolean;
   planoNome: string | null;
+  planoSlug: string | null;
   isLoading: boolean;
   isBlocked: boolean;
 }
@@ -29,7 +30,7 @@ export function useEmpresaPlan(): EmpresaPlan {
 
       const { data: empresa, error } = await supabase
         .from("empresas")
-        .select("id, status_assinatura, plano_id, planos(nome, limite_colaboradores, permite_obras)")
+        .select("id, status_assinatura, plano_id, planos(nome, slug, limite_colaboradores, permite_obras)")
         .eq("id", profile.empresa_id)
         .maybeSingle();
 
@@ -47,6 +48,7 @@ export function useEmpresaPlan(): EmpresaPlan {
     limiteColaboradores: plano?.limite_colaboradores ?? null,
     permiteObras: plano?.permite_obras ?? false,
     planoNome: plano?.nome ?? null,
+    planoSlug: plano?.slug ?? null,
     isLoading,
     isBlocked: data?.status_assinatura === "blocked" || data?.status_assinatura === "overdue",
   };

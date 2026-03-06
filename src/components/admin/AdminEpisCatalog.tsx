@@ -21,7 +21,7 @@ const AdminEpisCatalog = () => {
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
-  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", custo_estimado: "" });
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const perPage = 10;
@@ -45,6 +45,7 @@ const AdminEpisCatalog = () => {
         nome_epi: form.nome_epi,
         ca_numero: form.ca_numero || null,
         periodicidade_dias: parseInt(form.periodicidade_dias),
+        custo_estimado: form.custo_estimado ? parseFloat(form.custo_estimado) : null,
       };
       if (editing) {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
@@ -76,14 +77,14 @@ const AdminEpisCatalog = () => {
 
   const openEdit = (e: Epi) => {
     setEditing(e);
-    setForm({ nome_epi: e.nome_epi, ca_numero: e.ca_numero ?? "", periodicidade_dias: String(e.periodicidade_dias) });
+    setForm({ nome_epi: e.nome_epi, ca_numero: e.ca_numero ?? "", periodicidade_dias: String(e.periodicidade_dias), custo_estimado: e.custo_estimado ? String(e.custo_estimado) : "" });
     setOpen(true);
   };
 
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", custo_estimado: "" });
   };
 
   return (
@@ -109,6 +110,7 @@ const AdminEpisCatalog = () => {
               <div><Label>Nome do EPI *</Label><Input value={form.nome_epi} onChange={(e) => setForm({ ...form, nome_epi: e.target.value })} /></div>
               <div><Label>Número do CA</Label><Input value={form.ca_numero} onChange={(e) => setForm({ ...form, ca_numero: e.target.value })} /></div>
               <div><Label>Periodicidade (dias) *</Label><Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} /></div>
+              <div><Label>Custo Estimado (R$)</Label><Input type="number" step="0.01" placeholder="0,00" value={form.custo_estimado} onChange={(e) => setForm({ ...form, custo_estimado: e.target.value })} /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
