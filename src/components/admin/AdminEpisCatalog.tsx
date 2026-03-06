@@ -110,6 +110,7 @@ const AdminEpisCatalog = () => {
               <div><Label>Nome do EPI *</Label><Input value={form.nome_epi} onChange={(e) => setForm({ ...form, nome_epi: e.target.value })} /></div>
               <div><Label>Número do CA</Label><Input value={form.ca_numero} onChange={(e) => setForm({ ...form, ca_numero: e.target.value })} /></div>
               <div><Label>Periodicidade (dias) *</Label><Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} /></div>
+              <div><Label>Custo Estimado (R$)</Label><Input type="number" step="0.01" placeholder="0,00" value={form.custo_estimado} onChange={(e) => setForm({ ...form, custo_estimado: e.target.value })} /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
