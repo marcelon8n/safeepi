@@ -8,6 +8,7 @@ interface EmpresaPlan {
   limiteColaboradores: number | null;
   permiteObras: boolean;
   planoNome: string | null;
+  planoSlug: string | null;
   isLoading: boolean;
   isBlocked: boolean;
 }
