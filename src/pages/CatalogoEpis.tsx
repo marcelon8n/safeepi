@@ -45,6 +45,7 @@ const CatalogoEpis = () => {
         periodicidade_dias: parseInt(form.periodicidade_dias),
         fabricante: form.fabricante || null,
         data_validade_ca: form.data_validade_ca || null,
+        custo_estimado: form.custo_estimado ? parseFloat(form.custo_estimado) : 0,
       };
       if (editing) {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
