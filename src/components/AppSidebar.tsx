@@ -76,7 +76,7 @@ const AppSidebar = () => {
         })}
 
         {/* Gestão de Obras - owner+ only */}
-        {isOwner && (
+        {isOwner && permiteObras && (
           <Collapsible open={obrasOpen} onOpenChange={setObrasOpen}>
             <CollapsibleTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <HardHat className="w-5 h-5" />
