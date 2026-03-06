@@ -23,6 +23,7 @@ import Obras from "./pages/Obras";
 import ObraDetalhe from "./pages/ObraDetalhe";
 import AlocacaoEquipe from "./pages/AlocacaoEquipe";
 import GestaoDocumentos from "./pages/GestaoDocumentos";
+import Relatorios from "./pages/Relatorios";
 
 const queryClient = new QueryClient();
 
