@@ -45,6 +45,7 @@ const AdminEpisCatalog = () => {
         nome_epi: form.nome_epi,
         ca_numero: form.ca_numero || null,
         periodicidade_dias: parseInt(form.periodicidade_dias),
+        custo_estimado: form.custo_estimado ? parseFloat(form.custo_estimado) : null,
       };
       if (editing) {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
