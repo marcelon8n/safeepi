@@ -24,7 +24,7 @@ const CatalogoEpis = () => {
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
-  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
 
   const today = new Date().toISOString().split("T")[0];
 
