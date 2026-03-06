@@ -134,9 +134,15 @@ const CatalogoEpis = () => {
                 <Label>Fabricante</Label>
                 <Input value={form.fabricante} onChange={(e) => setForm({ ...form, fabricante: e.target.value })} placeholder="Ex: 3M, Honeywell..." />
               </div>
-              <div>
-                <Label>Periodicidade (dias) *</Label>
-                <Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Periodicidade (dias) *</Label>
+                  <Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Custo Estimado (R$)</Label>
+                  <Input type="number" step="0.01" placeholder="0,00" value={form.custo_estimado} onChange={(e) => setForm({ ...form, custo_estimado: e.target.value })} />
+                </div>
               </div>
             </div>
             <DialogFooter>
