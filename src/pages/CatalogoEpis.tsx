@@ -24,7 +24,7 @@ const CatalogoEpis = () => {
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
-  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -45,6 +45,7 @@ const CatalogoEpis = () => {
         periodicidade_dias: parseInt(form.periodicidade_dias),
         fabricante: form.fabricante || null,
         data_validade_ca: form.data_validade_ca || null,
+        custo_estimado: form.custo_estimado ? parseFloat(form.custo_estimado) : 0,
       };
       if (editing) {
         const { error } = await supabase.from("epis").update(payload).eq("id", editing.id);
@@ -82,6 +83,7 @@ const CatalogoEpis = () => {
       periodicidade_dias: String(e.periodicidade_dias),
       fabricante: e.fabricante ?? "",
       data_validade_ca: e.data_validade_ca ?? "",
+      custo_estimado: e.custo_estimado ? String(e.custo_estimado) : "",
     });
     setOpen(true);
   };
@@ -89,7 +91,7 @@ const CatalogoEpis = () => {
   const closeDialog = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "" });
+    setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
   };
 
   const getCaStatus = (e: Epi) => {
@@ -132,9 +134,15 @@ const CatalogoEpis = () => {
                 <Label>Fabricante</Label>
                 <Input value={form.fabricante} onChange={(e) => setForm({ ...form, fabricante: e.target.value })} placeholder="Ex: 3M, Honeywell..." />
               </div>
-              <div>
-                <Label>Periodicidade (dias) *</Label>
-                <Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Periodicidade (dias) *</Label>
+                  <Input type="number" value={form.periodicidade_dias} onChange={(e) => setForm({ ...form, periodicidade_dias: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Custo Estimado (R$)</Label>
+                  <Input type="number" step="0.01" placeholder="0,00" value={form.custo_estimado} onChange={(e) => setForm({ ...form, custo_estimado: e.target.value })} />
+                </div>
               </div>
             </div>
             <DialogFooter>
@@ -158,14 +166,15 @@ const CatalogoEpis = () => {
                 <TableHead>Validade CA</TableHead>
                 <TableHead>Fabricante</TableHead>
                 <TableHead>Periodicidade</TableHead>
+                <TableHead>Custo Est.</TableHead>
                 <TableHead className="w-24">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
               ) : epis?.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum EPI cadastrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum EPI cadastrado.</TableCell></TableRow>
               ) : (
                 epis?.map((e) => {
                   const caStatus = getCaStatus(e);
@@ -183,6 +192,7 @@ const CatalogoEpis = () => {
                       </TableCell>
                       <TableCell>{e.fabricante ?? "—"}</TableCell>
                       <TableCell>{e.periodicidade_dias} dias</TableCell>
+                      <TableCell>{e.custo_estimado ? `R$ ${Number(e.custo_estimado).toFixed(2)}` : "—"}</TableCell>
                       <TableCell>
                         <RoleGate allowWrite>
                         <div className="flex gap-1">
