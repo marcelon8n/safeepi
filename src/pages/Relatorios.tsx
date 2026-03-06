@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ClipboardList,
   AlertTriangle,
@@ -100,15 +102,30 @@ const Relatorios = () => {
     return { totalMes, vencidos, aVencer30 };
   }, [entregas]);
 
-  // ---- Previsão financeira (pro) ----
-  const previsaoFinanceira = useMemo(() => {
-    if (!entregas) return 0;
-    return entregas
-      .filter((e) => {
-        const dv = new Date(e.data_vencimento);
-        return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
-      })
-      .reduce((sum, e) => sum + (Number((e as any).epis?.custo_estimado) || 0), 0);
+  const formatBRL = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  // ---- Previsão financeira (pro) com breakdown ----
+  const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; qtd: number; subtotal: number }[] };
+    const aVencer = entregas.filter((e) => {
+      const dv = new Date(e.data_vencimento);
+      return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
+    });
+    const groups: Record<string, { qtd: number; subtotal: number }> = {};
+    let total = 0;
+    aVencer.forEach((e) => {
+      const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
+      const custo = Number((e as any).epis?.custo_estimado) || 0;
+      if (!groups[nome]) groups[nome] = { qtd: 0, subtotal: 0 };
+      groups[nome].qtd += 1;
+      groups[nome].subtotal += custo;
+      total += custo;
+    });
+    const breakdown = Object.entries(groups)
+      .map(([nome, v]) => ({ nome, ...v }))
+      .sort((a, b) => b.subtotal - a.subtotal);
+    return { previsaoFinanceira: total, custoBreakdown: breakdown };
   }, [entregas]);
 
   // ---- Gráfico de motivos ----
@@ -237,9 +254,28 @@ const Relatorios = () => {
                   {isLoading ? (
                     <Skeleton className="h-10 w-40" />
                   ) : (
-                    <p className="text-3xl font-bold text-primary">
-                      R$ {previsaoFinanceira.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </p>
+                    <div>
+                      <p className="text-3xl font-bold text-primary">
+                        {formatBRL(previsaoFinanceira)}
+                      </p>
+                      {custoBreakdown.length > 0 && (
+                        <>
+                          <Separator className="my-3" />
+                          <ScrollArea className="max-h-[200px]">
+                            <ul className="space-y-2">
+                              {custoBreakdown.map((item) => (
+                                <li key={item.nome} className="flex items-center justify-between text-sm">
+                                  <span className="text-muted-foreground truncate mr-2">
+                                    {item.nome} <span className="text-xs">({item.qtd}x)</span>
+                                  </span>
+                                  <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </ScrollArea>
+                        </>
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>
