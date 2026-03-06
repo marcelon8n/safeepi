@@ -1,9 +1,12 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, HardHat, ShieldCheck, Building2, Crown, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import CheckoutDialog from "@/components/checkout/CheckoutDialog";
 
 const epiPlans = [
   {
@@ -17,7 +20,6 @@ const epiPlans = [
       { text: "Alertas de vencimento", included: true },
       { text: "Módulo de Obras", included: false },
     ],
-    href: "#",
     highlight: false,
   },
   {
@@ -31,7 +33,6 @@ const epiPlans = [
       { text: "Suporte prioritário", included: true },
       { text: "Módulo de Obras", included: false },
     ],
-    href: "#",
     highlight: false,
   },
 ];
@@ -48,7 +49,6 @@ const obrasPlans = [
       { text: "Controle de EPI por canteiro", included: true },
       { text: "Dashboards operacionais", included: true },
     ],
-    href: "#",
     highlight: true,
     badge: "Mais Popular",
   },
@@ -63,7 +63,6 @@ const obrasPlans = [
       { text: "Acesso completo a todas as funcionalidades", included: true },
       { text: "Funcionalidades futuras inclusas", included: true },
     ],
-    href: "#",
     highlight: false,
   },
 ];
@@ -77,20 +76,31 @@ const faqs = [
   { q: "Qual a diferença entre os planos EPI e Obras?", a: "Os planos da linha EPI são focados exclusivamente no controle de equipamentos de proteção individual, ideais para indústrias e comércios. Já os planos da linha Obras incluem tudo dos planos EPI, mais o módulo completo de gestão de obras com alocação por canteiro." },
 ];
 
-interface PlanCardProps {
-  plan: typeof epiPlans[0];
+interface PlanDef {
+  name: string;
+  price: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  features: { text: string; included: boolean }[];
+  highlight: boolean;
+  badge?: string;
 }
 
-const PlanCard = ({ plan }: PlanCardProps) => (
+interface PlanCardProps {
+  plan: PlanDef;
+  onSelect: (plan: PlanDef) => void;
+}
+
+const PlanCard = ({ plan, onSelect }: PlanCardProps) => (
   <Card
     className={`relative flex flex-col shadow-sm bg-card text-card-foreground ${
       plan.highlight ? "ring-2 ring-primary shadow-lg" : "border-border"
     }`}
   >
-    {plan.highlight && "badge" in plan && (plan as any).badge && (
+    {plan.highlight && plan.badge && (
       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
         <Badge className="bg-primary text-primary-foreground hover:bg-primary whitespace-nowrap">
-          {(plan as any).badge}
+          {plan.badge}
         </Badge>
       </div>
     )}
@@ -120,19 +130,32 @@ const PlanCard = ({ plan }: PlanCardProps) => (
           </li>
         ))}
       </ul>
-      <a href={plan.href} target="_blank" rel="noopener noreferrer" className="w-full">
-        <Button
-          className="w-full"
-          variant={plan.highlight ? "default" : "outline"}
-        >
-          Começar agora
-        </Button>
-      </a>
+      <Button
+        className="w-full"
+        variant={plan.highlight ? "default" : "outline"}
+        onClick={() => onSelect(plan)}
+      >
+        Começar agora
+      </Button>
     </CardContent>
   </Card>
 );
 
 const Pricing = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanDef | null>(null);
+
+  const handleSelectPlan = (plan: PlanDef) => {
+    if (!loading && !user) {
+      navigate("/auth");
+      return;
+    }
+    setSelectedPlan(plan);
+    setCheckoutOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -148,9 +171,15 @@ const Pricing = () => {
             <Link to="/precos" className="text-sm font-medium text-primary hover:underline hidden sm:inline">
               Preços
             </Link>
-            <Link to="/auth">
-              <Button>Entrar</Button>
-            </Link>
+            {user ? (
+              <Link to="/dashboard">
+                <Button>Painel</Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button>Entrar</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -176,7 +205,7 @@ const Pricing = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {epiPlans.map((plan) => (
-            <PlanCard key={plan.name} plan={plan} />
+            <PlanCard key={plan.name} plan={plan} onSelect={handleSelectPlan} />
           ))}
         </div>
       </section>
@@ -201,7 +230,7 @@ const Pricing = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {obrasPlans.map((plan) => (
-            <PlanCard key={plan.name} plan={plan} />
+            <PlanCard key={plan.name} plan={plan} onSelect={handleSelectPlan} />
           ))}
         </div>
       </section>
@@ -233,6 +262,13 @@ const Pricing = () => {
           © {new Date().getFullYear()} Safe Solutions. Todos os direitos reservados.
         </div>
       </footer>
+
+      {/* Checkout Dialog */}
+      <CheckoutDialog
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        plan={selectedPlan}
+      />
     </div>
   );
 };
