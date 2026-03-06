@@ -106,6 +106,18 @@ const AdminAssinatura = () => {
             </CardContent>
           </Card>
         </div>
+
+          <Separator className="my-6" />
+
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">
+              Deseja alterar seu plano ou contratar mais recursos?
+            </p>
+            <Button size="lg" className="gap-2" onClick={() => navigate("/precos")}>
+              <Rocket className="w-4 h-4" />
+              Mudar de Plano
+            </Button>
+          </div>
       )}
     </div>
   );
