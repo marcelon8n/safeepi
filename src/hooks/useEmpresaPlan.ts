@@ -48,6 +48,7 @@ export function useEmpresaPlan(): EmpresaPlan {
     limiteColaboradores: plano?.limite_colaboradores ?? null,
     permiteObras: plano?.permite_obras ?? false,
     planoNome: plano?.nome ?? null,
+    planoSlug: plano?.slug ?? null,
     isLoading,
     isBlocked: data?.status_assinatura === "blocked" || data?.status_assinatura === "overdue",
   };
