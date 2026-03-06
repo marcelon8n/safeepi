@@ -91,12 +91,11 @@ const RegistroEntregas = () => {
 
   // Count query for pagination
   const { data: totalCount } = useQuery({
-    queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim],
+    queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim, filtroStatus],
     queryFn: async () => {
       const hasColabFilter = !!filtroColaborador;
       const hasEpiFilter = !!filtroEpi;
 
-      // Only use inner joins when filters require them to avoid excluding records
       const selectParts = ["id"];
       if (hasColabFilter) selectParts.push("colaboradores!inner(nome_completo)");
       if (hasEpiFilter) selectParts.push("epis!inner(nome_epi)");
@@ -116,6 +115,9 @@ const RegistroEntregas = () => {
       }
       if (filtroDataFim) {
         query = query.lte("data_entrega", filtroDataFim);
+      }
+      if (filtroStatus !== "todos") {
+        query = query.eq("status", filtroStatus);
       }
 
       const { count } = await query;
