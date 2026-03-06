@@ -364,36 +364,45 @@ const RegistroEntregas = () => {
               <CardTitle className="text-lg">Entregas Recentes</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {/* Filters row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 pb-3">
-                <Input
-                  placeholder="Filtrar colaborador..."
-                  value={filtroColaborador}
-                  onChange={(e) => applyFilter(setFiltroColaborador, e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <Input
-                  placeholder="Filtrar EPI..."
-                  value={filtroEpi}
-                  onChange={(e) => applyFilter(setFiltroEpi, e.target.value)}
-                  className="h-8 text-xs"
-                />
-                <Input
-                  type="date"
-                  placeholder="Data início"
-                  value={filtroDataInicio}
-                  onChange={(e) => applyFilter(setFiltroDataInicio, e.target.value)}
-                  className="h-8 text-xs"
-                  title="Data início"
-                />
-                <Input
-                  type="date"
-                  placeholder="Data fim"
-                  value={filtroDataFim}
-                  onChange={(e) => applyFilter(setFiltroDataFim, e.target.value)}
-                  className="h-8 text-xs"
-                  title="Data fim"
-                />
+              {/* Status tabs + Filters row */}
+              <div className="px-4 pb-3 space-y-3">
+                <Tabs value={filtroStatus} onValueChange={(v) => { setFiltroStatus(v as any); setPage(0); }}>
+                  <TabsList className="w-full sm:w-auto">
+                    <TabsTrigger value="todos">Todos</TabsTrigger>
+                    <TabsTrigger value="ativa">Ativos</TabsTrigger>
+                    <TabsTrigger value="inativa">Inativos / Histórico</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <Input
+                    placeholder="Filtrar colaborador..."
+                    value={filtroColaborador}
+                    onChange={(e) => applyFilter(setFiltroColaborador, e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    placeholder="Filtrar EPI..."
+                    value={filtroEpi}
+                    onChange={(e) => applyFilter(setFiltroEpi, e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Data início"
+                    value={filtroDataInicio}
+                    onChange={(e) => applyFilter(setFiltroDataInicio, e.target.value)}
+                    className="h-8 text-xs"
+                    title="Data início"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Data fim"
+                    value={filtroDataFim}
+                    onChange={(e) => applyFilter(setFiltroDataFim, e.target.value)}
+                    className="h-8 text-xs"
+                    title="Data fim"
+                  />
+                </div>
               </div>
 
               <Table>
