@@ -21,7 +21,7 @@ const AdminEpisCatalog = () => {
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Epi | null>(null);
-  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "" });
+  const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", custo_estimado: "" });
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const perPage = 10;
