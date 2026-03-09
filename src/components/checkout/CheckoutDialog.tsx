@@ -173,24 +173,19 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         valor: plan?.price,
       };
 
-      const res = await fetch(
+      const response = await fetch(
         "https://workflows-mvp.lab-n8n.com/webhook-test/checkout-safeepi",
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
       );
 
-      if (!res.ok) throw new Error("Resposta inválida do servidor");
+      const data = await response.json();
 
-      const data = await res.json();
-
-      if (data.invoiceUrl) {
-        window.open(data.invoiceUrl, "_blank");
+      if (data && data.url) {
+        window.location.href = data.url;
       }
-
-      toast({ title: "Pagamento gerado com sucesso!", description: `Você será redirecionado para o pagamento do plano ${plan?.name}.` });
-      onOpenChange(false);
     } catch (err) {
       console.error("Checkout error:", err);
-      toast({ title: "Erro ao gerar pagamento", description: "Tente novamente.", variant: "destructive" });
+      toast({ title: "Erro ao conectar com o servidor", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
