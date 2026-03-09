@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -41,15 +41,14 @@ const maskCep = (v: string) => {
 /* ── schema ── */
 const checkoutSchema = z.object({
   razaoSocial: z.string().trim().min(2, "Informe a razão social").max(200),
-  cpfCnpj: z
-    .string()
-    .trim()
-    .min(14, "CPF ou CNPJ inválido")
-    .max(18),
+  cpfCnpj: z.string().trim().min(14, "CPF ou CNPJ inválido").max(18),
   emailFaturamento: z.string().trim().email("E-mail inválido").max(255),
   celular: z.string().trim().min(14, "Celular inválido").max(15),
   cep: z.string().trim().min(9, "CEP inválido").max(9),
+  logradouro: z.string().trim().min(2, "Informe o logradouro").max(200),
   numero: z.string().trim().min(1, "Informe o número").max(10),
+  bairro: z.string().trim().min(2, "Informe o bairro").max(100),
+  complemento: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
@@ -70,8 +69,8 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
   const { empresaId } = useEmpresaId();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [fetchingCep, setFetchingCep] = useState(false);
 
-  /* fetch empresa data for auto-fill */
   const { data: empresa } = useQuery({
     queryKey: ["empresa-checkout", empresaId],
     queryFn: async () => {
@@ -101,11 +100,14 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
       emailFaturamento: "",
       celular: "",
       cep: "",
+      logradouro: "",
       numero: "",
+      bairro: "",
+      complemento: "",
     },
   });
 
-  /* auto-fill when empresa data arrives */
+  /* auto-fill empresa */
   useEffect(() => {
     if (empresa) {
       setValue("razaoSocial", empresa.nome_fantasia ?? "");
@@ -116,7 +118,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
     }
   }, [empresa, user, setValue]);
 
-  /* reset form when dialog closes */
+  /* reset on close */
   useEffect(() => {
     if (!open) {
       reset();
@@ -124,9 +126,38 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
     }
   }, [open, reset]);
 
+  /* ViaCEP lookup */
+  const lookupCep = useCallback(
+    async (cepRaw: string) => {
+      const digits = cepRaw.replace(/\D/g, "");
+      if (digits.length !== 8) return;
+      setFetchingCep(true);
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+        const data = await res.json();
+        if (!data.erro) {
+          setValue("logradouro", data.logradouro ?? "", { shouldValidate: true });
+          setValue("bairro", data.bairro ?? "", { shouldValidate: true });
+        }
+      } catch {
+        /* silently ignore – user can fill manually */
+      } finally {
+        setFetchingCep(false);
+      }
+    },
+    [setValue],
+  );
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = maskCep(e.target.value);
+    setValue("cep", masked, { shouldValidate: true });
+    if (masked.replace(/\D/g, "").length === 8) {
+      lookupCep(masked);
+    }
+  };
+
   const onSubmit = async (values: CheckoutFormValues) => {
     setSubmitting(true);
-    // Simulated submission
     console.log("🧾 Checkout payload:", {
       plano: plan?.name,
       preco: plan?.price,
@@ -150,7 +181,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-primary">Checkout</DialogTitle>
           <DialogDescription>
@@ -198,22 +229,45 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
             {errors.celular && <p className="text-xs text-destructive">{errors.celular.message}</p>}
           </div>
 
-          {/* CEP + Número */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="cep">CEP</Label>
+          {/* CEP */}
+          <div className="space-y-1.5">
+            <Label htmlFor="cep">CEP</Label>
+            <div className="relative">
               <Input
                 id="cep"
                 value={watch("cep")}
-                onChange={(e) => setValue("cep", maskCep(e.target.value), { shouldValidate: true })}
+                onChange={handleCepChange}
                 placeholder="00000-000"
               />
-              {errors.cep && <p className="text-xs text-destructive">{errors.cep.message}</p>}
+              {fetchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
+            {errors.cep && <p className="text-xs text-destructive">{errors.cep.message}</p>}
+          </div>
+
+          {/* Logradouro + Número */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="logradouro">Logradouro</Label>
+              <Input id="logradouro" {...register("logradouro")} placeholder="Rua, Avenida..." />
+              {errors.logradouro && <p className="text-xs text-destructive">{errors.logradouro.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="numero">Número</Label>
               <Input id="numero" {...register("numero")} placeholder="123" />
               {errors.numero && <p className="text-xs text-destructive">{errors.numero.message}</p>}
+            </div>
+          </div>
+
+          {/* Bairro + Complemento */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="bairro">Bairro</Label>
+              <Input id="bairro" {...register("bairro")} />
+              {errors.bairro && <p className="text-xs text-destructive">{errors.bairro.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="complemento">Complemento <span className="text-muted-foreground text-xs">(opcional)</span></Label>
+              <Input id="complemento" {...register("complemento")} placeholder="Apto, Sala..." />
             </div>
           </div>
 
