@@ -180,10 +180,17 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
 
       const data = await response.json();
 
+      alert("RESPOSTA DO N8N: " + JSON.stringify(data));
+
       if (data && data.url) {
         window.location.href = data.url;
+      } else if (data && data.invoiceUrl) {
+        window.location.href = data.invoiceUrl;
+      } else {
+        alert("Atenção: O n8n respondeu, mas o link (url) não veio no JSON.");
       }
-    } catch (err) {
+    } catch (err: any) {
+      alert("ERRO FATAL NO FETCH: " + err.message);
       console.error("Checkout error:", err);
       toast({ title: "Erro ao conectar com o servidor", variant: "destructive" });
     } finally {
