@@ -158,23 +158,42 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setSubmitting(true);
-    console.log("🧾 Checkout payload:", {
-      plano: plan?.name,
-      preco: plan?.price,
-      ...values,
-      cpfCnpjLimpo: values.cpfCnpj.replace(/\D/g, ""),
-      celularLimpo: values.celular.replace(/\D/g, ""),
-      cepLimpo: values.cep.replace(/\D/g, ""),
-    });
+    try {
+      const body = {
+        nome: values.razaoSocial,
+        cpfCnpj: values.cpfCnpj.replace(/\D/g, ""),
+        email: values.emailFaturamento,
+        celular: values.celular.replace(/\D/g, ""),
+        cep: values.cep.replace(/\D/g, ""),
+        logradouro: values.logradouro,
+        numero: values.numero,
+        bairro: values.bairro,
+        complemento: values.complemento ?? "",
+        planoNome: plan?.name,
+        valor: plan?.price,
+      };
 
-    await new Promise((r) => setTimeout(r, 1500));
+      const res = await fetch(
+        "https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi",
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+      );
 
-    toast({
-      title: "Pagamento gerado com sucesso!",
-      description: `Sua assinatura do plano ${plan?.name} foi iniciada.`,
-    });
-    setSubmitting(false);
-    onOpenChange(false);
+      if (!res.ok) throw new Error("Resposta inválida do servidor");
+
+      const data = await res.json();
+
+      if (data.invoiceUrl) {
+        window.open(data.invoiceUrl, "_blank");
+      }
+
+      toast({ title: "Pagamento gerado com sucesso!", description: `Você será redirecionado para o pagamento do plano ${plan?.name}.` });
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast({ title: "Erro ao gerar pagamento", description: "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!plan) return null;
