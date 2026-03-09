@@ -174,8 +174,8 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
       };
 
       const response = await fetch(
-        "https://workflows-mvp.lab-n8n.com/webhook-test/checkout-safeepi",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+        "https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi",
+        { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(body) },
       );
 
       const data = await response.json();
