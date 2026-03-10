@@ -315,11 +315,16 @@ const Relatorios = () => {
             {/* Painel Financeiro */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-primary" /> Previsão de Custos (30 dias)
-                  </CardTitle>
-                  <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
+                <CardHeader className="pb-2 flex flex-row items-start justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-primary" /> Previsão de Custos (30 dias)
+                    </CardTitle>
+                    <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoBreakdown.length === 0} onClick={handleExportCustosCSV}>
+                    <Download className="w-4 h-4" /> Exportar Planilha
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
