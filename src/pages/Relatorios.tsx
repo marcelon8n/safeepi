@@ -1,8 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,6 +23,7 @@ import {
   TrendingUp,
   ShieldCheck,
   FileText,
+  FileSpreadsheet,
   Sparkles,
   DollarSign,
   PieChart,
@@ -49,6 +53,16 @@ const Relatorios = () => {
   const { empresaId } = useEmpresaId();
 
   const isPro = planoSlug === "epi-pro" || planoSlug === "obras-premium";
+
+  // Fetch empresa name for exports
+  const { data: empresa } = useQuery({
+    queryKey: ["empresa-nome", empresaId],
+    queryFn: async () => {
+      const { data } = await supabase.from("empresas").select("nome_fantasia").eq("id", empresaId!).maybeSingle();
+      return data;
+    },
+    enabled: !!empresaId,
+  });
 
   const today = new Date();
   const monthStart = startOfMonth(today);
@@ -144,6 +158,41 @@ const Relatorios = () => {
 
   const recentes = entregas?.slice(0, 10) ?? [];
   const isLoading = loadingEntregas || planLoading;
+
+  const empresaNome = empresa?.nome_fantasia ?? "Empresa";
+
+  const handleExportCSV = useCallback(() => {
+    const header = "Empresa;Entregues no Mês;Pendentes;Vencidos";
+    const row = `${empresaNome};${kpis.totalMes};${kpis.aVencer30};${kpis.vencidos}`;
+    const csvContent = "\ufeff" + header + "\n" + row;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio-epi-${format(today, "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado com sucesso!");
+  }, [empresaNome, kpis, today]);
+
+  const handleExportPDF = useCallback(() => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Safe Solutions - Relatório de Gestão de EPI", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${format(today, "dd/MM/yyyy 'às' HH:mm")}`, 14, 28);
+
+    autoTable(doc, {
+      startY: 36,
+      head: [["Empresa", "Entregues no Mês", "Pendentes", "Vencidos"]],
+      body: [[empresaNome, kpis.totalMes, kpis.aVencer30, kpis.vencidos]],
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save(`relatorio-epi-${format(today, "yyyy-MM-dd")}.pdf`);
+    toast.success("PDF exportado com sucesso!");
+  }, [empresaNome, kpis, today]);
 
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
@@ -316,9 +365,14 @@ const Relatorios = () => {
                   </CardTitle>
                   <CardDescription>Rastreabilidade jurídica das entregas com CA e hash de registro.</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" className="gap-2" disabled={!isPro}>
-                  <FileText className="w-4 h-4" /> Exportar Relatório
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5" disabled={!isPro} onClick={handleExportCSV}>
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" /> CSV
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5" disabled={!isPro} onClick={handleExportPDF}>
+                    <FileText className="w-4 h-4 text-destructive" /> PDF
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
