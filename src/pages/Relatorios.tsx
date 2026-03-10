@@ -365,9 +365,14 @@ const Relatorios = () => {
                   </CardTitle>
                   <CardDescription>Rastreabilidade jurídica das entregas com CA e hash de registro.</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" className="gap-2" disabled={!isPro}>
-                  <FileText className="w-4 h-4" /> Exportar Relatório
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5" disabled={!isPro} onClick={handleExportCSV}>
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" /> CSV
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5" disabled={!isPro} onClick={handleExportPDF}>
+                    <FileText className="w-4 h-4 text-destructive" /> PDF
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
