@@ -196,6 +196,26 @@ const Relatorios = () => {
     toast.success("PDF exportado com sucesso!");
   }, [empresaNome, kpis, today]);
 
+  const handleExportCustosCSV = useCallback(() => {
+    if (custoBreakdown.length === 0) {
+      toast.error("Não há dados de previsão de custos para exportar.");
+      return;
+    }
+    const header = "Nome do EPI;CA;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
+    const rows = custoBreakdown.map((item) =>
+      `${item.nome};${item.ca};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+    );
+    const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `previsao_custos_safe_solutions_${format(today, "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Planilha de custos exportada com sucesso!");
+  }, [custoBreakdown, today]);
+
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
       <div className="space-y-8">
