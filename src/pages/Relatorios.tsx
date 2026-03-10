@@ -122,17 +122,18 @@ const Relatorios = () => {
 
   // ---- Previsão financeira (pro) com breakdown ----
   const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
-    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; qtd: number; subtotal: number }[] };
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; ca: string; qtd: number; custoUnitario: number; subtotal: number }[] };
     const aVencer = entregas.filter((e) => {
       const dv = new Date(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     });
-    const groups: Record<string, { qtd: number; subtotal: number }> = {};
+    const groups: Record<string, { ca: string; qtd: number; custoUnitario: number; subtotal: number }> = {};
     let total = 0;
     aVencer.forEach((e) => {
       const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
       const custo = Number((e as any).epis?.custo_estimado) || 0;
-      if (!groups[nome]) groups[nome] = { qtd: 0, subtotal: 0 };
+      const ca = e.ca_numero_entregue ?? "—";
+      if (!groups[nome]) groups[nome] = { ca, qtd: 0, custoUnitario: custo, subtotal: 0 };
       groups[nome].qtd += 1;
       groups[nome].subtotal += custo;
       total += custo;
