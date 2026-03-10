@@ -99,6 +99,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "auditoria_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       colaboradores: {
@@ -141,6 +148,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
           {
@@ -209,6 +223,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "colaboradores_obras_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
@@ -253,6 +274,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "convites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       diario_obra: {
@@ -292,6 +320,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "diario_obra_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "diario_obra_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
@@ -307,8 +342,11 @@ export type Database = {
           created_at: string | null
           id: string
           nome_fantasia: string
+          plan_type: string | null
           plano_id: string | null
           status_assinatura: string | null
+          subscription_id_asaas: string | null
+          trial_ends_at: string | null
         }
         Insert: {
           asaas_customer_id?: string | null
@@ -316,8 +354,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           nome_fantasia: string
+          plan_type?: string | null
           plano_id?: string | null
           status_assinatura?: string | null
+          subscription_id_asaas?: string | null
+          trial_ends_at?: string | null
         }
         Update: {
           asaas_customer_id?: string | null
@@ -325,8 +366,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           nome_fantasia?: string
+          plan_type?: string | null
           plano_id?: string | null
           status_assinatura?: string | null
+          subscription_id_asaas?: string | null
+          trial_ends_at?: string | null
         }
         Relationships: [
           {
@@ -431,6 +475,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "entregas_epi_epi_id_fkey"
             columns: ["epi_id"]
             isOneToOne: false
@@ -486,6 +537,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "epis_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
         ]
@@ -550,6 +608,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_obras_empresa"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       planos: {
@@ -590,6 +655,10 @@ export type Database = {
           id: string
           nome: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted: boolean | null
+          terms_accepted_at: string | null
+          terms_ip_address: string | null
+          terms_version: string | null
           user_id: string
         }
         Insert: {
@@ -599,6 +668,10 @@ export type Database = {
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
+          terms_ip_address?: string | null
+          terms_version?: string | null
           user_id: string
         }
         Update: {
@@ -608,6 +681,10 @@ export type Database = {
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
+          terms_ip_address?: string | null
+          terms_version?: string | null
           user_id?: string
         }
         Relationships: [
@@ -616,6 +693,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
         ]
@@ -701,6 +785,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "setores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -721,7 +812,23 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      v_empresas_trial_vencido: {
+        Row: {
+          email_admin: string | null
+          id: string | null
+          nome_fantasia: string | null
+          trial_ends_at: string | null
+        }
+        Relationships: []
       }
       view_conformidade_colaboradores: {
         Row: {
@@ -768,6 +875,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       vw_epis_para_escalacao: {
@@ -788,6 +902,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       vw_epis_vencendo_7_dias: {
@@ -804,6 +925,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
         ]
@@ -826,6 +954,13 @@ export type Database = {
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
         ]
       }
       vw_relatorio_mensal_resumo: {
@@ -842,6 +977,13 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
         ]
