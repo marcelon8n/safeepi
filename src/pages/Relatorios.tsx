@@ -159,6 +159,41 @@ const Relatorios = () => {
   const recentes = entregas?.slice(0, 10) ?? [];
   const isLoading = loadingEntregas || planLoading;
 
+  const empresaNome = empresa?.nome_fantasia ?? "Empresa";
+
+  const handleExportCSV = useCallback(() => {
+    const header = "Empresa;Entregues no Mês;Pendentes;Vencidos";
+    const row = `${empresaNome};${kpis.totalMes};${kpis.aVencer30};${kpis.vencidos}`;
+    const csvContent = "\ufeff" + header + "\n" + row;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio-epi-${format(today, "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado com sucesso!");
+  }, [empresaNome, kpis, today]);
+
+  const handleExportPDF = useCallback(() => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Safe Solutions - Relatório de Gestão de EPI", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${format(today, "dd/MM/yyyy 'às' HH:mm")}`, 14, 28);
+
+    autoTable(doc, {
+      startY: 36,
+      head: [["Empresa", "Entregues no Mês", "Pendentes", "Vencidos"]],
+      body: [[empresaNome, kpis.totalMes, kpis.aVencer30, kpis.vencidos]],
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save(`relatorio-epi-${format(today, "yyyy-MM-dd")}.pdf`);
+    toast.success("PDF exportado com sucesso!");
+  }, [empresaNome, kpis, today]);
+
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
       <div className="space-y-8">
