@@ -54,6 +54,16 @@ const Relatorios = () => {
 
   const isPro = planoSlug === "epi-pro" || planoSlug === "obras-premium";
 
+  // Fetch empresa name for exports
+  const { data: empresa } = useQuery({
+    queryKey: ["empresa-nome", empresaId],
+    queryFn: async () => {
+      const { data } = await supabase.from("empresas").select("nome_fantasia").eq("id", empresaId!).maybeSingle();
+      return data;
+    },
+    enabled: !!empresaId,
+  });
+
   const today = new Date();
   const monthStart = startOfMonth(today);
   const monthEnd = endOfMonth(today);
