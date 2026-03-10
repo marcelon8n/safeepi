@@ -23,6 +23,7 @@ import {
   TrendingUp,
   ShieldCheck,
   FileText,
+  FileSpreadsheet,
   Sparkles,
   DollarSign,
   PieChart,
