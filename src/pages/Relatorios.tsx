@@ -27,6 +27,7 @@ import {
   Sparkles,
   DollarSign,
   PieChart,
+  Download,
 } from "lucide-react";
 import { format, addDays, isBefore, isAfter, startOfMonth, endOfMonth } from "date-fns";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -121,17 +122,18 @@ const Relatorios = () => {
 
   // ---- Previsão financeira (pro) com breakdown ----
   const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
-    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; qtd: number; subtotal: number }[] };
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; ca: string; qtd: number; custoUnitario: number; subtotal: number }[] };
     const aVencer = entregas.filter((e) => {
       const dv = new Date(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     });
-    const groups: Record<string, { qtd: number; subtotal: number }> = {};
+    const groups: Record<string, { ca: string; qtd: number; custoUnitario: number; subtotal: number }> = {};
     let total = 0;
     aVencer.forEach((e) => {
       const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
       const custo = Number((e as any).epis?.custo_estimado) || 0;
-      if (!groups[nome]) groups[nome] = { qtd: 0, subtotal: 0 };
+      const ca = e.ca_numero_entregue ?? "—";
+      if (!groups[nome]) groups[nome] = { ca, qtd: 0, custoUnitario: custo, subtotal: 0 };
       groups[nome].qtd += 1;
       groups[nome].subtotal += custo;
       total += custo;
@@ -193,6 +195,26 @@ const Relatorios = () => {
     doc.save(`relatorio-epi-${format(today, "yyyy-MM-dd")}.pdf`);
     toast.success("PDF exportado com sucesso!");
   }, [empresaNome, kpis, today]);
+
+  const handleExportCustosCSV = useCallback(() => {
+    if (custoBreakdown.length === 0) {
+      toast.error("Não há dados de previsão de custos para exportar.");
+      return;
+    }
+    const header = "Nome do EPI;CA;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
+    const rows = custoBreakdown.map((item) =>
+      `${item.nome};${item.ca};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+    );
+    const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `previsao_custos_safe_solutions_${format(today, "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Planilha de custos exportada com sucesso!");
+  }, [custoBreakdown, today]);
 
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
@@ -293,11 +315,16 @@ const Relatorios = () => {
             {/* Painel Financeiro */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-primary" /> Previsão de Custos (30 dias)
-                  </CardTitle>
-                  <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
+                <CardHeader className="pb-2 flex flex-row items-start justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-primary" /> Previsão de Custos (30 dias)
+                    </CardTitle>
+                    <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoBreakdown.length === 0} onClick={handleExportCustosCSV}>
+                    <Download className="w-4 h-4" /> Exportar Planilha
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
