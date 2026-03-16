@@ -48,13 +48,6 @@ export type Database = {
             foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
             referencedRelation: "view_conformidade_colaboradores"
             referencedColumns: ["colaborador_id"]
           },
@@ -110,13 +103,6 @@ export type Database = {
             foreignKeyName: "auditoria_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "auditoria_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -163,13 +149,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "colaboradores_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "colaboradores_empresa_id_fkey"
@@ -233,13 +212,6 @@ export type Database = {
             foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
             referencedRelation: "view_conformidade_colaboradores"
             referencedColumns: ["colaborador_id"]
           },
@@ -249,13 +221,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "colaboradores_obras_empresa_id_fkey"
@@ -313,13 +278,6 @@ export type Database = {
             foreignKeyName: "convites_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "convites_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -360,13 +318,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "diario_obra_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "diario_obra_empresa_id_fkey"
@@ -513,13 +464,6 @@ export type Database = {
             foreignKeyName: "entregas_epi_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
             referencedRelation: "view_conformidade_colaboradores"
             referencedColumns: ["colaborador_id"]
           },
@@ -534,13 +478,6 @@ export type Database = {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -550,13 +487,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "epis"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_epi_id_fkey"
-            columns: ["epi_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["epi_id"]
           },
           {
             foreignKeyName: "entregas_epi_responsavel_id_fkey"
@@ -608,13 +538,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "epis_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "epis_empresa_id_fkey"
@@ -684,13 +607,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_obras_empresa"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "fk_obras_empresa"
@@ -783,13 +699,6 @@ export type Database = {
             foreignKeyName: "profiles_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "profiles_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -838,13 +747,6 @@ export type Database = {
             foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
             referencedRelation: "view_conformidade_colaboradores"
             referencedColumns: ["colaborador_id"]
           },
@@ -887,13 +789,6 @@ export type Database = {
             foreignKeyName: "setores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "setores_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -903,16 +798,46 @@ export type Database = {
     Views: {
       v_alertas_vencimento: {
         Row: {
+          ca_numero: string | null
           colaborador_id: string | null
           colaborador_nome: string | null
+          data_entrega: string | null
           data_vencimento: string | null
-          email_admin: string | null
-          email_encarregado: string | null
           empresa_id: string | null
-          epi_id: string | null
+          entrega_id: string | null
           epi_nome: string | null
+          status_troca: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_trial_vencido"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       v_empresas_trial_vencido: {
         Row: {
@@ -972,13 +897,6 @@ export type Database = {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -1006,13 +924,6 @@ export type Database = {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -1020,26 +931,37 @@ export type Database = {
       }
       vw_epis_vencendo_7_dias: {
         Row: {
-          email_notificacao: string | null
+          ca_numero: string | null
+          colaborador_id: string | null
+          colaborador_nome: string | null
+          data_entrega: string | null
+          data_vencimento: string | null
           empresa_id: string | null
-          empresa_nome: string | null
-          lista_epis: Json | null
-          total_epis: number | null
+          entrega_id: string | null
+          epi_nome: string | null
+          status_troca: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "view_conformidade_colaboradores"
+            referencedColumns: ["colaborador_id"]
+          },
           {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
@@ -1072,13 +994,6 @@ export type Database = {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
@@ -1099,13 +1014,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_alertas_vencimento"
-            referencedColumns: ["empresa_id"]
           },
           {
             foreignKeyName: "entregas_epi_empresa_id_fkey"
