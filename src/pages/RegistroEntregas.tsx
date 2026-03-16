@@ -15,10 +15,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { format, addDays, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import jsPDF from "jspdf";
 
 /** Parse a date-only string (yyyy-MM-dd) as local time, not UTC */
 const parseLocalDate = (dateStr: string) => {
@@ -58,10 +60,19 @@ const RegistroEntregas = () => {
   const [colaboradorId, setColaboradorId] = useState("");
   const [epiId, setEpiId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [dataVencimento, setDataVencimento] = useState("");
   const [motivoEntrega, setMotivoEntrega] = useState<MotivoEntrega>("entrega_inicial");
   const [observacoes, setObservacoes] = useState("");
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
+  const [caConfirmado, setCaConfirmado] = useState(false);
+
+  // Modal pós-registro
+  const [entregaConfirmada, setEntregaConfirmada] = useState<{
+    colaboradorNome: string;
+    epiNome: string;
+    caNumerо: string | null;
+    dataEntrega: string;
+    empresaNome: string;
+  } | null>(null);
 
   // Filters
   const [filtroColaborador, setFiltroColaborador] = useState("");
@@ -89,27 +100,24 @@ const RegistroEntregas = () => {
     },
   });
 
-  // Count query for pagination
+  const { data: empresa } = useQuery({
+    queryKey: ["empresa", empresaId],
+    queryFn: async () => {
+      if (!empresaId) return null;
+      const { data } = await supabase.from("empresas").select("nome_fantasia").eq("id", empresaId).single();
+      return data;
+    },
+    enabled: !!empresaId,
+  });
+
+  // Count query for pagination (using v_alertas_vencimento)
   const { data: totalCount } = useQuery({
     queryKey: ["entregas-count", filtroColaborador, filtroEpi, filtroDataInicio, filtroDataFim, filtroStatus],
     queryFn: async () => {
-      const hasColabFilter = !!filtroColaborador;
-      const hasEpiFilter = !!filtroEpi;
-
-      const selectParts = ["id"];
-      if (hasColabFilter) selectParts.push("colaboradores!inner(nome_completo)");
-      if (hasEpiFilter) selectParts.push("epis!inner(nome_epi)");
-
       let query = supabase
         .from("entregas_epi")
-        .select(selectParts.join(", "), { count: "exact", head: true });
+        .select("id", { count: "exact", head: true });
 
-      if (hasColabFilter) {
-        query = query.ilike("colaboradores.nome_completo", `%${filtroColaborador}%`);
-      }
-      if (hasEpiFilter) {
-        query = query.ilike("epis.nome_epi", `%${filtroEpi}%`);
-      }
       if (filtroDataInicio) {
         query = query.gte("data_entrega", filtroDataInicio);
       }
@@ -164,20 +172,7 @@ const RegistroEntregas = () => {
 
   const handleEpiChange = (id: string) => {
     setEpiId(id);
-    const epi = epis?.find((e) => e.id === id);
-    if (epi && dataEntrega) {
-      const vencimento = addDays(parseLocalDate(dataEntrega), epi.periodicidade_dias);
-      setDataVencimento(format(vencimento, "yyyy-MM-dd"));
-    }
-  };
-
-  const handleDataChange = (date: string) => {
-    setDataEntrega(date);
-    const epi = epis?.find((e) => e.id === epiId);
-    if (epi && date) {
-      const vencimento = addDays(parseLocalDate(date), epi.periodicidade_dias);
-      setDataVencimento(format(vencimento, "yyyy-MM-dd"));
-    }
+    setCaConfirmado(false);
   };
 
   const invalidateAll = () => {
@@ -203,6 +198,15 @@ const RegistroEntregas = () => {
     onError: () => toast.error("Erro ao registrar baixa."),
   });
 
+  const clearForm = () => {
+    setColaboradorId("");
+    setEpiId("");
+    setDataEntrega(format(new Date(), "yyyy-MM-dd"));
+    setMotivoEntrega("entrega_inicial");
+    setObservacoes("");
+    setCaConfirmado(false);
+  };
+
   const registrar = useMutation({
     mutationFn: async () => {
       if (motivoEntrega === "vencimento" || motivoEntrega === "dano_desgaste") {
@@ -218,28 +222,115 @@ const RegistroEntregas = () => {
         colaborador_id: colaboradorId,
         epi_id: epiId,
         data_entrega: dataEntrega,
-        data_vencimento: dataVencimento,
+        data_vencimento: dataEntrega, // placeholder - trigger overwrites this
         empresa_id: empresaId,
         motivo_entrega: motivoEntrega,
         observacoes: observacoes || null,
-        ca_numero_entregue: selectedEpi?.ca_numero ?? null,
-        data_validade_ca_entregue: selectedEpi?.data_validade_ca ?? null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       invalidateAll();
       setPage(0);
+
+      const colabNome = colaboradores?.find((c) => c.id === colaboradorId)?.nome_completo ?? "—";
+      const epiNome = selectedEpi?.nome_epi ?? "—";
+      const caNum = selectedEpi?.ca_numero ?? null;
+
+      setEntregaConfirmada({
+        colaboradorNome: colabNome,
+        epiNome: epiNome,
+        caNumerо: caNum,
+        dataEntrega: dataEntrega,
+        empresaNome: empresa?.nome_fantasia ?? "Empresa",
+      });
+
       toast.success("Entrega registrada com sucesso!");
-      setColaboradorId("");
-      setEpiId("");
-      setDataEntrega(format(new Date(), "yyyy-MM-dd"));
-      setDataVencimento("");
-      setMotivoEntrega("entrega_inicial");
-      setObservacoes("");
     },
     onError: () => toast.error("Erro ao registrar entrega."),
   });
+
+  const gerarFichaPDF = () => {
+    if (!entregaConfirmada) return;
+
+    const doc = new jsPDF();
+    const { colaboradorNome, epiNome, caNumerо, dataEntrega: dtEntrega, empresaNome } = entregaConfirmada;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("FICHA DE ENTREGA DE EPI", 105, 25, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(empresaNome, 105, 35, { align: "center" });
+
+    // Line
+    doc.setLineWidth(0.5);
+    doc.line(20, 42, 190, 42);
+
+    // Content
+    let y = 55;
+    const lineHeight = 12;
+
+    const addField = (label: string, value: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${label}:`, 25, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(value, 80, y);
+      y += lineHeight;
+    };
+
+    addField("Colaborador", colaboradorNome);
+    addField("EPI", epiNome);
+    addField("CA", caNumerо ?? "N/A");
+    addField("Data de Entrega", formatLocalDate(dtEntrega));
+
+    // Disclaimer
+    y += 15;
+    doc.setFontSize(10);
+    doc.text(
+      "Declaro ter recebido o equipamento de proteção individual acima descrito,",
+      25,
+      y
+    );
+    y += 6;
+    doc.text(
+      "comprometendo-me a utilizá-lo adequadamente e a zelar pela sua conservação.",
+      25,
+      y
+    );
+
+    // Signature
+    y += 35;
+    doc.line(25, y, 110, y);
+    y += 6;
+    doc.text("Assinatura do Colaborador", 25, y);
+
+    y += 20;
+    doc.line(25, y, 110, y);
+    y += 6;
+    doc.text("Assinatura do Responsável", 25, y);
+
+    // Footer
+    doc.setFontSize(8);
+    doc.text(
+      `Documento gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`,
+      105,
+      285,
+      { align: "center" }
+    );
+
+    doc.save(`ficha-entrega-${colaboradorNome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+  };
+
+  const handleNovaEntrega = () => {
+    clearForm();
+    setEntregaConfirmada(null);
+  };
+
+  // Disable register button logic
+  const canRegister = colaboradorId && epiId && dataEntrega && !registrar.isPending && (!caVencido || caConfirmado);
 
   // Reset page when filters change
   const applyFilter = (setter: (v: string) => void, value: string) => {
@@ -249,6 +340,7 @@ const RegistroEntregas = () => {
 
   return (
     <AppLayout title="Registro de Entregas" description="Registre a entrega de EPIs aos colaboradores">
+      {/* Modal Devolução */}
       <Dialog open={!!devolucaoId} onOpenChange={(open) => !open && setDevolucaoId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -265,6 +357,36 @@ const RegistroEntregas = () => {
               disabled={devolverMutation.isPending}
             >
               {devolverMutation.isPending ? "Processando..." : "Confirmar Baixa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Entrega Confirmada */}
+      <Dialog open={!!entregaConfirmada} onOpenChange={(open) => !open && handleNovaEntrega()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-600">
+              ✅ Entrega Confirmada
+            </DialogTitle>
+            <DialogDescription>
+              O registro foi salvo com sucesso. Você pode gerar a ficha de entrega para assinatura física.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2 text-sm">
+            <p><span className="font-medium">Colaborador:</span> {entregaConfirmada?.colaboradorNome}</p>
+            <p><span className="font-medium">EPI:</span> {entregaConfirmada?.epiNome}</p>
+            <p><span className="font-medium">CA:</span> {entregaConfirmada?.caNumerо ?? "N/A"}</p>
+            <p><span className="font-medium">Data:</span> {entregaConfirmada ? formatLocalDate(entregaConfirmada.dataEntrega) : ""}</p>
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button onClick={gerarFichaPDF} className="w-full gap-2">
+              <FileText className="w-4 h-4" />
+              Gerar Ficha de Entrega (PDF)
+            </Button>
+            <Button variant="outline" onClick={handleNovaEntrega} className="w-full gap-2">
+              <Plus className="w-4 h-4" />
+              Registrar Nova Entrega
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -306,13 +428,26 @@ const RegistroEntregas = () => {
             </div>
 
             {caVencido && (
-              <Alert variant="destructive" className="border-destructive bg-destructive/10">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="font-semibold">
-                  ⚠️ O CA deste EPI está vencido ({selectedEpi?.data_validade_ca ? formatLocalDate(selectedEpi.data_validade_ca) : ""}). 
-                  Entrega bloqueada por irregularidade jurídica.
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-3">
+                <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-800 dark:text-amber-300">
+                    ⚠️ Atenção: O CA deste equipamento expirou em{" "}
+                    <strong>{selectedEpi?.data_validade_ca ? formatLocalDate(selectedEpi.data_validade_ca) : ""}</strong>.
+                    O fornecimento é legal apenas se o lote foi adquirido antes desta data (NT 130/2018). Deseja prosseguir?
+                  </AlertDescription>
+                </Alert>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="ca-confirm"
+                    checked={caConfirmado}
+                    onCheckedChange={(checked) => setCaConfirmado(checked === true)}
+                  />
+                  <Label htmlFor="ca-confirm" className="text-xs leading-tight cursor-pointer">
+                    Confirmo que este lote foi adquirido dentro da validade do CA.
+                  </Label>
+                </div>
+              </div>
             )}
 
             <div>
@@ -341,16 +476,17 @@ const RegistroEntregas = () => {
 
             <div>
               <Label>Data de Entrega *</Label>
-              <Input type="date" value={dataEntrega} onChange={(e) => handleDataChange(e.target.value)} />
+              <Input type="date" value={dataEntrega} onChange={(e) => setDataEntrega(e.target.value)} />
             </div>
-            <div>
-              <Label>Data de Vencimento (automático)</Label>
-              <Input type="date" value={dataVencimento} disabled className="bg-muted" />
-            </div>
+
+            <Badge variant="secondary" className="w-full justify-center py-1.5 text-xs font-normal text-muted-foreground">
+              Vencimento calculado automaticamente pelo sistema
+            </Badge>
+
             <Button
               className="w-full"
               onClick={() => registrar.mutate()}
-              disabled={!colaboradorId || !epiId || !dataEntrega || !dataVencimento || caVencido || registrar.isPending}
+              disabled={!canRegister}
             >
               {registrar.isPending ? "Registrando..." : "Registrar Entrega"}
             </Button>
