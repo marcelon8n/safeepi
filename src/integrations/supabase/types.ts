@@ -499,7 +499,7 @@ export type Database = {
       }
       epis: {
         Row: {
-          ca_numero: string | null
+          ca_numero: string
           created_at: string | null
           custo_estimado: number | null
           data_validade_ca: string | null
@@ -510,7 +510,7 @@ export type Database = {
           periodicidade_dias: number
         }
         Insert: {
-          ca_numero?: string | null
+          ca_numero: string
           created_at?: string | null
           custo_estimado?: number | null
           data_validade_ca?: string | null
@@ -521,7 +521,7 @@ export type Database = {
           periodicidade_dias: number
         }
         Update: {
-          ca_numero?: string | null
+          ca_numero?: string
           created_at?: string | null
           custo_estimado?: number | null
           data_validade_ca?: string | null
@@ -651,7 +651,7 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string | null
-          empresa_id: string
+          empresa_id: string | null
           id: string
           nome: string | null
           role: Database["public"]["Enums"]["user_role"] | null
@@ -664,7 +664,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email?: string | null
-          empresa_id: string
+          empresa_id?: string | null
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -677,7 +677,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           email?: string | null
-          empresa_id?: string
+          empresa_id?: string | null
           id?: string
           nome?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
@@ -1054,6 +1054,7 @@ export type Database = {
       }
     }
     Enums: {
+      motivo_entrega: "substituicao" | "extravio" | "danificado" | "novo_item"
       motivo_entrega_tipo:
         | "entrega_inicial"
         | "vencimento"
@@ -1188,6 +1189,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      motivo_entrega: ["substituicao", "extravio", "danificado", "novo_item"],
       motivo_entrega_tipo: [
         "entrega_inicial",
         "vencimento",
