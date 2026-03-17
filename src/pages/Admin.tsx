@@ -1,41 +1,44 @@
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, HardHat, ScrollText, CreditCard } from "lucide-react";
-import AdminEpisCatalog from "@/components/admin/AdminEpisCatalog";
+import { LayoutDashboard, DollarSign, ShieldAlert, Users, Settings } from "lucide-react";
+import AdminOverview from "@/components/admin/AdminOverview";
+import AdminFinanceiro from "@/components/admin/AdminFinanceiro";
+import AdminCompliance from "@/components/admin/AdminCompliance";
 import AdminUsers from "@/components/admin/AdminUsers";
-import AdminAuditLog from "@/components/admin/AdminAuditLog";
-import AdminAssinatura from "@/components/admin/AdminAssinatura";
-import { useRole } from "@/hooks/useRole";
+import AdminConfiguracoes from "@/components/admin/AdminConfiguracoes";
 
 const Admin = () => {
-  const { isSuperAdmin } = useRole();
-
   return (
-    <AppLayout title="Painel de Governança" description="Controle acessos, faturamento e diretrizes do sistema.">
-      <Tabs defaultValue="usuarios" className="w-full">
+    <AppLayout title="Painel de Controle" description="Visão estratégica para gestão de riscos, custos e conformidade.">
+      <Tabs defaultValue="visao-geral" className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
-          <TabsTrigger value="usuarios" className="gap-2">
+          <TabsTrigger value="visao-geral" className="gap-2">
+            <LayoutDashboard className="w-4 h-4" />
+            Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="financeiro" className="gap-2">
+            <DollarSign className="w-4 h-4" />
+            Financeiro & Custos
+          </TabsTrigger>
+          <TabsTrigger value="compliance" className="gap-2">
+            <ShieldAlert className="w-4 h-4" />
+            Compliance & Riscos
+          </TabsTrigger>
+          <TabsTrigger value="acessos" className="gap-2">
             <Users className="w-4 h-4" />
-            Usuários do Sistema
+            Gestão de Acessos
           </TabsTrigger>
-          <TabsTrigger value="epis" className="gap-2">
-            <HardHat className="w-4 h-4" />
-            Catálogo de EPIs
-          </TabsTrigger>
-          <TabsTrigger value="auditoria" className="gap-2">
-            <ScrollText className="w-4 h-4" />
-            Auditoria
-          </TabsTrigger>
-          <TabsTrigger value="assinatura" className="gap-2">
-            <CreditCard className="w-4 h-4" />
-            Assinatura
+          <TabsTrigger value="configuracoes" className="gap-2">
+            <Settings className="w-4 h-4" />
+            Configurações
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="usuarios"><AdminUsers /></TabsContent>
-        <TabsContent value="epis"><AdminEpisCatalog /></TabsContent>
-        <TabsContent value="auditoria"><AdminAuditLog /></TabsContent>
-        <TabsContent value="assinatura"><AdminAssinatura /></TabsContent>
+        <TabsContent value="visao-geral"><AdminOverview /></TabsContent>
+        <TabsContent value="financeiro"><AdminFinanceiro /></TabsContent>
+        <TabsContent value="compliance"><AdminCompliance /></TabsContent>
+        <TabsContent value="acessos"><AdminUsers /></TabsContent>
+        <TabsContent value="configuracoes"><AdminConfiguracoes /></TabsContent>
       </Tabs>
     </AppLayout>
   );
