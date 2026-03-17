@@ -22,8 +22,6 @@ const AppSidebar = () => {
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
     { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
-    { to: "/setores", label: "Setores", icon: Network, show: isAdmin },
-    { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: isAdmin },
     { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
     { to: "/relatorios", label: "Relatórios", icon: FileBarChart, show: isAdmin },
     { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
