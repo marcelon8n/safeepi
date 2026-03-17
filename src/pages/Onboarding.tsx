@@ -6,9 +6,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Users } from "lucide-react";
+import { Building2, Users, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const pollProfileEmpresa = async (userId: string, maxAttempts = 4, intervalMs = 1500): Promise<boolean> => {
+  for (let i = 0; i < maxAttempts; i++) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("empresa_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (data?.empresa_id) return true;
+    if (i < maxAttempts - 1) await sleep(intervalMs);
+  }
+  return false;
+};
 
 const Onboarding = () => {
   const { user } = useAuth();
@@ -19,8 +34,8 @@ const Onboarding = () => {
   const [nomeFantasia, setNomeFantasia] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [loading, setLoading] = useState(false);
+  const [configuring, setConfiguring] = useState(false);
 
-  // Buscar convites pendentes para o email do usuário
   const { data: convitesPendentes = [] } = useQuery({
     queryKey: ["convites-pendentes", user?.email],
     queryFn: async () => {
@@ -36,25 +51,48 @@ const Onboarding = () => {
     enabled: !!user?.email,
   });
 
+  const finalizeAndRedirect = async () => {
+    if (!user) return;
+    setConfiguring(true);
+
+    try {
+      const confirmed = await pollProfileEmpresa(user.id);
+      if (!confirmed) {
+        toast.error("Não foi possível confirmar o vínculo. Tente fazer login novamente.");
+        setConfiguring(false);
+        return;
+      }
+
+      await supabase.auth.refreshSession();
+      await queryClient.invalidateQueries({ queryKey: ["empresa-plan", user.id] });
+      await queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
+      await queryClient.refetchQueries({ queryKey: ["empresa-plan", user.id] });
+
+      toast.success("Tudo pronto! Redirecionando...");
+      navigate("/dashboard", { replace: true });
+    } catch {
+      toast.error("Erro ao finalizar configuração. Tente novamente.");
+      setConfiguring(false);
+    }
+  };
+
   const handleCreateEmpresa = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("create_empresa_onboarding", {
+      const { error } = await supabase.rpc("create_empresa_onboarding", {
         p_nome_fantasia: nomeFantasia,
         p_cnpj: cnpj,
       });
       if (error) {
         toast.error(`Erro ao criar empresa: ${error.message}`);
+        setLoading(false);
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
-      await queryClient.refetchQueries({ queryKey: ["empresa-id"] });
-      toast.success("Empresa cadastrada com sucesso!");
-      navigate("/dashboard", { replace: true });
+      setLoading(false);
+      await finalizeAndRedirect();
     } catch (err: any) {
       toast.error(`Erro inesperado: ${err.message || "Tente novamente."}`);
-    } finally {
       setLoading(false);
     }
   };
@@ -62,20 +100,18 @@ const Onboarding = () => {
   const handleAcceptInvite = async (conviteId: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("accept_invite", {
+      const { error } = await supabase.rpc("accept_invite", {
         p_convite_id: conviteId,
       });
       if (error) {
         toast.error(`Erro ao aceitar convite: ${error.message}`);
+        setLoading(false);
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["empresa-id"] });
-      await queryClient.refetchQueries({ queryKey: ["empresa-id"] });
-      toast.success("Você foi vinculado à empresa com sucesso!");
-      navigate("/dashboard", { replace: true });
+      setLoading(false);
+      await finalizeAndRedirect();
     } catch (err: any) {
       toast.error(`Erro inesperado: ${err.message || "Tente novamente."}`);
-    } finally {
       setLoading(false);
     }
   };
@@ -89,6 +125,23 @@ const Onboarding = () => {
       .replace(/(\d{4})(\d)/, "$1-$2");
   };
 
+  // Tela de configuração (loading após criação/aceite)
+  if (configuring) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <p className="text-lg font-medium text-foreground">Configurando seu painel...</p>
+            <p className="text-sm text-muted-foreground text-center">
+              Estamos finalizando o vínculo da sua empresa. Isso leva apenas alguns segundos.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Tela de escolha
   if (mode === "choose") {
     return (
@@ -99,18 +152,15 @@ const Onboarding = () => {
               <Building2 className="w-7 h-7 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl">Bem-vindo ao Safe Solutions</CardTitle>
-            <CardDescription>
-              Como deseja começar?
-            </CardDescription>
+            <CardDescription>Como deseja começar?</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Convites pendentes */}
             {convitesPendentes.length > 0 && (
               <div className="space-y-2 mb-4">
                 <p className="text-sm font-medium text-foreground">
                   Você tem {convitesPendentes.length} convite(s) pendente(s):
                 </p>
-                {convitesPendentes.map((c) => (
+                {convitesPendentes.map((c: any) => (
                   <Button
                     key={c.id}
                     variant="outline"
@@ -129,11 +179,7 @@ const Onboarding = () => {
                 ))}
               </div>
             )}
-
-            <Button
-              className="w-full h-auto py-4"
-              onClick={() => setMode("create")}
-            >
+            <Button className="w-full h-auto py-4" onClick={() => setMode("create")} disabled={loading}>
               <Building2 className="w-5 h-5 mr-2" />
               <div className="text-left">
                 <p className="font-medium">Criar Nova Empresa</p>
@@ -182,16 +228,18 @@ const Onboarding = () => {
               />
             </div>
             <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setMode("choose")}
-              >
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setMode("choose")}>
                 Voltar
               </Button>
               <Button type="submit" className="flex-1" disabled={loading || !nomeFantasia || !cnpj}>
-                {loading ? "Salvando..." : "Cadastrar"}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Cadastrar"
+                )}
               </Button>
             </div>
           </form>
