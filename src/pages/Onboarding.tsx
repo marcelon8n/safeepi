@@ -32,6 +32,7 @@ const Onboarding = () => {
 
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [nomeFantasia, setNomeFantasia] = useState("");
+  const [razaoSocial, setRazaoSocial] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [loading, setLoading] = useState(false);
   const [configuring, setConfiguring] = useState(false);
@@ -83,6 +84,7 @@ const Onboarding = () => {
       const { error } = await supabase.rpc("create_empresa_onboarding", {
         p_nome_fantasia: nomeFantasia,
         p_cnpj: cnpj,
+        p_razao_social: razaoSocial,
       });
       if (error) {
         toast.error(`Erro ao criar empresa: ${error.message}`);
@@ -208,6 +210,17 @@ const Onboarding = () => {
         <CardContent>
           <form onSubmit={handleCreateEmpresa} className="space-y-5">
             <div className="space-y-2">
+              <Label htmlFor="razao">Razão Social *</Label>
+              <Input
+                id="razao"
+                value={razaoSocial}
+                onChange={(e) => setRazaoSocial(e.target.value)}
+                placeholder="Ex: ABC Construções Ltda"
+                required
+              />
+              <p className="text-xs text-muted-foreground">Nome oficial para documentos e contratos.</p>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="nome">Nome Fantasia *</Label>
               <Input
                 id="nome"
@@ -216,6 +229,7 @@ const Onboarding = () => {
                 placeholder="Ex: Construtora ABC"
                 required
               />
+              <p className="text-xs text-muted-foreground">Nome de identificação visual no sistema.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="cnpj">CNPJ *</Label>
@@ -231,7 +245,7 @@ const Onboarding = () => {
               <Button type="button" variant="outline" className="flex-1" onClick={() => setMode("choose")}>
                 Voltar
               </Button>
-              <Button type="submit" className="flex-1" disabled={loading || !nomeFantasia || !cnpj}>
+              <Button type="submit" className="flex-1" disabled={loading || !nomeFantasia || !cnpj || !razaoSocial}>
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
