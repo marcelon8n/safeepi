@@ -159,16 +159,9 @@ const FichaIndividualEpi = () => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout title="Ficha Individual de EPI" description="Controle individual de entrega e recebimento de EPIs">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="h-7 w-7 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Ficha Individual de EPI</h1>
-              <p className="text-sm text-muted-foreground">Controle individual de entrega e recebimento de EPIs</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-end">
           {selectedColaboradorId && entregas && entregas.length > 0 && (
             <Button onClick={handlePrintPDF} className="gap-2">
               <Printer className="h-4 w-4" /> Imprimir PDF
