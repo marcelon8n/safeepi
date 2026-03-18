@@ -344,6 +344,7 @@ export type Database = {
           nome_fantasia: string
           plan_type: string | null
           plano_id: string | null
+          razao_social: string | null
           status_assinatura: string | null
           subscription_id_asaas: string | null
           trial_ends_at: string | null
@@ -356,6 +357,7 @@ export type Database = {
           nome_fantasia: string
           plan_type?: string | null
           plano_id?: string | null
+          razao_social?: string | null
           status_assinatura?: string | null
           subscription_id_asaas?: string | null
           trial_ends_at?: string | null
@@ -368,6 +370,7 @@ export type Database = {
           nome_fantasia?: string
           plan_type?: string | null
           plano_id?: string | null
+          razao_social?: string | null
           status_assinatura?: string | null
           subscription_id_asaas?: string | null
           trial_ends_at?: string | null
@@ -1030,6 +1033,14 @@ export type Database = {
       create_empresa_onboarding: {
         Args: { p_cnpj: string; p_nome_fantasia: string }
         Returns: string
+      }
+      get_epi_durability: {
+        Args: { p_empresa_id: string }
+        Returns: {
+          epi_nome: string
+          media_dias: number
+          total_trocas: number
+        }[]
       }
       get_my_role: {
         Args: never
