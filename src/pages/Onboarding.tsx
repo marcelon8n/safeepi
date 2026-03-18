@@ -210,6 +210,17 @@ const Onboarding = () => {
         <CardContent>
           <form onSubmit={handleCreateEmpresa} className="space-y-5">
             <div className="space-y-2">
+              <Label htmlFor="razao">Razão Social *</Label>
+              <Input
+                id="razao"
+                value={razaoSocial}
+                onChange={(e) => setRazaoSocial(e.target.value)}
+                placeholder="Ex: ABC Construções Ltda"
+                required
+              />
+              <p className="text-xs text-muted-foreground">Nome oficial para documentos e contratos.</p>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="nome">Nome Fantasia *</Label>
               <Input
                 id="nome"
@@ -218,6 +229,7 @@ const Onboarding = () => {
                 placeholder="Ex: Construtora ABC"
                 required
               />
+              <p className="text-xs text-muted-foreground">Nome de identificação visual no sistema.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="cnpj">CNPJ *</Label>
