@@ -84,6 +84,7 @@ const Onboarding = () => {
       const { error } = await supabase.rpc("create_empresa_onboarding", {
         p_nome_fantasia: nomeFantasia,
         p_cnpj: cnpj,
+        p_razao_social: razaoSocial,
       });
       if (error) {
         toast.error(`Erro ao criar empresa: ${error.message}`);
