@@ -24,6 +24,7 @@ import ObraDetalhe from "./pages/ObraDetalhe";
 import AlocacaoEquipe from "./pages/AlocacaoEquipe";
 import GestaoDocumentos from "./pages/GestaoDocumentos";
 import Relatorios from "./pages/Relatorios";
+import FichaIndividualEpi from "./pages/FichaIndividualEpi";
 
 const queryClient = new QueryClient();
 
