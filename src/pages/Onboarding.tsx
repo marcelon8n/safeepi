@@ -32,6 +32,7 @@ const Onboarding = () => {
 
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [nomeFantasia, setNomeFantasia] = useState("");
+  const [razaoSocial, setRazaoSocial] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [loading, setLoading] = useState(false);
   const [configuring, setConfiguring] = useState(false);
