@@ -1030,10 +1030,16 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_convite_id: string }; Returns: string }
-      create_empresa_onboarding: {
-        Args: { p_cnpj: string; p_nome_fantasia: string }
-        Returns: string
-      }
+      create_empresa_onboarding:
+        | { Args: { p_cnpj: string; p_nome_fantasia: string }; Returns: string }
+        | {
+            Args: {
+              p_cnpj: string
+              p_nome_fantasia: string
+              p_razao_social?: string
+            }
+            Returns: string
+          }
       get_epi_durability: {
         Args: { p_empresa_id: string }
         Returns: {
