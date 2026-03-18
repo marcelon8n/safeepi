@@ -245,7 +245,7 @@ const Onboarding = () => {
               <Button type="button" variant="outline" className="flex-1" onClick={() => setMode("choose")}>
                 Voltar
               </Button>
-              <Button type="submit" className="flex-1" disabled={loading || !nomeFantasia || !cnpj}>
+              <Button type="submit" className="flex-1" disabled={loading || !nomeFantasia || !cnpj || !razaoSocial}>
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
