@@ -23,6 +23,7 @@ const AppSidebar = () => {
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
     { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
     { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
+    { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
     { to: "/relatorios", label: "Relatórios", icon: FileBarChart, show: isAdmin },
     { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
     { to: "/admin", label: "Administração", icon: ShieldCheck, show: isOwner },
