@@ -1,17 +1,15 @@
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, DollarSign, ShieldAlert, Users, Settings, BarChart3, CalendarDays } from "lucide-react";
+import { LayoutDashboard, DollarSign, ShieldAlert, BarChart3, CalendarDays } from "lucide-react";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminFinanceiro from "@/components/admin/AdminFinanceiro";
 import AdminCompliance from "@/components/admin/AdminCompliance";
-import AdminUsers from "@/components/admin/AdminUsers";
-import AdminConfiguracoes from "@/components/admin/AdminConfiguracoes";
 import AdminConsumoMensal from "@/components/admin/AdminConsumoMensal";
 import AdminDurabilidade from "@/components/admin/AdminDurabilidade";
 
 const Admin = () => {
   return (
-    <AppLayout title="Painel de Controle" description="Visão estratégica para gestão de riscos, custos e conformidade.">
+    <AppLayout title="Painel Estratégico" description="Visão estratégica para gestão de riscos, custos e conformidade.">
       <Tabs defaultValue="visao-geral" className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="visao-geral" className="gap-2">
@@ -34,14 +32,6 @@ const Admin = () => {
             <BarChart3 className="w-4 h-4" />
             Durabilidade
           </TabsTrigger>
-          <TabsTrigger value="acessos" className="gap-2">
-            <Users className="w-4 h-4" />
-            Gestão de Acessos
-          </TabsTrigger>
-          <TabsTrigger value="configuracoes" className="gap-2">
-            <Settings className="w-4 h-4" />
-            Configurações
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="visao-geral"><AdminOverview /></TabsContent>
@@ -49,8 +39,6 @@ const Admin = () => {
         <TabsContent value="compliance"><AdminCompliance /></TabsContent>
         <TabsContent value="consumo"><AdminConsumoMensal /></TabsContent>
         <TabsContent value="durabilidade"><AdminDurabilidade /></TabsContent>
-        <TabsContent value="acessos"><AdminUsers /></TabsContent>
-        <TabsContent value="configuracoes"><AdminConfiguracoes /></TabsContent>
       </Tabs>
     </AppLayout>
   );

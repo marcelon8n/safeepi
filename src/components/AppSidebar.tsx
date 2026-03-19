@@ -1,12 +1,32 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, HardHat, ClipboardList, LogOut, Menu, X, Users2, ShieldCheck, Building2, UserPlus, ChevronDown, Network, FileBarChart, FileText } from "lucide-react";
+import {
+  ClipboardList, HardHat, Layers, Building2, UserPlus, BookOpen,
+  Users, FileCheck, ShieldCheck, Building, ScrollText, Mail,
+  User, LogOut, Menu, X, ChevronDown, FileText, LayoutDashboard,
+  BarChart3, DollarSign, CalendarDays, ShieldAlert
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+  show: boolean;
+  defaultOpen?: boolean;
+}
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  show: boolean;
+}
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -15,26 +35,52 @@ const AppSidebar = () => {
   const { permiteObras } = useEmpresaPlan();
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [obrasOpen, setObrasOpen] = useState(
-    ["/obras", "/alocacao-equipe", "/gestao-documentos"].some((p) => location.pathname.startsWith(p))
-  );
 
-  const navItems = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
-    { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
-    { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
-    { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
-    { to: "/relatorios", label: "Relatórios", icon: FileBarChart, show: isAdmin },
-    { to: "/equipe", label: "Equipe", icon: Users2, show: isAdmin },
-    { to: "/admin", label: "Administração", icon: ShieldCheck, show: isOwner },
+  const isActive = (path: string) => location.pathname === path;
+  const isInGroup = (items: NavItem[]) => items.some((i) => isActive(i.to));
+
+  const groups: NavGroup[] = [
+    {
+      label: "Gestão Operacional",
+      show: true,
+      items: [
+        { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
+        { to: "/entregas", label: "Entregas de EPI", icon: ClipboardList, show: isEditor },
+        { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
+        { to: "/setores", label: "Setores", icon: Layers, show: true },
+        { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
+        { to: "/relatorios", label: "Relatórios", icon: BarChart3, show: isAdmin },
+      ],
+    },
+    {
+      label: "Engenharia e Obras",
+      show: isOwner && permiteObras,
+      items: [
+        { to: "/obras", label: "Obras", icon: Building2, show: true },
+        { to: "/alocacao-equipe", label: "Alocações", icon: UserPlus, show: true },
+        { to: "/diario-obra", label: "Diário de Obra", icon: BookOpen, show: true },
+      ],
+    },
+    {
+      label: "Pessoas",
+      show: true,
+      items: [
+        { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
+        { to: "/requisitos", label: "Requisitos", icon: FileCheck, show: true },
+      ],
+    },
+    {
+      label: "Administração",
+      show: isAdmin,
+      items: [
+        { to: "/admin", label: "Painel Estratégico", icon: ShieldAlert, show: isOwner },
+        { to: "/meu-perfil", label: "Meu Perfil", icon: User, show: true },
+        { to: "/dados-empresa", label: "Dados da Empresa", icon: Building, show: isOwner },
+        { to: "/auditoria", label: "Auditoria", icon: ScrollText, show: isOwner },
+        { to: "/convites", label: "Convites de Equipe", icon: Mail, show: isOwner },
+      ],
+    },
   ];
-
-  const obrasSubItems = [
-    { to: "/obras", label: "Obras", icon: Building2 },
-    { to: "/alocacao-equipe", label: "Alocação de Equipe", icon: UserPlus },
-  ];
-
-  const visibleItems = navItems.filter((item) => item.show);
 
   const sidebarContent = (
     <>
@@ -55,56 +101,44 @@ const AppSidebar = () => {
         )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {visibleItems.map((item) => {
-          const isActive = location.pathname === item.to;
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {groups.filter((g) => g.show).map((group, gi) => {
+          const visibleItems = group.items.filter((i) => i.show);
+          if (visibleItems.length === 0) return null;
+          const groupActive = isInGroup(visibleItems);
+
           return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-primary"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              {item.label}
-            </Link>
+            <div key={group.label}>
+              {gi > 0 && <Separator className="my-3 bg-sidebar-border" />}
+              <Collapsible defaultOpen={groupActive || gi === 0}>
+                <CollapsibleTrigger className="flex items-center gap-2 px-3 py-1.5 w-full text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors">
+                  <span className="flex-1 text-left">{group.label}</span>
+                  <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-0.5 mt-1">
+                  {visibleItems.map((item) => {
+                    const active = isActive(item.to);
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          active
+                            ? "bg-sidebar-accent text-sidebar-primary"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
           );
         })}
-
-        {/* Gestão de Obras - owner+ only */}
-        {isOwner && permiteObras && (
-          <Collapsible open={obrasOpen} onOpenChange={setObrasOpen}>
-            <CollapsibleTrigger className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <HardHat className="w-5 h-5" />
-              <span className="flex-1 text-left">Gestão de Obras</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${obrasOpen ? "rotate-180" : ""}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pl-4 space-y-0.5 mt-0.5">
-              {obrasSubItems.map((item) => {
-                const isActive = location.pathname === item.to;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </CollapsibleContent>
-          </Collapsible>
-        )}
       </nav>
 
       <div className="px-3 py-4 border-t border-sidebar-border space-y-3">

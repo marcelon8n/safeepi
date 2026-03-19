@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
@@ -10,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
@@ -20,6 +21,7 @@ import RoleGate from "@/components/RoleGate";
 type Epi = Tables<"epis">;
 
 const CatalogoEpis = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
@@ -196,6 +198,9 @@ const CatalogoEpis = () => {
                       <TableCell>
                         <RoleGate allowWrite>
                         <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" title="Registrar Entrega" onClick={() => navigate(`/entregas?epi=${e.id}`)}>
+                            <ClipboardList className="w-4 h-4 text-primary" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(e)}>
                             <Pencil className="w-4 h-4" />
                           </Button>

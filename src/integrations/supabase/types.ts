@@ -64,31 +64,46 @@ export type Database = {
         Row: {
           acao: string
           created_at: string | null
+          dados_antigos: Json | null
+          dados_novos: Json | null
           detalhes: Json | null
           empresa_id: string | null
           id: string
+          ip_origem: string | null
           registro_id: string
+          schema_version: number | null
           tabela: string
+          user_agent: string | null
           usuario_id: string | null
         }
         Insert: {
           acao: string
           created_at?: string | null
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
           detalhes?: Json | null
           empresa_id?: string | null
           id?: string
+          ip_origem?: string | null
           registro_id: string
+          schema_version?: number | null
           tabela: string
+          user_agent?: string | null
           usuario_id?: string | null
         }
         Update: {
           acao?: string
           created_at?: string | null
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
           detalhes?: Json | null
           empresa_id?: string | null
           id?: string
+          ip_origem?: string | null
           registro_id?: string
+          schema_version?: number | null
           tabela?: string
+          user_agent?: string | null
           usuario_id?: string | null
         }
         Relationships: [
