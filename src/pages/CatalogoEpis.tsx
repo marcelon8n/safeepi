@@ -21,6 +21,7 @@ import RoleGate from "@/components/RoleGate";
 type Epi = Tables<"epis">;
 
 const CatalogoEpis = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
   const [open, setOpen] = useState(false);
