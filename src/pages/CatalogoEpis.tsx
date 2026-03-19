@@ -198,6 +198,9 @@ const CatalogoEpis = () => {
                       <TableCell>
                         <RoleGate allowWrite>
                         <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" title="Registrar Entrega" onClick={() => navigate(`/entregas?epi=${e.id}`)}>
+                            <ClipboardList className="w-4 h-4 text-primary" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(e)}>
                             <Pencil className="w-4 h-4" />
                           </Button>
