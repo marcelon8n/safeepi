@@ -100,10 +100,10 @@ const Requisitos = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Buscar requisito ou colaborador..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
-            <Select value={filtroColab} onValueChange={setFiltroColab}>
+            <Select value={filtroColab} onValueChange={(v) => setFiltroColab(v === "all" ? "" : v)}>
               <SelectTrigger className="w-[200px]"><SelectValue placeholder="Todos os colaboradores" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {colaboradores?.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome_completo}</SelectItem>)}
               </SelectContent>
             </Select>
