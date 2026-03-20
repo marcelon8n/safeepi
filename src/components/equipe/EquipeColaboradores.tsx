@@ -84,7 +84,7 @@ const EquipeColaboradores = ({ canEdit }: Props) => {
                   <TableCell>{c.cargo ?? "—"}</TableCell>
                   <TableCell>{(c.setores as any)?.nome ?? "—"}</TableCell>
                   <TableCell>
-                    <Badge variant={c.status === "ativo" ? "default" : "secondary"}>
+                    <Badge variant={c.status === "ativo" ? "success" : "secondary"} className="font-semibold">
                       {c.status ?? "ativo"}
                     </Badge>
                   </TableCell>
