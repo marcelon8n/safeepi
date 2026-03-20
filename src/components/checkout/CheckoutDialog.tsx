@@ -173,7 +173,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         empresaId: empresaId,
       };
 
-      const response = await fetch("https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi", {
+      const response = await fetch("https://api.safesolutions.app/webhook/checkout-safeepi", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(body),
