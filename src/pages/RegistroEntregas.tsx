@@ -607,12 +607,12 @@ const RegistroEntregas = () => {
                           <TableCell>
                             {isAtiva ? (
                               vencido ? (
-                                <Badge variant="destructive">Vencido</Badge>
+                                <Badge variant="destructive" className="font-semibold">Vencido</Badge>
                               ) : (
-                                <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800">Ativo</Badge>
+                                <Badge variant="success" className="font-semibold">Ativo</Badge>
                               )
                             ) : (
-                              <Badge variant="secondary" className="text-muted-foreground">
+                              <Badge variant="secondary" className="font-semibold">
                                 {e.status_troca === "substituido" ? "Substituído" : "Inativo"}
                               </Badge>
                             )}
