@@ -69,6 +69,7 @@ const Requisitos = () => {
         tipo_requisito: form.tipo_requisito,
         data_emissao: form.data_emissao || null,
         data_validade: form.data_validade || null,
+        empresa_id: empresaId!,
       });
       if (error) throw error;
     },
