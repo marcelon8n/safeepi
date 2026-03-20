@@ -18,7 +18,10 @@ import { useQuery } from "@tanstack/react-query";
 const maskCpfCnpj = (v: string) => {
   const d = v.replace(/\D/g, "");
   if (d.length <= 11)
-    return d.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    return d
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   return d
     .replace(/^(\d{2})(\d)/, "$1.$2")
     .replace(/^(\d{2}\.\d{3})(\d)/, "$1.$2")
@@ -75,11 +78,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
     queryKey: ["empresa-checkout", empresaId],
     queryFn: async () => {
       if (!empresaId) return null;
-      const { data } = await supabase
-        .from("empresas")
-        .select("nome_fantasia, cnpj")
-        .eq("id", empresaId)
-        .maybeSingle();
+      const { data } = await supabase.from("empresas").select("nome_fantasia, cnpj").eq("id", empresaId).maybeSingle();
       return data;
     },
     enabled: !!empresaId && open,
@@ -173,10 +172,11 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         valor: plan?.price,
       };
 
-      const response = await fetch(
-        "https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi",
-        { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(body) },
-      );
+      const response = await fetch("https://workflows-mvp.lab-n8n.com/webhook-test/checkout-safeepi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(body),
+      });
 
       const data = await response.json();
 
@@ -187,7 +187,11 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         setSubmitting(false);
       }
     } catch (err: any) {
-      toast({ title: "Erro ao conectar com o servidor", description: "Tente novamente em alguns instantes.", variant: "destructive" });
+      toast({
+        title: "Erro ao conectar com o servidor",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
       setSubmitting(false);
     }
   };
@@ -248,13 +252,10 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
           <div className="space-y-1.5">
             <Label htmlFor="cep">CEP</Label>
             <div className="relative">
-              <Input
-                id="cep"
-                value={watch("cep")}
-                onChange={handleCepChange}
-                placeholder="00000-000"
-              />
-              {fetchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+              <Input id="cep" value={watch("cep")} onChange={handleCepChange} placeholder="00000-000" />
+              {fetchingCep && (
+                <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
             </div>
             {errors.cep && <p className="text-xs text-destructive">{errors.cep.message}</p>}
           </div>
@@ -281,7 +282,9 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
               {errors.bairro && <p className="text-xs text-destructive">{errors.bairro.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="complemento">Complemento <span className="text-muted-foreground text-xs">(opcional)</span></Label>
+              <Label htmlFor="complemento">
+                Complemento <span className="text-muted-foreground text-xs">(opcional)</span>
+              </Label>
               <Input id="complemento" {...register("complemento")} placeholder="Apto, Sala..." />
             </div>
           </div>
