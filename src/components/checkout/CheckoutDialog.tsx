@@ -172,7 +172,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         valor: plan?.price,
       };
 
-      const response = await fetch("https://workflows-mvp.lab-n8n.com/webhook-test/checkout-safeepi", {
+      const response = await fetch("https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(body),
