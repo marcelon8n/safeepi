@@ -14,52 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      alocacoes_obras: {
-        Row: {
-          ativo: boolean | null
-          colaborador_id: string | null
-          data_alocacao: string | null
-          id: string
-          obra_id: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          colaborador_id?: string | null
-          data_alocacao?: string | null
-          id?: string
-          obra_id?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          colaborador_id?: string | null
-          data_alocacao?: string | null
-          id?: string
-          obra_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "alocacoes_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "alocacoes_obras_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "obras"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       auditoria: {
         Row: {
           acao: string
@@ -728,6 +682,7 @@ export type Database = {
           data_emissao: string | null
           data_validade: string | null
           documento_url: string | null
+          empresa_id: string
           id: string
           status_verificado: boolean | null
           tipo_requisito: string
@@ -738,6 +693,7 @@ export type Database = {
           data_emissao?: string | null
           data_validade?: string | null
           documento_url?: string | null
+          empresa_id: string
           id?: string
           status_verificado?: boolean | null
           tipo_requisito: string
@@ -748,6 +704,7 @@ export type Database = {
           data_emissao?: string | null
           data_validade?: string | null
           documento_url?: string | null
+          empresa_id?: string
           id?: string
           status_verificado?: boolean | null
           tipo_requisito?: string
