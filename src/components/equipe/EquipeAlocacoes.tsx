@@ -94,7 +94,7 @@ const EquipeAlocacoes = ({ canEdit }: Props) => {
                   <TableCell>{(a.obras as any)?.nome ?? "—"}</TableCell>
                   <TableCell>{formatDate(a.data_inicio)}</TableCell>
                   <TableCell>
-                    <Badge variant={a.ativo ? "default" : "secondary"}>
+                    <Badge variant={a.ativo ? "success" : "secondary"} className="font-semibold">
                       {a.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>
