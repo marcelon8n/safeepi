@@ -170,6 +170,7 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         complemento: values.complemento ?? "",
         planoNome: plan?.name,
         valor: plan?.price,
+        empresaId: empresaId,
       };
 
       const response = await fetch("https://webhooks-mvp.lab-n8n.com/webhook/checkout-safeepi", {
@@ -178,18 +179,22 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
         body: JSON.stringify(body),
       });
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status}: O servidor recusou a conexão.`);
+      }
+
       const data = await response.json();
 
-      if (data && data.url) {
-        window.location.href = data.url;
+      if (data && (data.url || data.invoiceUrl)) {
+        window.location.href = data.url || data.invoiceUrl;
       } else {
         toast({ title: "Erro", description: "Não foi possível gerar o link de pagamento.", variant: "destructive" });
         setSubmitting(false);
       }
     } catch (err: any) {
       toast({
-        title: "Erro ao conectar com o servidor",
-        description: "Tente novamente em alguns instantes.",
+        title: "Erro ao processar checkout",
+        description: err.message || "Falha desconhecida. Tente novamente.",
         variant: "destructive",
       });
       setSubmitting(false);
