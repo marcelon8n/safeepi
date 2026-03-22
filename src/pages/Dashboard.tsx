@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
@@ -8,14 +9,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/AppLayout";
+import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
 import { format, differenceInDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ptBR } from "date-fns/locale";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { empresaId } = useEmpresaId();
   const today = new Date().toISOString().split("T")[0];
+  const [modalVencidos, setModalVencidos] = useState(false);
+  const [modalProximos, setModalProximos] = useState(false);
+
+  // EPIs vencidos (view dedicada)
+  const { data: episVencidosView, isLoading: loadingVencidosView } = useQuery({
+    queryKey: ["vw-epis-vencidos", empresaId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vw_epis_vencidos").select("*");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!empresaId,
+  });
 
   // EPIs vencidos (from v_alertas_vencimento where data_vencimento < today and status_troca = pendente)
   const { data: alertasVencimento, isLoading: loadingAlertas } = useQuery({
@@ -98,7 +112,10 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         {/* Card 1 - EPIs Vencidos (Red) */}
-        <Card className="border-2 border-destructive/40 bg-destructive/5 shadow-sm">
+        <Card
+          className="border-2 border-destructive/40 bg-destructive/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setModalVencidos(true)}
+        >
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -106,7 +123,7 @@ const Dashboard = () => {
                 <p className="text-4xl font-bold mt-1 text-destructive">
                   {isLoading ? "—" : episVencidos.length}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Entregas com troca pendente</p>
+                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
               <div className="p-3 rounded-xl bg-destructive/10 text-destructive">
                 <ShieldAlert className="w-7 h-7" />
@@ -116,7 +133,10 @@ const Dashboard = () => {
         </Card>
 
         {/* Card 2 - Trocas Próximas (Yellow) */}
-        <Card className="border-2 border-warning/40 bg-warning/5 shadow-sm">
+        <Card
+          className="border-2 border-warning/40 bg-warning/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setModalProximos(true)}
+        >
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -124,7 +144,7 @@ const Dashboard = () => {
                 <p className="text-4xl font-bold mt-1 text-warning">
                   {isLoading ? "—" : vencendo7dias?.length ?? 0}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">EPIs vencendo em breve</p>
+                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
               <div className="p-3 rounded-xl bg-warning/10 text-warning">
                 <Clock className="w-7 h-7" />
@@ -254,6 +274,24 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       )}
+
+      <DashboardDetailModal
+        open={modalVencidos}
+        onOpenChange={setModalVencidos}
+        title="EPIs Vencidos — Troca Pendente"
+        data={episVencidosView ?? []}
+        isLoading={loadingVencidosView}
+        variant="destructive"
+      />
+
+      <DashboardDetailModal
+        open={modalProximos}
+        onOpenChange={setModalProximos}
+        title="Trocas Próximas — Vencendo em 7 dias"
+        data={vencendo7dias ?? []}
+        isLoading={loading7dias}
+        variant="warning"
+      />
     </AppLayout>
   );
 };
