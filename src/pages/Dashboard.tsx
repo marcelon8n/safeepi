@@ -17,6 +17,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { empresaId } = useEmpresaId();
   const today = new Date().toISOString().split("T")[0];
+  const [modalVencidos, setModalVencidos] = useState(false);
+  const [modalProximos, setModalProximos] = useState(false);
+
+  // EPIs vencidos (view dedicada)
+  const { data: episVencidosView, isLoading: loadingVencidosView } = useQuery({
+    queryKey: ["vw-epis-vencidos", empresaId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vw_epis_vencidos").select("*");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!empresaId,
+  });
 
   // EPIs vencidos (from v_alertas_vencimento where data_vencimento < today and status_troca = pendente)
   const { data: alertasVencimento, isLoading: loadingAlertas } = useQuery({
