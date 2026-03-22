@@ -274,6 +274,24 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       )}
+
+      <DashboardDetailModal
+        open={modalVencidos}
+        onOpenChange={setModalVencidos}
+        title="EPIs Vencidos — Troca Pendente"
+        data={episVencidosView ?? []}
+        isLoading={loadingVencidosView}
+        variant="destructive"
+      />
+
+      <DashboardDetailModal
+        open={modalProximos}
+        onOpenChange={setModalProximos}
+        title="Trocas Próximas — Vencendo em 7 dias"
+        data={vencendo7dias ?? []}
+        isLoading={loading7dias}
+        variant="warning"
+      />
     </AppLayout>
   );
 };
