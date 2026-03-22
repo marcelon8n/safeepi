@@ -250,7 +250,7 @@ const AdminConsumoMensal = () => {
                                     <Package className="h-4 w-4 text-muted-foreground" />
                                     {epi.nomeEpi}
                                     {epi.semPreco && (
-                                      <AlertTriangle className="h-3.5 w-3.5 text-warning" title="Sem custo cadastrado" />
+                                      <span title="Sem custo cadastrado"><AlertTriangle className="h-3.5 w-3.5 text-warning" /></span>
                                     )}
                                   </TableCell>
                                   <TableCell className="text-right font-semibold">{epi.count}</TableCell>
