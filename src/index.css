@@ -95,3 +95,28 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
+
+/* Print styles — only show report content */
+@media print {
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Hide sidebar, navigation, header bar */
+  nav, aside, header,
+  .print\\:hidden,
+  [data-sidebar],
+  [role="navigation"] {
+    display: none !important;
+  }
+  /* Reset main content margins */
+  main {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+  }
+  /* Ensure charts print with color */
+  .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+}
