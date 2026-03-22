@@ -112,7 +112,10 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         {/* Card 1 - EPIs Vencidos (Red) */}
-        <Card className="border-2 border-destructive/40 bg-destructive/5 shadow-sm">
+        <Card
+          className="border-2 border-destructive/40 bg-destructive/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setModalVencidos(true)}
+        >
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -120,7 +123,7 @@ const Dashboard = () => {
                 <p className="text-4xl font-bold mt-1 text-destructive">
                   {isLoading ? "—" : episVencidos.length}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Entregas com troca pendente</p>
+                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
               <div className="p-3 rounded-xl bg-destructive/10 text-destructive">
                 <ShieldAlert className="w-7 h-7" />
