@@ -98,25 +98,69 @@
 
 /* Print styles — only show report content */
 @media print {
+  * {
+    box-shadow: none !important;
+  }
   body {
     background: white !important;
+    color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    font-size: 12px;
   }
-  /* Hide sidebar, navigation, header bar */
+
+  /* Hide everything that is NOT the main content area */
   nav, aside, header,
-  .print\\:hidden,
+  .print\:hidden,
   [data-sidebar],
-  [role="navigation"] {
+  [role="navigation"],
+  button, .tabs-list {
     display: none !important;
   }
-  /* Reset main content margins */
+
+  /* The Tabs component list (tab triggers) */
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  /* Reset main content to fill full page */
   main {
     margin-left: 0 !important;
-    padding: 1rem !important;
+    padding: 0.5rem !important;
+    width: 100% !important;
   }
-  /* Ensure charts print with color */
+
+  /* Make sure the print:block header shows */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Cards should not break across pages */
+  .card, [data-radix-collapsible-content] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Force collapsible content to be visible */
+  [data-radix-collapsible-content] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure charts print with colors */
   .recharts-wrapper {
     page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Tables print cleanly */
+  table {
+    width: 100% !important;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 6px 8px !important;
   }
 }
