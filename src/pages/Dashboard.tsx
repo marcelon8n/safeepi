@@ -133,7 +133,10 @@ const Dashboard = () => {
         </Card>
 
         {/* Card 2 - Trocas Próximas (Yellow) */}
-        <Card className="border-2 border-warning/40 bg-warning/5 shadow-sm">
+        <Card
+          className="border-2 border-warning/40 bg-warning/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setModalProximos(true)}
+        >
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -141,7 +144,7 @@ const Dashboard = () => {
                 <p className="text-4xl font-bold mt-1 text-warning">
                   {isLoading ? "—" : vencendo7dias?.length ?? 0}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">EPIs vencendo em breve</p>
+                <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
               <div className="p-3 rounded-xl bg-warning/10 text-warning">
                 <Clock className="w-7 h-7" />
