@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
@@ -8,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/AppLayout";
+import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
 import { format, differenceInDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ptBR } from "date-fns/locale";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { empresaId } = useEmpresaId();
