@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  ClipboardList, HardHat, Layers, Building2, UserPlus, BookOpen,
+  ClipboardList, HardHat, Layers,
   Users, FileCheck, Building, ScrollText, Mail,
   User, LogOut, Menu, X, ChevronDown, FileText, LayoutDashboard,
-  BarChart3, ShieldAlert, Heart
+  BarChart3, ShieldAlert
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
-import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -31,7 +30,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { isEditor, isAdmin, isOwner, isSuperAdmin } = useRole();
-  const { permiteObras } = useEmpresaPlan();
+  
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -48,15 +47,6 @@ const AppSidebar = () => {
         { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
         { to: "/setores", label: "Setores", icon: Layers, show: true },
         { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
-      ],
-    },
-    {
-      label: "Engenharia",
-      show: isOwner && permiteObras,
-      items: [
-        { to: "/obras", label: "Obras", icon: Building2, show: true },
-        { to: "/alocacao-equipe", label: "Alocações", icon: UserPlus, show: true },
-        { to: "/diario-obra", label: "Diário de Obra", icon: BookOpen, show: true },
       ],
     },
     {

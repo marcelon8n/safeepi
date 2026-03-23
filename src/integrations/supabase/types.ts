@@ -75,13 +75,6 @@ export type Database = {
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "auditoria_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
         ]
       }
       colaboradores: {
@@ -134,96 +127,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "colaboradores_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-          {
             foreignKeyName: "colaboradores_setor_id_fkey"
             columns: ["setor_id"]
             isOneToOne: false
             referencedRelation: "setores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      colaboradores_obras: {
-        Row: {
-          ativo: boolean | null
-          colaborador_id: string
-          created_at: string | null
-          data_fim: string | null
-          data_inicio: string
-          empresa_id: string
-          id: string
-          motivo_movimentacao: string | null
-          obra_id: string
-        }
-        Insert: {
-          ativo?: boolean | null
-          colaborador_id: string
-          created_at?: string | null
-          data_fim?: string | null
-          data_inicio: string
-          empresa_id: string
-          id?: string
-          motivo_movimentacao?: string | null
-          obra_id: string
-        }
-        Update: {
-          ativo?: boolean | null
-          colaborador_id?: string
-          created_at?: string | null
-          data_fim?: string | null
-          data_inicio?: string
-          empresa_id?: string
-          id?: string
-          motivo_movimentacao?: string | null
-          obra_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_empresas_trial_vencido"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "colaboradores_obras_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "obras"
             referencedColumns: ["id"]
           },
         ]
@@ -269,72 +176,6 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "convites_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-        ]
-      }
-      diario_obra: {
-        Row: {
-          autor_id: string | null
-          created_at: string
-          descricao: string
-          empresa_id: string
-          foto_url: string | null
-          id: string
-          obra_id: string
-        }
-        Insert: {
-          autor_id?: string | null
-          created_at?: string
-          descricao: string
-          empresa_id: string
-          foto_url?: string | null
-          id?: string
-          obra_id: string
-        }
-        Update: {
-          autor_id?: string | null
-          created_at?: string
-          descricao?: string
-          empresa_id?: string
-          foto_url?: string | null
-          id?: string
-          obra_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "diario_obra_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "diario_obra_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_empresas_trial_vencido"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "diario_obra_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-          {
-            foreignKeyName: "diario_obra_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "obras"
             referencedColumns: ["id"]
           },
         ]
@@ -489,13 +330,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-          {
             foreignKeyName: "entregas_epi_epi_id_fkey"
             columns: ["epi_id"]
             isOneToOne: false
@@ -559,89 +393,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "epis_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
-        ]
-      }
-      obras: {
-        Row: {
-          alvara_url: string | null
-          cidade: string | null
-          cliente: string | null
-          created_at: string | null
-          data_fim_real: string | null
-          data_inicio: string
-          data_prevista_fim: string | null
-          empresa_id: string
-          endereco: string | null
-          id: string
-          nome: string
-          requisitos_obrigatorios: string[] | null
-          responsavel: string | null
-          status: string | null
-          tipo: string | null
-        }
-        Insert: {
-          alvara_url?: string | null
-          cidade?: string | null
-          cliente?: string | null
-          created_at?: string | null
-          data_fim_real?: string | null
-          data_inicio: string
-          data_prevista_fim?: string | null
-          empresa_id: string
-          endereco?: string | null
-          id?: string
-          nome: string
-          requisitos_obrigatorios?: string[] | null
-          responsavel?: string | null
-          status?: string | null
-          tipo?: string | null
-        }
-        Update: {
-          alvara_url?: string | null
-          cidade?: string | null
-          cliente?: string | null
-          created_at?: string | null
-          data_fim_real?: string | null
-          data_inicio?: string
-          data_prevista_fim?: string | null
-          empresa_id?: string
-          endereco?: string | null
-          id?: string
-          nome?: string
-          requisitos_obrigatorios?: string[] | null
-          responsavel?: string | null
-          status?: string | null
-          tipo?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_obras_empresa"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_obras_empresa"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "v_empresas_trial_vencido"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_obras_empresa"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
           },
         ]
       }
@@ -729,13 +480,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
           },
         ]
       }
@@ -830,13 +574,6 @@ export type Database = {
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "setores_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
         ]
       }
     }
@@ -881,13 +618,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
           },
         ]
       }
@@ -952,44 +682,7 @@ export type Database = {
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
         ]
-      }
-      vw_dashboard_resumo: {
-        Row: {
-          empresa_id: string | null
-          total_colaboradores_ativos: number | null
-          total_epis_vencendo_7_dias: number | null
-          total_epis_vencidos: number | null
-          total_obras_ativas: number | null
-          total_pendencias_compliance: number | null
-          ultima_atualizacao: string | null
-        }
-        Insert: {
-          empresa_id?: string | null
-          total_colaboradores_ativos?: never
-          total_epis_vencendo_7_dias?: never
-          total_epis_vencidos?: never
-          total_obras_ativas?: never
-          total_pendencias_compliance?: never
-          ultima_atualizacao?: never
-        }
-        Update: {
-          empresa_id?: string | null
-          total_colaboradores_ativos?: never
-          total_epis_vencendo_7_dias?: never
-          total_epis_vencidos?: never
-          total_obras_ativas?: never
-          total_pendencias_compliance?: never
-          ultima_atualizacao?: never
-        }
-        Relationships: []
       }
       vw_epis_para_escalacao: {
         Row: {
@@ -1015,13 +708,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
           },
         ]
       }
@@ -1066,13 +752,6 @@ export type Database = {
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
         ]
       }
       vw_epis_vencidos: {
@@ -1100,13 +779,6 @@ export type Database = {
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
-          },
         ]
       }
       vw_relatorio_mensal_resumo: {
@@ -1131,13 +803,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_dashboard_resumo"
-            referencedColumns: ["empresa_id"]
           },
         ]
       }

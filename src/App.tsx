@@ -19,18 +19,14 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Upsell from "./pages/Upsell";
 import Blocked from "./pages/Blocked";
-import Obras from "./pages/Obras";
-import ObraDetalhe from "./pages/ObraDetalhe";
-import AlocacaoEquipe from "./pages/AlocacaoEquipe";
-import GestaoDocumentos from "./pages/GestaoDocumentos";
-import Relatorios from "./pages/Relatorios";
+import Convites from "./pages/Convites";
 import FichaIndividualEpi from "./pages/FichaIndividualEpi";
+import Relatorios from "./pages/Relatorios";
 import Requisitos from "./pages/Requisitos";
 import MeuPerfil from "./pages/MeuPerfil";
 import DadosEmpresa from "./pages/DadosEmpresa";
 import Auditoria from "./pages/Auditoria";
-import Convites from "./pages/Convites";
-import DiarioObra from "./pages/DiarioObra";
+
 
 const queryClient = new QueryClient();
 
@@ -55,12 +51,6 @@ const App = () => (
             <Route path="/setores" element={<ProtectedRoute><Setores /></ProtectedRoute>} />
             <Route path="/ficha-epi" element={<ProtectedRoute><FichaIndividualEpi /></ProtectedRoute>} />
             <Route path="/relatorios" element={<ProtectedRoute adminOnly><Relatorios /></ProtectedRoute>} />
-            {/* Engenharia e Obras */}
-            <Route path="/obras" element={<ProtectedRoute ownerOnly><Obras /></ProtectedRoute>} />
-            <Route path="/obras/:id" element={<ProtectedRoute ownerOnly><ObraDetalhe /></ProtectedRoute>} />
-            <Route path="/alocacao-equipe" element={<ProtectedRoute ownerOnly><AlocacaoEquipe /></ProtectedRoute>} />
-            <Route path="/diario-obra" element={<ProtectedRoute ownerOnly><DiarioObra /></ProtectedRoute>} />
-            <Route path="/gestao-documentos" element={<ProtectedRoute ownerOnly><GestaoDocumentos /></ProtectedRoute>} />
             {/* Pessoas */}
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/requisitos" element={<ProtectedRoute><Requisitos /></ProtectedRoute>} />
