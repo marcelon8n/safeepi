@@ -19,18 +19,7 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Upsell from "./pages/Upsell";
 import Blocked from "./pages/Blocked";
-import Obras from "./pages/Obras";
-import ObraDetalhe from "./pages/ObraDetalhe";
-import AlocacaoEquipe from "./pages/AlocacaoEquipe";
-import GestaoDocumentos from "./pages/GestaoDocumentos";
-import Relatorios from "./pages/Relatorios";
-import FichaIndividualEpi from "./pages/FichaIndividualEpi";
-import Requisitos from "./pages/Requisitos";
-import MeuPerfil from "./pages/MeuPerfil";
-import DadosEmpresa from "./pages/DadosEmpresa";
-import Auditoria from "./pages/Auditoria";
 import Convites from "./pages/Convites";
-import DiarioObra from "./pages/DiarioObra";
 
 const queryClient = new QueryClient();
 
