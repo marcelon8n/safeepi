@@ -60,20 +60,6 @@ const Colaboradores = () => {
     },
   });
 
-  const { data: historicoEpis, isLoading: histLoading } = useQuery({
-    queryKey: ["historico-epis", histColabId],
-    queryFn: async () => {
-      if (!histColabId) return [];
-      const { data, error } = await supabase
-        .from("entregas_epi")
-        .select("*, epis(nome_epi)")
-        .eq("colaborador_id", histColabId)
-        .order("data_entrega", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!histColabId,
-  });
 
   const save = useMutation({
     mutationFn: async () => {
