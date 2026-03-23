@@ -20,6 +20,13 @@ import Pricing from "./pages/Pricing";
 import Upsell from "./pages/Upsell";
 import Blocked from "./pages/Blocked";
 import Convites from "./pages/Convites";
+import FichaIndividualEpi from "./pages/FichaIndividualEpi";
+import Relatorios from "./pages/Relatorios";
+import Requisitos from "./pages/Requisitos";
+import MeuPerfil from "./pages/MeuPerfil";
+import DadosEmpresa from "./pages/DadosEmpresa";
+import Auditoria from "./pages/Auditoria";
+import GestaoDocumentos from "./pages/GestaoDocumentos";
 
 const queryClient = new QueryClient();
 

@@ -1,13 +1,11 @@
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Layers, FileText, UserPlus } from "lucide-react";
+import { Users, Layers, FileText } from "lucide-react";
 import { SetoresSection } from "@/components/admin/AdminStructure";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { useRole } from "@/hooks/useRole";
-import RoleGate from "@/components/RoleGate";
 import EquipeColaboradores from "@/components/equipe/EquipeColaboradores";
 import EquipeDocumentos from "@/components/equipe/EquipeDocumentos";
-import EquipeAlocacoes from "@/components/equipe/EquipeAlocacoes";
 
 const Equipe = () => {
   const { empresaId } = useEmpresaId();
@@ -29,10 +27,6 @@ const Equipe = () => {
             <FileText className="w-4 h-4" />
             Documentos & ASO
           </TabsTrigger>
-          <TabsTrigger value="alocacoes" className="gap-2">
-            <UserPlus className="w-4 h-4" />
-            Alocações
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="colaboradores">
@@ -43,9 +37,6 @@ const Equipe = () => {
         </TabsContent>
         <TabsContent value="documentos">
           <EquipeDocumentos canEdit={canWrite} />
-        </TabsContent>
-        <TabsContent value="alocacoes">
-          <EquipeAlocacoes canEdit={canWrite} />
         </TabsContent>
       </Tabs>
     </AppLayout>

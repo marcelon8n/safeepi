@@ -27,7 +27,7 @@ const Dashboard = () => {
     queryKey: ["vw-dashboard-resumo", empresaId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("vw_dashboard_resumo")
+        .from("vw_relatorio_mensal_resumo" as any)
         .select("*")
         .maybeSingle();
       if (error) throw error;

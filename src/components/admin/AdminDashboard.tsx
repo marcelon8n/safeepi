@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   const { data: totalObras, isLoading: l2 } = useQuery({
     queryKey: ["admin-obras-count"],
     queryFn: async () => {
-      const { count } = await supabase.from("obras").select("*", { count: "exact", head: true }).eq("status", "ativa");
+      const { count } = await supabase.from("colaboradores_obras" as any).select("*", { count: "exact", head: true }).eq("ativo", true);
       return count ?? 0;
     },
   });
