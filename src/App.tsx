@@ -26,7 +26,7 @@ import Requisitos from "./pages/Requisitos";
 import MeuPerfil from "./pages/MeuPerfil";
 import DadosEmpresa from "./pages/DadosEmpresa";
 import Auditoria from "./pages/Auditoria";
-import GestaoDocumentos from "./pages/GestaoDocumentos";
+
 
 const queryClient = new QueryClient();
 

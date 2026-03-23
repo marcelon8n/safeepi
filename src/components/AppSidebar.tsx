@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  ClipboardList, HardHat, Layers, Building2, UserPlus, BookOpen,
+  ClipboardList, HardHat, Layers,
   Users, FileCheck, Building, ScrollText, Mail,
   User, LogOut, Menu, X, ChevronDown, FileText, LayoutDashboard,
-  BarChart3, ShieldAlert, Heart
+  BarChart3, ShieldAlert
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
