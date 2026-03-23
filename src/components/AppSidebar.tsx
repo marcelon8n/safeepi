@@ -31,7 +31,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const { signOut, user } = useAuth();
   const { isEditor, isAdmin, isOwner, isSuperAdmin } = useRole();
-  const { permiteObras } = useEmpresaPlan();
+  
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
