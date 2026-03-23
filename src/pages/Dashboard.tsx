@@ -22,16 +22,23 @@ const Dashboard = () => {
   const [modalVencidos, setModalVencidos] = useState(false);
   const [modalProximos, setModalProximos] = useState(false);
 
-  // Single query from the materialized view
+  // Compute KPIs from existing tables/views
   const { data: resumo, isLoading: loadingResumo } = useQuery({
-    queryKey: ["vw-dashboard-resumo", empresaId],
+    queryKey: ["dashboard-resumo", empresaId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vw_relatorio_mensal_resumo" as any)
-        .select("*")
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+      const [colabRes, vencidosRes, vencendoRes, conformidadeRes] = await Promise.all([
+        supabase.from("colaboradores").select("*", { count: "exact", head: true }).eq("status", "ativo"),
+        supabase.from("vw_epis_vencidos").select("*", { count: "exact", head: true }),
+        supabase.from("vw_epis_vencendo_7_dias").select("*", { count: "exact", head: true }),
+        supabase.from("view_dashboard_conformidade").select("*").maybeSingle(),
+      ]);
+      return {
+        total_colaboradores_ativos: colabRes.count ?? 0,
+        total_epis_vencidos: vencidosRes.count ?? 0,
+        total_epis_vencendo_7_dias: vencendoRes.count ?? 0,
+        total_obras_ativas: 0,
+        total_pendencias_compliance: conformidadeRes.data?.colaboradores_irregulares ?? 0,
+      };
     },
     enabled: !!empresaId,
   });
