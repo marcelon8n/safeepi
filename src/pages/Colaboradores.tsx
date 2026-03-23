@@ -39,14 +39,6 @@ const Colaboradores = () => {
   const sheetColabId = searchParams.get("colaboradorId");
   const [sheetColabNome, setSheetColabNome] = useState("");
 
-  // Sync name when opening via URL param directly
-  useEffect(() => {
-    if (sheetColabId && colaboradores) {
-      const found = colaboradores.find((c) => c.id === sheetColabId);
-      if (found) setSheetColabNome(found.nome_completo);
-    }
-  }, [sheetColabId, colaboradores]);
-
   const { data: setores } = useQuery({
     queryKey: ["setores"],
     queryFn: async () => {
