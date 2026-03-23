@@ -131,9 +131,8 @@ const Colaboradores = () => {
   };
 
   const openHistorico = (c: Colaborador) => {
-    setHistColabId(c.id);
-    setHistColabNome(c.nome_completo);
-    setHistOpen(true);
+    setSheetColabNome(c.nome_completo);
+    setSearchParams({ colaboradorId: c.id });
   };
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
