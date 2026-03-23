@@ -51,15 +51,6 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: "Engenharia",
-      show: isOwner && permiteObras,
-      items: [
-        { to: "/obras", label: "Obras", icon: Building2, show: true },
-        { to: "/alocacao-equipe", label: "Alocações", icon: UserPlus, show: true },
-        { to: "/diario-obra", label: "Diário de Obra", icon: BookOpen, show: true },
-      ],
-    },
-    {
       label: "Compliance",
       show: true,
       items: [

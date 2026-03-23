@@ -44,12 +44,6 @@ const App = () => (
             <Route path="/setores" element={<ProtectedRoute><Setores /></ProtectedRoute>} />
             <Route path="/ficha-epi" element={<ProtectedRoute><FichaIndividualEpi /></ProtectedRoute>} />
             <Route path="/relatorios" element={<ProtectedRoute adminOnly><Relatorios /></ProtectedRoute>} />
-            {/* Engenharia e Obras */}
-            <Route path="/obras" element={<ProtectedRoute ownerOnly><Obras /></ProtectedRoute>} />
-            <Route path="/obras/:id" element={<ProtectedRoute ownerOnly><ObraDetalhe /></ProtectedRoute>} />
-            <Route path="/alocacao-equipe" element={<ProtectedRoute ownerOnly><AlocacaoEquipe /></ProtectedRoute>} />
-            <Route path="/diario-obra" element={<ProtectedRoute ownerOnly><DiarioObra /></ProtectedRoute>} />
-            <Route path="/gestao-documentos" element={<ProtectedRoute ownerOnly><GestaoDocumentos /></ProtectedRoute>} />
             {/* Pessoas */}
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/requisitos" element={<ProtectedRoute><Requisitos /></ProtectedRoute>} />
