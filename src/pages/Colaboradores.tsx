@@ -21,7 +21,7 @@ import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import RoleGate from "@/components/RoleGate";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
-
+import ColaboradorSheet from "@/components/colaboradores/ColaboradorSheet";
 type Colaborador = Tables<"colaboradores">;
 
 const Colaboradores = () => {
