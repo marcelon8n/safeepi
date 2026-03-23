@@ -325,59 +325,17 @@ const Colaboradores = () => {
           </CardContent>
         </Card>
 
-        {/* Modal: Histórico de EPIs (somente leitura) */}
-        <Dialog open={histOpen} onOpenChange={setHistOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Histórico de EPIs — {histColabNome}</DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[60vh] overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>EPI</TableHead>
-                    <TableHead>Data Entrega</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {histLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        {Array.from({ length: 4 }).map((_, j) => (
-                          <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : !historicoEpis?.length ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                        Nenhum registro de entrega encontrado.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    historicoEpis.map((e: any) => {
-                      const vencido = new Date(e.data_vencimento) < new Date();
-                      return (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium">{e.epis?.nome_epi ?? "—"}</TableCell>
-                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>
-                            <Badge variant={vencido ? "destructive" : e.status === "ativa" ? "default" : "secondary"}>
-                              {vencido ? "Vencido" : e.status ?? "ativa"}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ColaboradorSheet
+          colaboradorId={sheetColabId}
+          colaboradorNome={sheetColabNome}
+          open={!!sheetColabId}
+          onOpenChange={(open) => {
+            if (!open) {
+              searchParams.delete("colaboradorId");
+              setSearchParams(searchParams);
+            }
+          }}
+        />
       </div>
     </AppLayout>
   );
