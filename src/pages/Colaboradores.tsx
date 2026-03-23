@@ -28,16 +28,16 @@ const Colaboradores = () => {
   const { empresaId } = useEmpresaId();
   const { limiteColaboradores } = useEmpresaPlan();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
 
-  // Modal: histórico de EPIs
-  const [histOpen, setHistOpen] = useState(false);
-  const [histColabId, setHistColabId] = useState<string | null>(null);
-  const [histColabNome, setHistColabNome] = useState("");
+  // Sheet: controlled by URL param ?colaboradorId=UUID
+  const sheetColabId = searchParams.get("colaboradorId");
+  const [sheetColabNome, setSheetColabNome] = useState("");
 
   const { data: setores } = useQuery({
     queryKey: ["setores"],
