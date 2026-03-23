@@ -60,6 +60,13 @@ const Colaboradores = () => {
     },
   });
 
+  // Sync name when opening via URL param directly
+  useEffect(() => {
+    if (sheetColabId && colaboradores) {
+      const found = colaboradores.find((c) => c.id === sheetColabId);
+      if (found) setSheetColabNome(found.nome_completo);
+    }
+  }, [sheetColabId, colaboradores]);
 
   const save = useMutation({
     mutationFn: async () => {
