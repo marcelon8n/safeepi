@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ClipboardList, HardHat, Layers, Building2, UserPlus, BookOpen,
-  Users, FileCheck, ShieldCheck, Building, ScrollText, Mail,
+  Users, FileCheck, Building, ScrollText, Mail,
   User, LogOut, Menu, X, ChevronDown, FileText, LayoutDashboard,
-  BarChart3, DollarSign, CalendarDays, ShieldAlert
+  BarChart3, ShieldAlert, Heart
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -18,7 +18,6 @@ interface NavGroup {
   label: string;
   items: NavItem[];
   show: boolean;
-  defaultOpen?: boolean;
 }
 
 interface NavItem {
@@ -41,7 +40,7 @@ const AppSidebar = () => {
 
   const groups: NavGroup[] = [
     {
-      label: "Gestão Operacional",
+      label: "Operacional",
       show: true,
       items: [
         { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
@@ -49,11 +48,10 @@ const AppSidebar = () => {
         { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
         { to: "/setores", label: "Setores", icon: Layers, show: true },
         { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
-        { to: "/relatorios", label: "Relatórios", icon: BarChart3, show: isAdmin },
       ],
     },
     {
-      label: "Engenharia e Obras",
+      label: "Engenharia",
       show: isOwner && permiteObras,
       items: [
         { to: "/obras", label: "Obras", icon: Building2, show: true },
@@ -62,17 +60,18 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: "Pessoas",
+      label: "Compliance",
       show: true,
       items: [
         { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
-        { to: "/requisitos", label: "Requisitos", icon: FileCheck, show: true },
+        { to: "/requisitos", label: "Requisitos / ASO", icon: FileCheck, show: true },
       ],
     },
     {
-      label: "Administração",
+      label: "Gestão",
       show: isAdmin,
       items: [
+        { to: "/relatorios", label: "Relatórios", icon: BarChart3, show: isAdmin },
         { to: "/admin", label: "Painel Estratégico", icon: ShieldAlert, show: isOwner },
         { to: "/meu-perfil", label: "Meu Perfil", icon: User, show: true },
         { to: "/dados-empresa", label: "Dados da Empresa", icon: Building, show: isOwner },
