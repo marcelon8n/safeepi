@@ -2,17 +2,19 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
-import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, Plus, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, Plus, ArrowRight, CheckCircle2, Users, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
 import { format, differenceInDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { ptBR } from "date-fns/locale";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { empresaId } = useEmpresaId();
@@ -20,7 +22,21 @@ const Dashboard = () => {
   const [modalVencidos, setModalVencidos] = useState(false);
   const [modalProximos, setModalProximos] = useState(false);
 
-  // EPIs vencidos (view dedicada)
+  // Single query from the materialized view
+  const { data: resumo, isLoading: loadingResumo } = useQuery({
+    queryKey: ["vw-dashboard-resumo", empresaId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("vw_dashboard_resumo")
+        .select("*")
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!empresaId,
+  });
+
+  // Detail views for modals (lazy-loaded on click)
   const { data: episVencidosView, isLoading: loadingVencidosView } = useQuery({
     queryKey: ["vw-epis-vencidos", empresaId],
     queryFn: async () => {
@@ -28,11 +44,21 @@ const Dashboard = () => {
       if (error) throw error;
       return data ?? [];
     },
-    enabled: !!empresaId,
+    enabled: !!empresaId && modalVencidos,
   });
 
-  // EPIs vencidos (from v_alertas_vencimento where data_vencimento < today and status_troca = pendente)
-  const { data: alertasVencimento, isLoading: loadingAlertas } = useQuery({
+  const { data: vencendo7dias, isLoading: loading7dias } = useQuery({
+    queryKey: ["vw-epis-vencendo-7-dias", empresaId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vw_epis_vencendo_7_dias").select("*");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!empresaId && modalProximos,
+  });
+
+  // Priority list for table
+  const { data: alertasVencimento } = useQuery({
     queryKey: ["v-alertas-vencimento", empresaId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -45,73 +71,56 @@ const Dashboard = () => {
     enabled: !!empresaId,
   });
 
-  // EPIs vencendo em 7 dias
-  const { data: vencendo7dias, isLoading: loading7dias } = useQuery({
-    queryKey: ["vw-epis-vencendo-7-dias", empresaId],
+  const { data: vencendo7diasTable } = useQuery({
+    queryKey: ["vw-epis-vencendo-7-dias-table", empresaId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vw_epis_vencendo_7_dias")
-        .select("*");
+      const { data, error } = await supabase.from("vw_epis_vencendo_7_dias").select("*");
       if (error) throw error;
       return data ?? [];
     },
     enabled: !!empresaId,
   });
 
-  // Total colaboradores ativos
-  const { data: totalColaboradores } = useQuery({
-    queryKey: ["colaboradores-ativos-count", empresaId],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("colaboradores")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "ativo");
-      return count ?? 0;
-    },
-    enabled: !!empresaId,
-  });
+  const totalVencidos = resumo?.total_epis_vencidos ?? 0;
+  const totalVencendo = resumo?.total_epis_vencendo_7_dias ?? 0;
+  const totalColaboradores = resumo?.total_colaboradores_ativos ?? 0;
+  const totalObras = resumo?.total_obras_ativas ?? 0;
+  const totalPendencias = resumo?.total_pendencias_compliance ?? 0;
 
-  // Colaboradores com EPIs em dia (sem nenhuma entrega vencida pendente)
+  // Índice de segurança based on resumo
+  const indiceSeg = totalColaboradores > 0
+    ? Math.max(0, Math.round(((totalColaboradores - totalPendencias) / totalColaboradores) * 100))
+    : 100;
+
+  // Priority list
   const episVencidos = alertasVencimento?.filter((a) => a.data_vencimento && a.data_vencimento < today) ?? [];
-  const colaboradoresComVencido = new Set(episVencidos.map((e) => e.colaborador_id).filter(Boolean));
-  const totalAtivos = totalColaboradores ?? 0;
-  const colaboradoresEmDia = Math.max(0, totalAtivos - colaboradoresComVencido.size);
-  const indiceSeg = totalAtivos > 0 ? Math.round((colaboradoresEmDia / totalAtivos) * 100) : 100;
-
-  // Priority list: vencidos + vencendo 7 dias, sorted by urgency
   const prioridades = [
     ...episVencidos.map((e) => ({ ...e, tipo: "vencido" as const })),
-    ...(vencendo7dias ?? []).map((e) => ({ ...e, tipo: "vencendo" as const })),
+    ...(vencendo7diasTable ?? []).map((e) => ({ ...e, tipo: "vencendo" as const })),
   ].sort((a, b) => {
     const da = a.data_vencimento ?? "9999-12-31";
     const db = b.data_vencimento ?? "9999-12-31";
     return da.localeCompare(db);
   });
 
-  const isLoading = loadingAlertas || loading7dias;
-  const allClear = episVencidos.length === 0 && (vencendo7dias?.length ?? 0) === 0;
+  const isLoading = loadingResumo;
+  const allClear = totalVencidos === 0 && totalVencendo === 0;
 
   return (
     <AppLayout title="Dashboard" description="Visão executiva de risco e conformidade">
-      {/* Header with CTA */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Painel de Conformidade</h2>
           <p className="text-sm text-muted-foreground mt-1">Monitore os riscos de segurança da sua empresa em tempo real</p>
         </div>
-        <Button
-          size="lg"
-          className="gap-2 shadow-md"
-          onClick={() => navigate("/entregas")}
-        >
+        <Button size="lg" className="gap-2 shadow-md" onClick={() => navigate("/entregas")}>
           <Plus className="w-5 h-5" />
           Novo Registro de Entrega
         </Button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-        {/* Card 1 - EPIs Vencidos (Red) */}
+      {/* KPI Cards - Main Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
         <Card
           className="border-2 border-destructive/40 bg-destructive/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => setModalVencidos(true)}
@@ -121,7 +130,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground font-medium">EPIs Vencidos</p>
                 <p className="text-4xl font-bold mt-1 text-destructive">
-                  {isLoading ? "—" : episVencidos.length}
+                  {isLoading ? <Skeleton className="h-10 w-16 inline-block" /> : totalVencidos}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
@@ -132,7 +141,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Card 2 - Trocas Próximas (Yellow) */}
         <Card
           className="border-2 border-warning/40 bg-warning/5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => setModalProximos(true)}
@@ -142,7 +150,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground font-medium">Trocas Próximas (7 dias)</p>
                 <p className="text-4xl font-bold mt-1 text-warning">
-                  {isLoading ? "—" : vencendo7dias?.length ?? 0}
+                  {isLoading ? <Skeleton className="h-10 w-16 inline-block" /> : totalVencendo}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Clique para ver detalhes</p>
               </div>
@@ -153,31 +161,54 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Card 3 - Índice de Segurança (Green) */}
         <Card className="border-2 border-success/40 bg-success/5 shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">Índice de Segurança</p>
                 <p className="text-4xl font-bold mt-1 text-success">
-                  {isLoading ? "—" : `${indiceSeg}%`}
+                  {isLoading ? <Skeleton className="h-10 w-16 inline-block" /> : `${indiceSeg}%`}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {colaboradoresEmDia}/{totalAtivos} colaboradores em dia
+                  {totalColaboradores} colaboradores ativos
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-success/10 text-success">
                 <ShieldCheck className="w-7 h-7" />
               </div>
             </div>
-            {!isLoading && (
-              <Progress value={indiceSeg} className="mt-3 h-2" />
-            )}
+            {!isLoading && <Progress value={indiceSeg} className="mt-3 h-2" />}
           </CardContent>
         </Card>
       </div>
 
-      {/* Action Table or Empty State */}
+      {/* Secondary KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-5 mb-8">
+        <Card className="shadow-sm">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Colaboradores Ativos</p>
+              <p className="text-2xl font-bold">{isLoading ? "—" : totalColaboradores}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Obras Ativas</p>
+              <p className="text-2xl font-bold">{isLoading ? "—" : totalObras}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Priority Table */}
       {isLoading ? (
         <Card className="shadow-sm">
           <CardContent className="p-10 text-center text-muted-foreground">
@@ -227,9 +258,7 @@ const Dashboard = () => {
 
                     return (
                       <TableRow key={`${item.entrega_id}-${idx}`}>
-                        <TableCell className="font-medium">
-                          {item.colaborador_nome ?? "—"}
-                        </TableCell>
+                        <TableCell className="font-medium">{item.colaborador_nome ?? "—"}</TableCell>
                         <TableCell>
                           <div>
                             <span>{item.epi_nome ?? "—"}</span>
@@ -239,9 +268,7 @@ const Dashboard = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {vencDate
-                            ? format(vencDate, "dd/MM/yyyy", { locale: ptBR })
-                            : "—"}
+                          {vencDate ? format(vencDate, "dd/MM/yyyy", { locale: ptBR }) : "—"}
                         </TableCell>
                         <TableCell>
                           {isVencido ? (
@@ -255,12 +282,7 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1"
-                            onClick={() => navigate("/entregas")}
-                          >
+                          <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate("/entregas")}>
                             Registrar Troca
                             <ArrowRight className="w-3 h-3" />
                           </Button>

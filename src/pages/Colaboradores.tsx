@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,23 +21,23 @@ import { useEmpresaPlan } from "@/hooks/useEmpresaPlan";
 import RoleGate from "@/components/RoleGate";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
-
+import ColaboradorSheet from "@/components/colaboradores/ColaboradorSheet";
 type Colaborador = Tables<"colaboradores">;
 
 const Colaboradores = () => {
   const { empresaId } = useEmpresaId();
   const { limiteColaboradores } = useEmpresaPlan();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
 
-  // Modal: histórico de EPIs
-  const [histOpen, setHistOpen] = useState(false);
-  const [histColabId, setHistColabId] = useState<string | null>(null);
-  const [histColabNome, setHistColabNome] = useState("");
+  // Sheet: controlled by URL param ?colaboradorId=UUID
+  const sheetColabId = searchParams.get("colaboradorId");
+  const [sheetColabNome, setSheetColabNome] = useState("");
 
   const { data: setores } = useQuery({
     queryKey: ["setores"],
@@ -59,20 +60,13 @@ const Colaboradores = () => {
     },
   });
 
-  const { data: historicoEpis, isLoading: histLoading } = useQuery({
-    queryKey: ["historico-epis", histColabId],
-    queryFn: async () => {
-      if (!histColabId) return [];
-      const { data, error } = await supabase
-        .from("entregas_epi")
-        .select("*, epis(nome_epi)")
-        .eq("colaborador_id", histColabId)
-        .order("data_entrega", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!histColabId,
-  });
+  // Sync name when opening via URL param directly
+  useEffect(() => {
+    if (sheetColabId && colaboradores) {
+      const found = colaboradores.find((c) => c.id === sheetColabId);
+      if (found) setSheetColabNome(found.nome_completo);
+    }
+  }, [sheetColabId, colaboradores]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -144,9 +138,8 @@ const Colaboradores = () => {
   };
 
   const openHistorico = (c: Colaborador) => {
-    setHistColabId(c.id);
-    setHistColabNome(c.nome_completo);
-    setHistOpen(true);
+    setSheetColabNome(c.nome_completo);
+    setSearchParams({ colaboradorId: c.id });
   };
 
   const getSetorNome = (c: any) => c.setores?.nome ?? "—";
@@ -339,59 +332,17 @@ const Colaboradores = () => {
           </CardContent>
         </Card>
 
-        {/* Modal: Histórico de EPIs (somente leitura) */}
-        <Dialog open={histOpen} onOpenChange={setHistOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Histórico de EPIs — {histColabNome}</DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[60vh] overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>EPI</TableHead>
-                    <TableHead>Data Entrega</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {histLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        {Array.from({ length: 4 }).map((_, j) => (
-                          <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : !historicoEpis?.length ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                        Nenhum registro de entrega encontrado.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    historicoEpis.map((e: any) => {
-                      const vencido = new Date(e.data_vencimento) < new Date();
-                      return (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium">{e.epis?.nome_epi ?? "—"}</TableCell>
-                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>
-                            <Badge variant={vencido ? "destructive" : e.status === "ativa" ? "default" : "secondary"}>
-                              {vencido ? "Vencido" : e.status ?? "ativa"}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ColaboradorSheet
+          colaboradorId={sheetColabId}
+          colaboradorNome={sheetColabNome}
+          open={!!sheetColabId}
+          onOpenChange={(open) => {
+            if (!open) {
+              searchParams.delete("colaboradorId");
+              setSearchParams(searchParams);
+            }
+          }}
+        />
       </div>
     </AppLayout>
   );
