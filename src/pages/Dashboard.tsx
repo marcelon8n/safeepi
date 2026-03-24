@@ -115,15 +115,9 @@ const Dashboard = () => {
 
   return (
     <AppLayout title="Dashboard" description="Visão executiva de risco e conformidade">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Painel de Conformidade</h2>
-          <p className="text-sm text-muted-foreground mt-1">Monitore os riscos de segurança da sua empresa em tempo real</p>
-        </div>
-        <Button size="lg" className="gap-2 shadow-md" onClick={() => navigate("/entregas")}>
-          <Plus className="w-5 h-5" />
-          Novo Registro de Entrega
-        </Button>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-foreground">Painel de Conformidade</h2>
+        <p className="text-sm text-muted-foreground mt-1">Monitore os riscos de segurança da sua empresa em tempo real</p>
       </div>
 
       {/* KPI Cards - Main Row */}
