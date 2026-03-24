@@ -16,6 +16,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   ClipboardList,
   AlertTriangle,
   CalendarClock,
@@ -76,7 +82,7 @@ const Relatorios = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entregas_epi")
-        .select("*, colaboradores(nome_completo), epis(nome_epi, custo_estimado)")
+        .select("*, colaboradores(nome_completo, setores(nome)), epis(nome_epi, custo_estimado)")
         .eq("empresa_id", empresaId!)
         .order("data_entrega", { ascending: false })
         .limit(500);
@@ -121,27 +127,56 @@ const Relatorios = () => {
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
   // ---- Previsão financeira (pro) com breakdown ----
-  const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
-    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; ca: string; qtd: number; custoUnitario: number; subtotal: number }[] };
+  type EpiItem = { nome: string; qtd: number; custoUnitario: number; subtotal: number };
+  type SetorGroup = { setor: string; subtotal: number; epis: EpiItem[] };
+
+  const { previsaoFinanceira, custoBreakdown, custoPorSetor } = useMemo(() => {
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as EpiItem[], custoPorSetor: [] as SetorGroup[] };
     const aVencer = entregas.filter((e) => {
       const dv = new Date(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     });
-    const groups: Record<string, { ca: string; qtd: number; custoUnitario: number; subtotal: number }> = {};
+
+    // Flat breakdown (for CSV export)
+    const flatGroups: Record<string, { qtd: number; custoUnitario: number; subtotal: number }> = {};
+    // Setor → EPI breakdown
+    const setorMap: Record<string, Record<string, { qtd: number; custoUnitario: number; subtotal: number }>> = {};
     let total = 0;
+
     aVencer.forEach((e) => {
       const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
       const custo = Number((e as any).epis?.custo_estimado) || 0;
-      const ca = e.ca_numero_entregue ?? "—";
-      if (!groups[nome]) groups[nome] = { ca, qtd: 0, custoUnitario: custo, subtotal: 0 };
-      groups[nome].qtd += 1;
-      groups[nome].subtotal += custo;
+      const setorNome = (e as any).colaboradores?.setores?.nome ?? "Sem Setor";
+
+      // Flat
+      if (!flatGroups[nome]) flatGroups[nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      flatGroups[nome].qtd += 1;
+      flatGroups[nome].subtotal += custo;
+
+      // By setor
+      if (!setorMap[setorNome]) setorMap[setorNome] = {};
+      if (!setorMap[setorNome][nome]) setorMap[setorNome][nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      setorMap[setorNome][nome].qtd += 1;
+      setorMap[setorNome][nome].subtotal += custo;
+
       total += custo;
     });
-    const breakdown = Object.entries(groups)
+
+    const breakdown = Object.entries(flatGroups)
       .map(([nome, v]) => ({ nome, ...v }))
       .sort((a, b) => b.subtotal - a.subtotal);
-    return { previsaoFinanceira: total, custoBreakdown: breakdown };
+
+    const porSetor: SetorGroup[] = Object.entries(setorMap)
+      .map(([setor, episMap]) => {
+        const epis = Object.entries(episMap)
+          .map(([nome, v]) => ({ nome, ...v }))
+          .sort((a, b) => b.subtotal - a.subtotal);
+        const subtotal = epis.reduce((s, e) => s + e.subtotal, 0);
+        return { setor, subtotal, epis };
+      })
+      .sort((a, b) => b.subtotal - a.subtotal);
+
+    return { previsaoFinanceira: total, custoBreakdown: breakdown, custoPorSetor: porSetor };
   }, [entregas]);
 
   // ---- Gráfico de motivos ----
@@ -201,9 +236,11 @@ const Relatorios = () => {
       toast.error("Não há dados de previsão de custos para exportar.");
       return;
     }
-    const header = "Nome do EPI;CA;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
-    const rows = custoBreakdown.map((item) =>
-      `${item.nome};${item.ca};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+    const header = "Setor;Nome do EPI;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
+    const rows = custoPorSetor.flatMap((s) =>
+      s.epis.map((item) =>
+        `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+      )
     );
     const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -214,7 +251,7 @@ const Relatorios = () => {
     link.click();
     URL.revokeObjectURL(url);
     toast.success("Planilha de custos exportada com sucesso!");
-  }, [custoBreakdown, today]);
+  }, [custoPorSetor, today]);
 
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
@@ -322,7 +359,7 @@ const Relatorios = () => {
                     </CardTitle>
                     <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoBreakdown.length === 0} onClick={handleExportCustosCSV}>
+                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoPorSetor.length === 0} onClick={handleExportCustosCSV}>
                     <Download className="w-4 h-4" /> Exportar Planilha
                   </Button>
                 </CardHeader>
@@ -334,20 +371,34 @@ const Relatorios = () => {
                       <p className="text-3xl font-bold text-primary">
                         {formatBRL(previsaoFinanceira)}
                       </p>
-                      {custoBreakdown.length > 0 && (
+                      {custoPorSetor.length > 0 && (
                         <>
                           <Separator className="my-3" />
-                          <ScrollArea className="max-h-[200px]">
-                            <ul className="space-y-2">
-                              {custoBreakdown.map((item) => (
-                                <li key={item.nome} className="flex items-center justify-between text-sm">
-                                  <span className="text-muted-foreground truncate mr-2">
-                                    {item.nome} <span className="text-xs">({item.qtd}x)</span>
-                                  </span>
-                                  <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
-                                </li>
+                          <ScrollArea className="max-h-[320px]">
+                            <Accordion type="multiple" className="w-full">
+                              {custoPorSetor.map((s) => (
+                                <AccordionItem key={s.setor} value={s.setor} className="border-b-0">
+                                  <AccordionTrigger className="py-2 text-sm hover:no-underline">
+                                    <div className="flex items-center justify-between w-full mr-2">
+                                      <span className="font-semibold">{s.setor}</span>
+                                      <Badge variant="secondary" className="ml-2 font-mono text-xs">{formatBRL(s.subtotal)}</Badge>
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="pb-2 pl-4">
+                                    <ul className="space-y-1.5">
+                                      {s.epis.map((item) => (
+                                        <li key={item.nome} className="flex items-center justify-between text-sm">
+                                          <span className="text-muted-foreground truncate mr-2">
+                                            {item.nome} <span className="text-xs">({item.qtd}x)</span>
+                                          </span>
+                                          <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </AccordionContent>
+                                </AccordionItem>
                               ))}
-                            </ul>
+                            </Accordion>
                           </ScrollArea>
                         </>
                       )}
