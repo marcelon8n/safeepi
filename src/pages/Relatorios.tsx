@@ -82,7 +82,7 @@ const Relatorios = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entregas_epi")
-        .select("*, colaboradores(nome_completo), epis(nome_epi, custo_estimado)")
+        .select("*, colaboradores(nome_completo, setores(nome)), epis(nome_epi, custo_estimado)")
         .eq("empresa_id", empresaId!)
         .order("data_entrega", { ascending: false })
         .limit(500);
