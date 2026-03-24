@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
-import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, Plus, ArrowRight, CheckCircle2, Users, Building2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, CheckCircle2, Users, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
