@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
-import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, Plus, ArrowRight, CheckCircle2, Users, Building2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, AlertTriangle, Clock, CheckCircle2, Users, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
 import { format, differenceInDays } from "date-fns";
-import { useNavigate } from "react-router-dom";
+
 import { ptBR } from "date-fns/locale";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  
   const { empresaId } = useEmpresaId();
   const today = new Date().toISOString().split("T")[0];
   const [modalVencidos, setModalVencidos] = useState(false);
@@ -115,15 +115,9 @@ const Dashboard = () => {
 
   return (
     <AppLayout title="Dashboard" description="Visão executiva de risco e conformidade">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Painel de Conformidade</h2>
-          <p className="text-sm text-muted-foreground mt-1">Monitore os riscos de segurança da sua empresa em tempo real</p>
-        </div>
-        <Button size="lg" className="gap-2 shadow-md" onClick={() => navigate("/entregas")}>
-          <Plus className="w-5 h-5" />
-          Novo Registro de Entrega
-        </Button>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-foreground">Painel de Conformidade</h2>
+        <p className="text-sm text-muted-foreground mt-1">Monitore os riscos de segurança da sua empresa em tempo real</p>
       </div>
 
       {/* KPI Cards - Main Row */}
@@ -254,7 +248,7 @@ const Dashboard = () => {
                     <TableHead>EPI</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ação</TableHead>
+                    
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -287,12 +281,6 @@ const Dashboard = () => {
                               Vence em {dias} dias
                             </Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate("/entregas")}>
-                            Registrar Troca
-                            <ArrowRight className="w-3 h-3" />
-                          </Button>
                         </TableCell>
                       </TableRow>
                     );
