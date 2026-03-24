@@ -22,7 +22,7 @@ import Blocked from "./pages/Blocked";
 import Convites from "./pages/Convites";
 import FichaIndividualEpi from "./pages/FichaIndividualEpi";
 import Relatorios from "./pages/Relatorios";
-import Requisitos from "./pages/Requisitos";
+
 import MeuPerfil from "./pages/MeuPerfil";
 import DadosEmpresa from "./pages/DadosEmpresa";
 import Auditoria from "./pages/Auditoria";
