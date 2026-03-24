@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
 import { format, differenceInDays } from "date-fns";
-import { useNavigate } from "react-router-dom";
+
 import { ptBR } from "date-fns/locale";
 
 const Dashboard = () => {
