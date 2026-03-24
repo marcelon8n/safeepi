@@ -248,7 +248,7 @@ const Dashboard = () => {
                     <TableHead>EPI</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ação</TableHead>
+                    
                   </TableRow>
                 </TableHeader>
                 <TableBody>
