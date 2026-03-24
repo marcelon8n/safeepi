@@ -15,12 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   ClipboardList,
   AlertTriangle,
@@ -36,7 +31,18 @@ import {
   Download,
 } from "lucide-react";
 import { format, addDays, isBefore, isAfter, startOfMonth, endOfMonth } from "date-fns";
-import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import {
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
 const MOTIVO_LABELS: Record<string, string> = {
   entrega_inicial: "Entrega Inicial",
@@ -47,11 +53,11 @@ const MOTIVO_LABELS: Record<string, string> = {
 };
 
 const PIE_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--destructive))",
-  "hsl(var(--accent))",
-  "hsl(210 60% 50%)",
-  "hsl(40 80% 50%)",
+  "hsl(var(--primary))", // Mantém a sua cor principal (provavelmente azul ou preto)
+  "hsl(var(--destructive))", // Mantém o vermelho (ótimo para "perda" ou "dano")
+  "#8b5cf6", // Roxo vibrante (Substituiu o cinza claro do --accent)
+  "hsl(210 60% 50%)", // Mantém o azul intermediário
+  "hsl(40 80% 50%)", // Mantém o tom mostarda/dourado
 ];
 
 const Relatorios = () => {
@@ -115,7 +121,9 @@ const Relatorios = () => {
       const d = new Date(e.data_entrega);
       return d >= monthStart && d <= monthEnd;
     }).length;
-    const vencidos = entregas.filter((e) => isBefore(new Date(e.data_vencimento), today) && e.status === "ativa").length;
+    const vencidos = entregas.filter(
+      (e) => isBefore(new Date(e.data_vencimento), today) && e.status === "ativa",
+    ).length;
     const aVencer30 = entregas.filter((e) => {
       const dv = new Date(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
@@ -123,8 +131,7 @@ const Relatorios = () => {
     return { totalMes, vencidos, aVencer30 };
   }, [entregas]);
 
-  const formatBRL = (v: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
   // ---- Previsão financeira (pro) com breakdown ----
   type EpiItem = { nome: string; qtd: number; custoUnitario: number; subtotal: number };
@@ -238,9 +245,10 @@ const Relatorios = () => {
     }
     const header = "Setor;Nome do EPI;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
     const rows = custoPorSetor.flatMap((s) =>
-      s.epis.map((item) =>
-        `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
-      )
+      s.epis.map(
+        (item) =>
+          `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`,
+      ),
     );
     const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -270,9 +278,26 @@ const Relatorios = () => {
 
           {/* KPI Cards */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-            <KpiCard title="Entregas no Mês" value={kpis.totalMes} icon={<ClipboardList className="w-5 h-5 text-primary" />} loading={isLoading} />
-            <KpiCard title="EPIs Vencidos" value={kpis.vencidos} icon={<AlertTriangle className="w-5 h-5 text-destructive" />} loading={isLoading} variant="destructive" />
-            <KpiCard title="A Vencer (30 dias)" value={kpis.aVencer30} icon={<CalendarClock className="w-5 h-5 text-amber-500" />} loading={isLoading} variant="warning" />
+            <KpiCard
+              title="Entregas no Mês"
+              value={kpis.totalMes}
+              icon={<ClipboardList className="w-5 h-5 text-primary" />}
+              loading={isLoading}
+            />
+            <KpiCard
+              title="EPIs Vencidos"
+              value={kpis.vencidos}
+              icon={<AlertTriangle className="w-5 h-5 text-destructive" />}
+              loading={isLoading}
+              variant="destructive"
+            />
+            <KpiCard
+              title="A Vencer (30 dias)"
+              value={kpis.aVencer30}
+              icon={<CalendarClock className="w-5 h-5 text-amber-500" />}
+              loading={isLoading}
+              variant="warning"
+            />
           </div>
 
           {/* Entregas Recentes */}
@@ -292,31 +317,37 @@ const Relatorios = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoading
-                    ? Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                          {Array.from({ length: 5 }).map((_, j) => (
-                            <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : recentes.length === 0
-                    ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma entrega encontrada.</TableCell>
-                      </TableRow>
-                    )
-                    : recentes.map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell className="font-medium">{(e as any).colaboradores?.nome_completo ?? "—"}</TableCell>
-                          <TableCell>{(e as any).epis?.nome_epi ?? "—"}</TableCell>
-                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{MOTIVO_LABELS[e.motivo_entrega ?? "entrega_inicial"] ?? e.motivo_entrega}</Badge>
+                  {isLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 5 }).map((_, j) => (
+                          <TableCell key={j}>
+                            <Skeleton className="h-4 w-24" />
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : recentes.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        Nenhuma entrega encontrada.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    recentes.map((e) => (
+                      <TableRow key={e.id}>
+                        <TableCell className="font-medium">{(e as any).colaboradores?.nome_completo ?? "—"}</TableCell>
+                        <TableCell>{(e as any).epis?.nome_epi ?? "—"}</TableCell>
+                        <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
+                        <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {MOTIVO_LABELS[e.motivo_entrega ?? "entrega_inicial"] ?? e.motivo_entrega}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -327,7 +358,11 @@ const Relatorios = () => {
         <section className="space-y-4 relative">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" /> Relatórios Avançados
-            {!isPro && <Badge variant="secondary" className="ml-2 gap-1"><Lock className="w-3 h-3" /> Pro</Badge>}
+            {!isPro && (
+              <Badge variant="secondary" className="ml-2 gap-1">
+                <Lock className="w-3 h-3" /> Pro
+              </Badge>
+            )}
           </h2>
 
           {/* Overlay de bloqueio */}
@@ -339,7 +374,8 @@ const Relatorios = () => {
                 </div>
                 <h3 className="text-xl font-bold">Desbloqueie Relatórios Avançados</h3>
                 <p className="text-muted-foreground text-sm">
-                  Dossiês Jurídicos, Previsão Financeira e Análise de Desperdícios estão disponíveis nos planos Pro e Premium.
+                  Dossiês Jurídicos, Previsão Financeira e Análise de Desperdícios estão disponíveis nos planos Pro e
+                  Premium.
                 </p>
                 <Button onClick={() => navigate("/precos")} size="lg" className="gap-2">
                   <TrendingUp className="w-4 h-4" /> Fazer Upgrade
@@ -359,7 +395,13 @@ const Relatorios = () => {
                     </CardTitle>
                     <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoPorSetor.length === 0} onClick={handleExportCustosCSV}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 shrink-0"
+                    disabled={!isPro || custoPorSetor.length === 0}
+                    onClick={handleExportCustosCSV}
+                  >
                     <Download className="w-4 h-4" /> Exportar Planilha
                   </Button>
                 </CardHeader>
@@ -368,9 +410,7 @@ const Relatorios = () => {
                     <Skeleton className="h-10 w-40" />
                   ) : (
                     <div>
-                      <p className="text-3xl font-bold text-primary">
-                        {formatBRL(previsaoFinanceira)}
-                      </p>
+                      <p className="text-3xl font-bold text-primary">{formatBRL(previsaoFinanceira)}</p>
                       {custoPorSetor.length > 0 && (
                         <>
                           <Separator className="my-3" />
@@ -381,7 +421,9 @@ const Relatorios = () => {
                                   <AccordionTrigger className="py-2 text-sm hover:no-underline">
                                     <div className="flex items-center justify-between w-full mr-2">
                                       <span className="font-semibold">{s.setor}</span>
-                                      <Badge variant="secondary" className="ml-2 font-mono text-xs">{formatBRL(s.subtotal)}</Badge>
+                                      <Badge variant="secondary" className="ml-2 font-mono text-xs">
+                                        {formatBRL(s.subtotal)}
+                                      </Badge>
                                     </div>
                                   </AccordionTrigger>
                                   <AccordionContent className="pb-2 pl-4">
@@ -391,7 +433,9 @@ const Relatorios = () => {
                                           <span className="text-muted-foreground truncate mr-2">
                                             {item.nome} <span className="text-xs">({item.qtd}x)</span>
                                           </span>
-                                          <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
+                                          <span className="font-medium whitespace-nowrap">
+                                            {formatBRL(item.subtotal)}
+                                          </span>
                                         </li>
                                       ))}
                                     </ul>
@@ -417,11 +461,21 @@ const Relatorios = () => {
                 </CardHeader>
                 <CardContent>
                   {isLoading || motivoData.length === 0 ? (
-                    <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Sem dados suficientes.</div>
+                    <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                      Sem dados suficientes.
+                    </div>
                   ) : (
                     <ResponsiveContainer width="100%" height={200}>
                       <RechartsPie>
-                        <Pie data={motivoData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        <Pie
+                          data={motivoData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={70}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
                           {motivoData.map((_, i) => (
                             <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                           ))}
@@ -464,31 +518,39 @@ const Relatorios = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {isPro && loadingCompliance
-                      ? Array.from({ length: 5 }).map((_, i) => (
-                          <TableRow key={i}>
-                            {Array.from({ length: 5 }).map((_, j) => (
-                              <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
-                            ))}
-                          </TableRow>
-                        ))
-                      : isPro && complianceEntregas && complianceEntregas.length > 0
-                      ? complianceEntregas.slice(0, 20).map((e) => (
-                          <TableRow key={e.id}>
-                            <TableCell className="font-medium">{(e as any).colaboradores?.nome_completo ?? "—"}</TableCell>
-                            <TableCell>{(e as any).epis?.nome_epi ?? "—"}</TableCell>
-                            <TableCell><Badge variant="outline">{e.ca_numero_entregue ?? "—"}</Badge></TableCell>
-                            <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                            <TableCell className="font-mono text-xs text-muted-foreground">
-                              {e.hash_registro ? `${e.hash_registro.slice(0, 4)}...${e.hash_registro.slice(-4)}` : "—"}
+                    {isPro && loadingCompliance ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array.from({ length: 5 }).map((_, j) => (
+                            <TableCell key={j}>
+                              <Skeleton className="h-4 w-20" />
                             </TableCell>
-                          </TableRow>
-                        ))
-                      : (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Sem dados de compliance.</TableCell>
+                          ))}
                         </TableRow>
-                      )}
+                      ))
+                    ) : isPro && complianceEntregas && complianceEntregas.length > 0 ? (
+                      complianceEntregas.slice(0, 20).map((e) => (
+                        <TableRow key={e.id}>
+                          <TableCell className="font-medium">
+                            {(e as any).colaboradores?.nome_completo ?? "—"}
+                          </TableCell>
+                          <TableCell>{(e as any).epis?.nome_epi ?? "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{e.ca_numero_entregue ?? "—"}</Badge>
+                          </TableCell>
+                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {e.hash_registro ? `${e.hash_registro.slice(0, 4)}...${e.hash_registro.slice(-4)}` : "—"}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Sem dados de compliance.
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -501,17 +563,31 @@ const Relatorios = () => {
 };
 
 // ---- Sub-component ----
-function KpiCard({ title, value, icon, loading, variant }: { title: string; value: number; icon: React.ReactNode; loading: boolean; variant?: string }) {
+function KpiCard({
+  title,
+  value,
+  icon,
+  loading,
+  variant,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  loading: boolean;
+  variant?: string;
+}) {
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-5">
-        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-          {icon}
-        </div>
+        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted flex items-center justify-center">{icon}</div>
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
-          {loading ? <Skeleton className="h-7 w-12 mt-1" /> : (
-            <p className={`text-2xl font-bold ${variant === "destructive" ? "text-destructive" : variant === "warning" ? "text-amber-500" : ""}`}>
+          {loading ? (
+            <Skeleton className="h-7 w-12 mt-1" />
+          ) : (
+            <p
+              className={`text-2xl font-bold ${variant === "destructive" ? "text-destructive" : variant === "warning" ? "text-amber-500" : ""}`}
+            >
               {value}
             </p>
           )}
