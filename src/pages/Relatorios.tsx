@@ -127,27 +127,56 @@ const Relatorios = () => {
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
   // ---- Previsão financeira (pro) com breakdown ----
-  const { previsaoFinanceira, custoBreakdown } = useMemo(() => {
-    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as { nome: string; ca: string; qtd: number; custoUnitario: number; subtotal: number }[] };
+  type EpiItem = { nome: string; qtd: number; custoUnitario: number; subtotal: number };
+  type SetorGroup = { setor: string; subtotal: number; epis: EpiItem[] };
+
+  const { previsaoFinanceira, custoBreakdown, custoPorSetor } = useMemo(() => {
+    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as EpiItem[], custoPorSetor: [] as SetorGroup[] };
     const aVencer = entregas.filter((e) => {
       const dv = new Date(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     });
-    const groups: Record<string, { ca: string; qtd: number; custoUnitario: number; subtotal: number }> = {};
+
+    // Flat breakdown (for CSV export)
+    const flatGroups: Record<string, { qtd: number; custoUnitario: number; subtotal: number }> = {};
+    // Setor → EPI breakdown
+    const setorMap: Record<string, Record<string, { qtd: number; custoUnitario: number; subtotal: number }>> = {};
     let total = 0;
+
     aVencer.forEach((e) => {
       const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
       const custo = Number((e as any).epis?.custo_estimado) || 0;
-      const ca = e.ca_numero_entregue ?? "—";
-      if (!groups[nome]) groups[nome] = { ca, qtd: 0, custoUnitario: custo, subtotal: 0 };
-      groups[nome].qtd += 1;
-      groups[nome].subtotal += custo;
+      const setorNome = (e as any).colaboradores?.setores?.nome ?? "Sem Setor";
+
+      // Flat
+      if (!flatGroups[nome]) flatGroups[nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      flatGroups[nome].qtd += 1;
+      flatGroups[nome].subtotal += custo;
+
+      // By setor
+      if (!setorMap[setorNome]) setorMap[setorNome] = {};
+      if (!setorMap[setorNome][nome]) setorMap[setorNome][nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      setorMap[setorNome][nome].qtd += 1;
+      setorMap[setorNome][nome].subtotal += custo;
+
       total += custo;
     });
-    const breakdown = Object.entries(groups)
+
+    const breakdown = Object.entries(flatGroups)
       .map(([nome, v]) => ({ nome, ...v }))
       .sort((a, b) => b.subtotal - a.subtotal);
-    return { previsaoFinanceira: total, custoBreakdown: breakdown };
+
+    const porSetor: SetorGroup[] = Object.entries(setorMap)
+      .map(([setor, episMap]) => {
+        const epis = Object.entries(episMap)
+          .map(([nome, v]) => ({ nome, ...v }))
+          .sort((a, b) => b.subtotal - a.subtotal);
+        const subtotal = epis.reduce((s, e) => s + e.subtotal, 0);
+        return { setor, subtotal, epis };
+      })
+      .sort((a, b) => b.subtotal - a.subtotal);
+
+    return { previsaoFinanceira: total, custoBreakdown: breakdown, custoPorSetor: porSetor };
   }, [entregas]);
 
   // ---- Gráfico de motivos ----
