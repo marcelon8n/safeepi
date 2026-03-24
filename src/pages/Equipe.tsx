@@ -1,18 +1,17 @@
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Layers, FileText } from "lucide-react";
+import { Users, Layers } from "lucide-react";
 import { SetoresSection } from "@/components/admin/AdminStructure";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import { useRole } from "@/hooks/useRole";
 import EquipeColaboradores from "@/components/equipe/EquipeColaboradores";
-import EquipeDocumentos from "@/components/equipe/EquipeDocumentos";
 
 const Equipe = () => {
   const { empresaId } = useEmpresaId();
-  const { canEditData, canWrite } = useRole();
+  const { canEditData } = useRole();
 
   return (
-    <AppLayout title="Gestão Operacional" description="Gerencie seus colaboradores e conformidades documentais.">
+    <AppLayout title="Gestão Operacional" description="Gerencie seus colaboradores e setores.">
       <Tabs defaultValue="colaboradores" className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="colaboradores" className="gap-2">
@@ -23,10 +22,6 @@ const Equipe = () => {
             <Layers className="w-4 h-4" />
             Setores
           </TabsTrigger>
-          <TabsTrigger value="documentos" className="gap-2">
-            <FileText className="w-4 h-4" />
-            Documentos & ASO
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="colaboradores">
@@ -34,9 +29,6 @@ const Equipe = () => {
         </TabsContent>
         <TabsContent value="setores">
           <SetoresSection empresaId={empresaId} canEdit={canEditData} />
-        </TabsContent>
-        <TabsContent value="documentos">
-          <EquipeDocumentos canEdit={canWrite} />
         </TabsContent>
       </Tabs>
     </AppLayout>
