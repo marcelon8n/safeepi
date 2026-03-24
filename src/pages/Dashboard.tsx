@@ -282,12 +282,6 @@ const Dashboard = () => {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate("/entregas")}>
-                            Registrar Troca
-                            <ArrowRight className="w-3 h-3" />
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     );
                   })}
