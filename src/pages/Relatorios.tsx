@@ -251,7 +251,7 @@ const Relatorios = () => {
     link.click();
     URL.revokeObjectURL(url);
     toast.success("Planilha de custos exportada com sucesso!");
-  }, [custoBreakdown, today]);
+  }, [custoPorSetor, today]);
 
   return (
     <AppLayout title="Relatórios" description="Visão consolidada de entregas, conformidade e custos.">
