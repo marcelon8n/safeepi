@@ -22,7 +22,7 @@ import Blocked from "./pages/Blocked";
 import Convites from "./pages/Convites";
 import FichaIndividualEpi from "./pages/FichaIndividualEpi";
 import Relatorios from "./pages/Relatorios";
-import Requisitos from "./pages/Requisitos";
+
 import MeuPerfil from "./pages/MeuPerfil";
 import DadosEmpresa from "./pages/DadosEmpresa";
 import Auditoria from "./pages/Auditoria";
@@ -53,7 +53,7 @@ const App = () => (
             <Route path="/relatorios" element={<ProtectedRoute adminOnly><Relatorios /></ProtectedRoute>} />
             {/* Pessoas */}
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
-            <Route path="/requisitos" element={<ProtectedRoute><Requisitos /></ProtectedRoute>} />
+            
             {/* Administração */}
             <Route path="/admin" element={<ProtectedRoute ownerOnly><Admin /></ProtectedRoute>} />
             <Route path="/meu-perfil" element={<ProtectedRoute><MeuPerfil /></ProtectedRoute>} />

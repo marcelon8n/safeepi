@@ -24,18 +24,6 @@ const AdminCompliance = () => {
     enabled: !!empresaId,
   });
 
-  const { data: requisitos, isLoading: l2 } = useQuery({
-    queryKey: ["admin-compliance-requisitos", empresaId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("requisitos_colaboradores")
-        .select("*, colaboradores(nome_completo)")
-        .eq("status_verificado", false);
-      return data ?? [];
-    },
-    enabled: !!empresaId,
-  });
-
   const { data: casVencidos, isLoading: l3 } = useQuery({
     queryKey: ["admin-compliance-cas", empresaId],
     queryFn: async () => {
@@ -48,9 +36,8 @@ const AdminCompliance = () => {
     enabled: !!empresaId,
   });
 
-  const isLoading = l1 || l2 || l3;
+  const isLoading = l1 || l3;
 
-  // EPIs vencidos há mais de 5 dias
   const urgentes = alertas
     ?.filter((a) => {
       if (!a.data_vencimento) return false;
@@ -62,8 +49,6 @@ const AdminCompliance = () => {
       const dB = differenceInDays(new Date(), parseISO(b.data_vencimento!));
       return dB - dA;
     }) ?? [];
-
-  const asosPendentes = requisitos?.filter((r) => r.tipo_requisito === "ASO") ?? [];
 
   const summaryCards = [
     {
@@ -80,21 +65,13 @@ const AdminCompliance = () => {
       color: "text-warning",
       bgColor: "bg-warning/10",
     },
-    {
-      label: "ASOs Pendentes",
-      value: asosPendentes.length,
-      icon: AlertTriangle,
-      color: "text-warning",
-      bgColor: "bg-warning/10",
-    },
   ];
 
   const noIssues = summaryCards.every((c) => c.value === 0) && urgentes.length === 0;
 
   return (
     <div className="space-y-6">
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {summaryCards.map((card) => (
           <Card key={card.label} className="shadow-sm">
             <CardContent className="p-5">
@@ -116,7 +93,6 @@ const AdminCompliance = () => {
         ))}
       </div>
 
-      {/* Urgent list */}
       {noIssues ? (
         <Card className="shadow-sm">
           <CardContent className="py-12 text-center">
@@ -175,7 +151,6 @@ const AdminCompliance = () => {
         </Card>
       )}
 
-      {/* CAs Vencidos */}
       {(casVencidos?.length ?? 0) > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="pb-2">

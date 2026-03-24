@@ -312,7 +312,14 @@ export type Database = {
             foreignKeyName: "entregas_epi_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
+            referencedRelation: "v_alertas_vencimento"
+            referencedColumns: ["colaborador_id"]
+          },
+          {
+            foreignKeyName: "entregas_epi_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_epis_vencendo_7_dias"
             referencedColumns: ["colaborador_id"]
           },
           {
@@ -483,57 +490,6 @@ export type Database = {
           },
         ]
       }
-      requisitos_colaboradores: {
-        Row: {
-          colaborador_id: string | null
-          data_emissao: string | null
-          data_validade: string | null
-          documento_url: string | null
-          empresa_id: string
-          id: string
-          status_verificado: boolean | null
-          tipo_requisito: string
-          updated_at: string | null
-        }
-        Insert: {
-          colaborador_id?: string | null
-          data_emissao?: string | null
-          data_validade?: string | null
-          documento_url?: string | null
-          empresa_id: string
-          id?: string
-          status_verificado?: boolean | null
-          tipo_requisito: string
-          updated_at?: string | null
-        }
-        Update: {
-          colaborador_id?: string | null
-          data_emissao?: string | null
-          data_validade?: string | null
-          documento_url?: string | null
-          empresa_id?: string
-          id?: string
-          status_verificado?: boolean | null
-          tipo_requisito?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "requisitos_colaboradores_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
-            referencedColumns: ["colaborador_id"]
-          },
-        ]
-      }
       setores: {
         Row: {
           created_at: string | null
@@ -585,6 +541,8 @@ export type Database = {
           colaborador_nome: string | null
           data_entrega: string | null
           data_vencimento: string | null
+          email_admin: string | null
+          email_encarregado: string | null
           empresa_id: string | null
           entrega_id: string | null
           epi_nome: string | null
@@ -592,28 +550,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "entregas_epi_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            foreignKeyName: "colaboradores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            foreignKeyName: "colaboradores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
@@ -627,36 +571,6 @@ export type Database = {
           id: string | null
           nome_fantasia: string | null
           trial_ends_at: string | null
-        }
-        Relationships: []
-      }
-      view_conformidade_colaboradores: {
-        Row: {
-          cargo: string | null
-          colaborador_id: string | null
-          integracao_concluida: boolean | null
-          nome_colaborador: string | null
-          possui_epis: boolean | null
-          status_colaborador: string | null
-          validade_aso: string | null
-        }
-        Insert: {
-          cargo?: string | null
-          colaborador_id?: string | null
-          integracao_concluida?: never
-          nome_colaborador?: string | null
-          possui_epis?: never
-          status_colaborador?: string | null
-          validade_aso?: never
-        }
-        Update: {
-          cargo?: string | null
-          colaborador_id?: string | null
-          integracao_concluida?: never
-          nome_colaborador?: string | null
-          possui_epis?: never
-          status_colaborador?: string | null
-          validade_aso?: never
         }
         Relationships: []
       }
@@ -725,28 +639,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "entregas_epi_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "view_conformidade_colaboradores"
-            referencedColumns: ["colaborador_id"]
-          },
-          {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            foreignKeyName: "colaboradores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "entregas_epi_empresa_id_fkey"
+            foreignKeyName: "colaboradores_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "v_empresas_trial_vencido"
