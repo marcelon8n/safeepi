@@ -16,7 +16,7 @@ import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  
   const { empresaId } = useEmpresaId();
   const today = new Date().toISOString().split("T")[0];
   const [modalVencidos, setModalVencidos] = useState(false);
