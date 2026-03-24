@@ -359,7 +359,7 @@ const Relatorios = () => {
                     </CardTitle>
                     <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoBreakdown.length === 0} onClick={handleExportCustosCSV}>
+                  <Button variant="outline" size="sm" className="gap-1.5 shrink-0" disabled={!isPro || custoPorSetor.length === 0} onClick={handleExportCustosCSV}>
                     <Download className="w-4 h-4" /> Exportar Planilha
                   </Button>
                 </CardHeader>
