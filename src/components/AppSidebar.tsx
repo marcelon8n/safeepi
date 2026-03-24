@@ -50,11 +50,10 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: "Compliance",
+      label: "Pessoas",
       show: true,
       items: [
         { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
-        { to: "/requisitos", label: "Requisitos / ASO", icon: FileCheck, show: true },
       ],
     },
     {
