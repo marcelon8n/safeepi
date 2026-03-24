@@ -372,20 +372,34 @@ const Relatorios = () => {
                       <p className="text-3xl font-bold text-primary">
                         {formatBRL(previsaoFinanceira)}
                       </p>
-                      {custoBreakdown.length > 0 && (
+                      {custoPorSetor.length > 0 && (
                         <>
                           <Separator className="my-3" />
-                          <ScrollArea className="max-h-[200px]">
-                            <ul className="space-y-2">
-                              {custoBreakdown.map((item) => (
-                                <li key={item.nome} className="flex items-center justify-between text-sm">
-                                  <span className="text-muted-foreground truncate mr-2">
-                                    {item.nome} <span className="text-xs">({item.qtd}x)</span>
-                                  </span>
-                                  <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
-                                </li>
+                          <ScrollArea className="max-h-[320px]">
+                            <Accordion type="multiple" className="w-full">
+                              {custoPorSetor.map((s) => (
+                                <AccordionItem key={s.setor} value={s.setor} className="border-b-0">
+                                  <AccordionTrigger className="py-2 text-sm hover:no-underline">
+                                    <div className="flex items-center justify-between w-full mr-2">
+                                      <span className="font-semibold">{s.setor}</span>
+                                      <Badge variant="secondary" className="ml-2 font-mono text-xs">{formatBRL(s.subtotal)}</Badge>
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="pb-2 pl-4">
+                                    <ul className="space-y-1.5">
+                                      {s.epis.map((item) => (
+                                        <li key={item.nome} className="flex items-center justify-between text-sm">
+                                          <span className="text-muted-foreground truncate mr-2">
+                                            {item.nome} <span className="text-xs">({item.qtd}x)</span>
+                                          </span>
+                                          <span className="font-medium whitespace-nowrap">{formatBRL(item.subtotal)}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </AccordionContent>
+                                </AccordionItem>
                               ))}
-                            </ul>
+                            </Accordion>
                           </ScrollArea>
                         </>
                       )}
