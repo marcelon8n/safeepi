@@ -236,9 +236,12 @@ const Relatorios = () => {
       toast.error("Não há dados de previsão de custos para exportar.");
       return;
     }
-    const header = "Nome do EPI;CA;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
-    const rows = custoBreakdown.map((item) =>
-      `${item.nome};${item.ca};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+    const header = "Setor;Nome do EPI;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
+    const rows = custoPorSetor.flatMap((s) =>
+      s.epis.map((item) =>
+        `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`
+      )
+    );
     );
     const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
