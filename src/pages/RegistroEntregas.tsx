@@ -84,7 +84,6 @@ const RegistroEntregas = () => {
 
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
   const [caConfirmado, setCaConfirmado] = useState(false);
-  const [caConfirmado, setCaConfirmado] = useState(false);
 
   // Modal pós-registro
   const [entregaConfirmada, setEntregaConfirmada] = useState<{
