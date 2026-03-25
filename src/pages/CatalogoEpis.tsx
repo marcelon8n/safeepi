@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
@@ -24,8 +24,11 @@ const CatalogoEpis = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Epi | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const modalParam = searchParams.get("modal");
+  const open = modalParam === "novo-epi" || modalParam === "editar-epi";
+  const [editingData, setEditingData] = useState<Epi | null>(null);
+  const editing = modalParam === "editar-epi" ? editingData : null;
   const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
 
   const today = new Date().toISOString().split("T")[0];
@@ -78,7 +81,7 @@ const CatalogoEpis = () => {
   });
 
   const openEdit = (e: Epi) => {
-    setEditing(e);
+    setEditingData(e);
     setForm({
       nome_epi: e.nome_epi,
       ca_numero: e.ca_numero ?? "",
@@ -87,13 +90,23 @@ const CatalogoEpis = () => {
       data_validade_ca: e.data_validade_ca ?? "",
       custo_estimado: e.custo_estimado ? String(e.custo_estimado) : "",
     });
-    setOpen(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "editar-epi");
+    setSearchParams(newParams);
   };
 
   const closeDialog = () => {
-    setOpen(false);
-    setEditing(null);
+    setEditingData(null);
     setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("modal");
+    setSearchParams(newParams);
+  };
+
+  const openNewDialog = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "novo-epi");
+    setSearchParams(newParams);
   };
 
   const getCaStatus = (e: Epi) => {
@@ -109,10 +122,8 @@ const CatalogoEpis = () => {
     <AppLayout title="Catálogo de EPIs" description="Cadastre e gerencie os equipamentos de proteção">
       <RoleGate allowWrite>
       <div className="flex justify-end mb-4">
-        <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
-          <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" />Novo EPI</Button>
-          </DialogTrigger>
+        <Button onClick={openNewDialog}><Plus className="w-4 h-4 mr-2" />Novo EPI</Button>
+        <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editing ? "Editar EPI" : "Novo EPI"}</DialogTitle>
