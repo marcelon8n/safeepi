@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 type Setor = Tables<"setores">;
 
@@ -34,6 +35,8 @@ const Setores = () => {
   const editing = modalParam === "editar-setor" ? editingData : null;
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
+  const isNewModal = modalParam === "novo-setor";
+  const { clearDraft } = useFormDraft("draft_novo_setor", form, setForm, isNewModal);
   const [emailError, setEmailError] = useState("");
 
   const { data: setores, isLoading } = useQuery({
@@ -89,6 +92,7 @@ const Setores = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["setores-list"] });
       toast.success(editing ? "Setor atualizado!" : "Setor cadastrado!");
+      clearDraft();
       closeDialog();
     },
     onError: (err: Error) => {
@@ -122,6 +126,7 @@ const Setores = () => {
     setEditingData(null);
     setForm({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
     setEmailError("");
+    clearDraft();
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("modal");
     setSearchParams(newParams);

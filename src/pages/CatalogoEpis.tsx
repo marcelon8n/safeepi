@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 type Epi = Tables<"epis">;
 
@@ -30,6 +31,8 @@ const CatalogoEpis = () => {
   const [editingData, setEditingData] = useState<Epi | null>(null);
   const editing = modalParam === "editar-epi" ? editingData : null;
   const [form, setForm] = useState({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
+  const isNewModal = modalParam === "novo-epi";
+  const { clearDraft } = useFormDraft("draft_novo_epi", form, setForm, isNewModal);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -63,6 +66,7 @@ const CatalogoEpis = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["epis"] });
       toast.success(editing ? "EPI atualizado!" : "EPI cadastrado!");
+      clearDraft();
       closeDialog();
     },
     onError: () => toast.error("Erro ao salvar EPI."),
@@ -98,6 +102,7 @@ const CatalogoEpis = () => {
   const closeDialog = () => {
     setEditingData(null);
     setForm({ nome_epi: "", ca_numero: "", periodicidade_dias: "", fabricante: "", data_validade_ca: "", custo_estimado: "" });
+    clearDraft();
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("modal");
     setSearchParams(newParams);
