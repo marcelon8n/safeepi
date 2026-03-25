@@ -22,6 +22,7 @@ import RoleGate from "@/components/RoleGate";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import ColaboradorSheet from "@/components/colaboradores/ColaboradorSheet";
+import { useFormDraft } from "@/hooks/useFormDraft";
 type Colaborador = Tables<"colaboradores">;
 
 const Colaboradores = () => {
@@ -37,6 +38,8 @@ const Colaboradores = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+  const isNewModal = modalParam === "novo-colaborador";
+  const { clearDraft } = useFormDraft("draft_novo_colaborador", form, setForm, isNewModal);
 
   // Sheet: controlled by URL param ?colaboradorId=UUID
   const sheetColabId = searchParams.get("colaboradorId");
@@ -98,6 +101,7 @@ const Colaboradores = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["colaboradores"] });
       toast.success(editing ? "Colaborador atualizado!" : "Colaborador cadastrado!");
+      clearDraft();
       closeDialog();
     },
     onError: (err: Error) => {
@@ -139,6 +143,7 @@ const Colaboradores = () => {
   const closeDialog = () => {
     setEditingData(null);
     setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+    clearDraft();
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("modal");
     newParams.delete("editId");

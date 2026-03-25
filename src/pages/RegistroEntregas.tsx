@@ -33,6 +33,7 @@ const formatLocalDate = (dateStr: string) =>
 
 import { useEmpresaId } from "@/hooks/useEmpresaId";
 import RoleGate from "@/components/RoleGate";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import type { Database } from "@/integrations/supabase/types";
 
 type MotivoEntrega = Database["public"]["Enums"]["motivo_entrega_tipo"];
@@ -65,7 +66,24 @@ const RegistroEntregas = () => {
   const [dataEntrega, setDataEntrega] = useState(format(new Date(), "yyyy-MM-dd"));
   const [motivoEntrega, setMotivoEntrega] = useState<MotivoEntrega>("entrega_inicial");
   const [observacoes, setObservacoes] = useState("");
+
+  // Draft persistence for the delivery form
+  const entregaForm = { colaboradorId, epiId, dataEntrega, motivoEntrega, observacoes };
+  const { clearDraft: clearEntregaDraft } = useFormDraft(
+    "draft_nova_entrega",
+    entregaForm,
+    (restored) => {
+      setColaboradorId(restored.colaboradorId ?? "");
+      setEpiId(restored.epiId ?? "");
+      setDataEntrega(restored.dataEntrega ?? format(new Date(), "yyyy-MM-dd"));
+      setMotivoEntrega(restored.motivoEntrega ?? "entrega_inicial");
+      setObservacoes(restored.observacoes ?? "");
+    },
+    true, // always enabled since this is a standalone form
+  );
+
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
+  const [caConfirmado, setCaConfirmado] = useState(false);
   const [caConfirmado, setCaConfirmado] = useState(false);
 
   // Modal pós-registro
@@ -208,6 +226,7 @@ const RegistroEntregas = () => {
     setMotivoEntrega("entrega_inicial");
     setObservacoes("");
     setCaConfirmado(false);
+    clearEntregaDraft();
   };
 
   const registrar = useMutation({
