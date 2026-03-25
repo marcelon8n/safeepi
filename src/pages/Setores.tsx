@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Search, Building2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,8 +27,11 @@ const emailSchema = z.string().email("Formato de e-mail inválido").or(z.literal
 const Setores = () => {
   const { empresaId } = useEmpresaId();
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Setor | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const modalParam = searchParams.get("modal");
+  const open = modalParam === "novo-setor" || modalParam === "editar-setor";
+  const [editingData, setEditingData] = useState<Setor | null>(null);
+  const editing = modalParam === "editar-setor" ? editingData : null;
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
   const [emailError, setEmailError] = useState("");
@@ -106,17 +110,27 @@ const Setores = () => {
   });
 
   const openEdit = (s: Setor) => {
-    setEditing(s);
+    setEditingData(s);
     setForm({ nome: s.nome, encarregado_nome: s.encarregado_nome ?? "", email_encarregado: s.email_encarregado ?? "", observacoes: "" });
     setEmailError("");
-    setOpen(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "editar-setor");
+    setSearchParams(newParams);
   };
 
   const closeDialog = () => {
-    setOpen(false);
-    setEditing(null);
+    setEditingData(null);
     setForm({ nome: "", encarregado_nome: "", email_encarregado: "", observacoes: "" });
     setEmailError("");
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("modal");
+    setSearchParams(newParams);
+  };
+
+  const openNewDialog = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "novo-setor");
+    setSearchParams(newParams);
   };
 
   return (
@@ -136,10 +150,8 @@ const Setores = () => {
             />
           </div>
           <RoleGate allowEdit>
-            <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
-              <DialogTrigger asChild>
-                <Button><Plus className="w-4 h-4 mr-2" />Novo Setor</Button>
-              </DialogTrigger>
+            <Button onClick={openNewDialog}><Plus className="w-4 h-4 mr-2" />Novo Setor</Button>
+            <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{editing ? "Editar Setor" : "Novo Setor"}</DialogTitle>

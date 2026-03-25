@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
@@ -57,6 +58,8 @@ const PAGE_SIZE = 15;
 const RegistroEntregas = () => {
   const queryClient = useQueryClient();
   const { empresaId } = useEmpresaId();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlStatus = searchParams.get("status") as "todos" | "ativa" | "inativa" | null;
   const [colaboradorId, setColaboradorId] = useState("");
   const [epiId, setEpiId] = useState("");
   const [dataEntrega, setDataEntrega] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -79,7 +82,7 @@ const RegistroEntregas = () => {
   const [filtroEpi, setFiltroEpi] = useState("");
   const [filtroDataInicio, setFiltroDataInicio] = useState("");
   const [filtroDataFim, setFiltroDataFim] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativa" | "inativa">("todos");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "ativa" | "inativa">(urlStatus || "todos");
 
   // Pagination
   const [page, setPage] = useState(0);
@@ -502,7 +505,7 @@ const RegistroEntregas = () => {
             <CardContent className="p-0">
               {/* Status tabs + Filters row */}
               <div className="px-4 pb-3 space-y-3">
-                <Tabs value={filtroStatus} onValueChange={(v) => { setFiltroStatus(v as any); setPage(0); }}>
+                <Tabs value={filtroStatus} onValueChange={(v) => { setFiltroStatus(v as any); setPage(0); const p = new URLSearchParams(searchParams); p.set("status", v); setSearchParams(p, { replace: true }); }}>
                   <TabsList className="w-full sm:w-auto">
                     <TabsTrigger value="todos">Todos</TabsTrigger>
                     <TabsTrigger value="ativa">Ativos</TabsTrigger>

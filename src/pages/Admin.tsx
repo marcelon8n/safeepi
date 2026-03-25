@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutDashboard, DollarSign, ShieldAlert, BarChart3, CalendarDays } from "lucide-react";
@@ -8,9 +9,18 @@ import AdminConsumoMensal from "@/components/admin/AdminConsumoMensal";
 import AdminDurabilidade from "@/components/admin/AdminDurabilidade";
 
 const Admin = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "visao-geral";
+
+  const handleTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("tab", value);
+    setSearchParams(newParams, { replace: true });
+  };
+
   return (
     <AppLayout title="Painel Estratégico" description="Visão estratégica para gestão de riscos, custos e conformidade.">
-      <Tabs defaultValue="visao-geral" className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="visao-geral" className="gap-2">
             <LayoutDashboard className="w-4 h-4" />

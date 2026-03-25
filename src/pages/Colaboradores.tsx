@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, AlertTriangle, Search, Eye } from "lucide-react";
@@ -29,8 +29,11 @@ const Colaboradores = () => {
   const { limiteColaboradores } = useEmpresaPlan();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Colaborador | null>(null);
+  const modalParam = searchParams.get("modal");
+  const editingId = searchParams.get("editId");
+  const [editingData, setEditingData] = useState<Colaborador | null>(null);
+  const open = modalParam === "novo-colaborador" || modalParam === "editar-colaborador";
+  const editing = modalParam === "editar-colaborador" ? editingData : null;
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
@@ -121,20 +124,31 @@ const Colaboradores = () => {
   });
 
   const openEdit = (c: Colaborador) => {
-    setEditing(c);
+    setEditingData(c);
     setForm({
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
     });
-    setOpen(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "editar-colaborador");
+    setSearchParams(newParams);
   };
 
   const closeDialog = () => {
-    setOpen(false);
-    setEditing(null);
+    setEditingData(null);
     setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("modal");
+    newParams.delete("editId");
+    setSearchParams(newParams);
+  };
+
+  const openNewDialog = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("modal", "novo-colaborador");
+    setSearchParams(newParams);
   };
 
   const openHistorico = (c: Colaborador) => {
@@ -194,12 +208,10 @@ const Colaboradores = () => {
           </div>
 
           <RoleGate allowEdit>
-            <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); else setOpen(true); }}>
-              <DialogTrigger asChild>
-                <Button disabled={limitReached}>
-                  <Plus className="w-4 h-4 mr-2" />Novo Colaborador
-                </Button>
-              </DialogTrigger>
+            <Button disabled={limitReached} onClick={openNewDialog}>
+              <Plus className="w-4 h-4 mr-2" />Novo Colaborador
+            </Button>
+            <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{editing ? "Editar Colaborador" : "Novo Colaborador"}</DialogTitle>
