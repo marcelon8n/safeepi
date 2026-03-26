@@ -410,33 +410,52 @@ const Relatorios = () => {
             {/* Painel Financeiro */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <Card>
-                <CardHeader className="pb-2 flex flex-row items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-primary" /> Previsão de Custos (30 dias)
-                    </CardTitle>
-                    <CardDescription>Soma do custo estimado dos EPIs que vencem nos próximos 30 dias.</CardDescription>
+                <CardHeader className="pb-2 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-primary" /> Análise de Custos de EPIs
+                      </CardTitle>
+                      <CardDescription>
+                        {isFutureMonth
+                          ? "Projeção: EPIs com vencimento programado neste mês."
+                          : "Realizado: EPIs entregues neste mês."}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Input
+                        type="month"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="w-[160px] h-9 text-sm"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        disabled={!isPro || custoPorSetor.length === 0}
+                        onClick={handleExportCustosCSV}
+                      >
+                        <Download className="w-4 h-4" /> CSV
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 shrink-0"
-                    disabled={!isPro || custoPorSetor.length === 0}
-                    onClick={handleExportCustosCSV}
-                  >
-                    <Download className="w-4 h-4" /> Exportar Planilha
-                  </Button>
+                  {isFutureMonth && (
+                    <Badge variant="outline" className="w-fit gap-1 text-xs">
+                      <CalendarClock className="w-3 h-3" /> Projeção Futura
+                    </Badge>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
                     <Skeleton className="h-10 w-40" />
                   ) : (
                     <div>
-                      <p className="text-3xl font-bold text-primary">{formatBRL(previsaoFinanceira)}</p>
-                      {custoPorSetor.length > 0 && (
+                      <p className="text-3xl font-bold text-primary">{formatBRL(custoTotal)}</p>
+                      {custoPorSetor.length > 0 ? (
                         <>
                           <Separator className="my-3" />
-                          <ScrollArea className="max-h-[320px]">
+                          <ScrollArea className="max-h-[360px]">
                             <Accordion type="multiple" className="w-full">
                               {custoPorSetor.map((s) => (
                                 <AccordionItem key={s.setor} value={s.setor} className="border-b-0">
@@ -449,17 +468,44 @@ const Relatorios = () => {
                                     </div>
                                   </AccordionTrigger>
                                   <AccordionContent className="pb-2 pl-4">
-                                    <ul className="space-y-1.5">
-                                      {s.epis.map((item) => (
-                                        <li key={item.nome} className="flex items-center justify-between text-sm">
-                                          <span className="text-muted-foreground truncate mr-2">
-                                            {item.nome} <span className="text-xs">({item.qtd}x)</span>
-                                          </span>
-                                          <span className="font-medium whitespace-nowrap">
-                                            {formatBRL(item.subtotal)}
-                                          </span>
-                                        </li>
-                                      ))}
+                                    <ul className="space-y-2">
+                                      {s.epis.map((item) => {
+                                        const motivoCounts: Record<string, number> = {};
+                                        item.motivos.forEach((m) => { motivoCounts[m] = (motivoCounts[m] || 0) + 1; });
+                                        return (
+                                          <li key={item.nome} className="space-y-1">
+                                            <div className="flex items-center justify-between text-sm">
+                                              <span className="text-muted-foreground truncate mr-2">
+                                                {item.nome} <span className="text-xs">({item.qtd}x)</span>
+                                              </span>
+                                              <span className="font-medium whitespace-nowrap">
+                                                {formatBRL(item.subtotal)}
+                                              </span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1">
+                                              {isFutureMonth ? (
+                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                                  Troca Programada
+                                                </Badge>
+                                              ) : (
+                                                Object.entries(motivoCounts).map(([motivo, count]) => {
+                                                  const isDestructive = motivo === "extravio" || motivo === "dano_desgaste";
+                                                  return (
+                                                    <Badge
+                                                      key={motivo}
+                                                      variant={isDestructive ? "destructive" : "outline"}
+                                                      className="text-[10px] px-1.5 py-0"
+                                                    >
+                                                      {MOTIVO_LABELS[motivo] ?? motivo}
+                                                      {count > 1 ? ` (${count})` : ""}
+                                                    </Badge>
+                                                  );
+                                                })
+                                              )}
+                                            </div>
+                                          </li>
+                                        );
+                                      })}
                                     </ul>
                                   </AccordionContent>
                                 </AccordionItem>
@@ -467,6 +513,8 @@ const Relatorios = () => {
                             </Accordion>
                           </ScrollArea>
                         </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-2">Nenhum item encontrado para este período.</p>
                       )}
                     </div>
                   )}
