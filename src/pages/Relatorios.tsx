@@ -265,12 +265,14 @@ const Relatorios = () => {
       toast.error("Não há dados de previsão de custos para exportar.");
       return;
     }
-    const header = "Setor;Nome do EPI;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido";
+    const header = "Setor;Nome do EPI;Quantidade para Reposição;Custo Unitário Estimado;Custo Total Sugerido;Motivo";
     const rows = custoPorSetor.flatMap((s) =>
-      s.epis.map(
-        (item) =>
-          `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")}`,
-      ),
+      s.epis.map((item) => {
+        const motivoTexto = isFutureMonth
+          ? "Troca Programada"
+          : [...new Set(item.motivos)].map((m) => MOTIVO_LABELS[m] ?? m).join(", ");
+        return `${s.setor};${item.nome};${item.qtd};${item.custoUnitario.toFixed(2).replace(".", ",")};${item.subtotal.toFixed(2).replace(".", ",")};${motivoTexto}`;
+      }),
     );
     const csvContent = "\ufeff" + header + "\n" + rows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -455,7 +457,7 @@ const Relatorios = () => {
                       {custoPorSetor.length > 0 ? (
                         <>
                           <Separator className="my-3" />
-                          <ScrollArea className="max-h-[360px]">
+                          <ScrollArea className="max-h-[400px] overflow-y-auto pr-2">
                             <Accordion type="multiple" className="w-full">
                               {custoPorSetor.map((s) => (
                                 <AccordionItem key={s.setor} value={s.setor} className="border-b-0">
