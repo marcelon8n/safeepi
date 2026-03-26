@@ -31,6 +31,9 @@ import {
   Download,
 } from "lucide-react";
 import { format, addDays, isBefore, isAfter, startOfMonth, endOfMonth } from "date-fns";
+
+/** Safely parse a date string (YYYY-MM-DD) avoiding timezone shift */
+const safeDate = (d: string) => new Date(d.length === 10 ? `${d}T12:00:00` : d);
 import {
   PieChart as RechartsPie,
   Pie,
@@ -118,14 +121,14 @@ const Relatorios = () => {
   const kpis = useMemo(() => {
     if (!entregas) return { totalMes: 0, vencidos: 0, aVencer30: 0 };
     const totalMes = entregas.filter((e) => {
-      const d = new Date(e.data_entrega);
+      const d = safeDate(e.data_entrega);
       return d >= monthStart && d <= monthEnd;
     }).length;
     const vencidos = entregas.filter(
-      (e) => isBefore(new Date(e.data_vencimento), today) && e.status === "ativa",
+      (e) => isBefore(safeDate(e.data_vencimento), today) && e.status === "ativa",
     ).length;
     const aVencer30 = entregas.filter((e) => {
-      const dv = new Date(e.data_vencimento);
+      const dv = safeDate(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     }).length;
     return { totalMes, vencidos, aVencer30 };
@@ -140,7 +143,7 @@ const Relatorios = () => {
   const { previsaoFinanceira, custoBreakdown, custoPorSetor } = useMemo(() => {
     if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as EpiItem[], custoPorSetor: [] as SetorGroup[] };
     const aVencer = entregas.filter((e) => {
-      const dv = new Date(e.data_vencimento);
+      const dv = safeDate(e.data_vencimento);
       return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
     });
 
@@ -338,8 +341,8 @@ const Relatorios = () => {
                       <TableRow key={e.id}>
                         <TableCell className="font-medium">{(e as any).colaboradores?.nome_completo ?? "—"}</TableCell>
                         <TableCell>{(e as any).epis?.nome_epi ?? "—"}</TableCell>
-                        <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
-                        <TableCell>{format(new Date(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
+                        <TableCell>{format(safeDate(e.data_entrega), "dd/MM/yyyy")}</TableCell>
+                        <TableCell>{format(safeDate(e.data_vencimento), "dd/MM/yyyy")}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
                             {MOTIVO_LABELS[e.motivo_entrega ?? "entrega_inicial"] ?? e.motivo_entrega}
@@ -538,7 +541,7 @@ const Relatorios = () => {
                           <TableCell>
                             <Badge variant="outline">{e.ca_numero_entregue ?? "—"}</Badge>
                           </TableCell>
-                          <TableCell>{format(new Date(e.data_entrega), "dd/MM/yyyy")}</TableCell>
+                          <TableCell>{format(safeDate(e.data_entrega), "dd/MM/yyyy")}</TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground">
                             {e.hash_registro ? `${e.hash_registro.slice(0, 4)}...${e.hash_registro.slice(-4)}` : "—"}
                           </TableCell>
