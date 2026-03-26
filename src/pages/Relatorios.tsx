@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,6 +70,9 @@ const Relatorios = () => {
   const { empresaId } = useEmpresaId();
 
   const isPro = planoSlug === "epi-pro" || planoSlug === "obras-premium";
+
+  // Month selector for cost analysis
+  const [selectedMonth, setSelectedMonth] = useState(() => format(new Date(), "yyyy-MM"));
 
   // Fetch empresa name for exports
   const { data: empresa } = useQuery({
