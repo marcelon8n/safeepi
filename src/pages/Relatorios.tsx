@@ -141,37 +141,52 @@ const Relatorios = () => {
   const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
   // ---- Previsão financeira (pro) com breakdown ----
-  type EpiItem = { nome: string; qtd: number; custoUnitario: number; subtotal: number };
+  type EpiItem = { nome: string; qtd: number; custoUnitario: number; subtotal: number; motivos: string[] };
   type SetorGroup = { setor: string; subtotal: number; epis: EpiItem[] };
 
-  const { previsaoFinanceira, custoBreakdown, custoPorSetor } = useMemo(() => {
-    if (!entregas) return { previsaoFinanceira: 0, custoBreakdown: [] as EpiItem[], custoPorSetor: [] as SetorGroup[] };
-    const aVencer = entregas.filter((e) => {
-      const dv = safeDate(e.data_vencimento);
-      return isAfter(dv, today) && isBefore(dv, in30Days) && e.status === "ativa";
+  const isFutureMonth = useMemo(() => {
+    const [y, m] = selectedMonth.split("-").map(Number);
+    const now = new Date();
+    return y > now.getFullYear() || (y === now.getFullYear() && m > now.getMonth() + 1);
+  }, [selectedMonth]);
+
+  const { custoTotal, custoBreakdown, custoPorSetor } = useMemo(() => {
+    if (!entregas) return { custoTotal: 0, custoBreakdown: [] as EpiItem[], custoPorSetor: [] as SetorGroup[] };
+
+    const [selY, selM] = selectedMonth.split("-").map(Number);
+    const selStart = startOfMonth(new Date(selY, selM - 1));
+    const selEnd = endOfMonth(new Date(selY, selM - 1));
+
+    const filtered = entregas.filter((e) => {
+      if (isFutureMonth) {
+        const dv = safeDate(e.data_vencimento);
+        return dv >= selStart && dv <= selEnd && e.status === "ativa";
+      } else {
+        const de = safeDate(e.data_entrega);
+        return de >= selStart && de <= selEnd;
+      }
     });
 
-    // Flat breakdown (for CSV export)
-    const flatGroups: Record<string, { qtd: number; custoUnitario: number; subtotal: number }> = {};
-    // Setor → EPI breakdown
-    const setorMap: Record<string, Record<string, { qtd: number; custoUnitario: number; subtotal: number }>> = {};
+    const flatGroups: Record<string, { qtd: number; custoUnitario: number; subtotal: number; motivos: string[] }> = {};
+    const setorMap: Record<string, Record<string, { qtd: number; custoUnitario: number; subtotal: number; motivos: string[] }>> = {};
     let total = 0;
 
-    aVencer.forEach((e) => {
+    filtered.forEach((e) => {
       const nome = (e as any).epis?.nome_epi ?? "EPI sem nome";
       const custo = Number((e as any).epis?.custo_estimado) || 0;
       const setorNome = (e as any).colaboradores?.setores?.nome ?? "Sem Setor";
+      const motivo = isFutureMonth ? "__programada__" : (e.motivo_entrega ?? "entrega_inicial");
 
-      // Flat
-      if (!flatGroups[nome]) flatGroups[nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      if (!flatGroups[nome]) flatGroups[nome] = { qtd: 0, custoUnitario: custo, subtotal: 0, motivos: [] };
       flatGroups[nome].qtd += 1;
       flatGroups[nome].subtotal += custo;
+      flatGroups[nome].motivos.push(motivo);
 
-      // By setor
       if (!setorMap[setorNome]) setorMap[setorNome] = {};
-      if (!setorMap[setorNome][nome]) setorMap[setorNome][nome] = { qtd: 0, custoUnitario: custo, subtotal: 0 };
+      if (!setorMap[setorNome][nome]) setorMap[setorNome][nome] = { qtd: 0, custoUnitario: custo, subtotal: 0, motivos: [] };
       setorMap[setorNome][nome].qtd += 1;
       setorMap[setorNome][nome].subtotal += custo;
+      setorMap[setorNome][nome].motivos.push(motivo);
 
       total += custo;
     });
@@ -190,8 +205,8 @@ const Relatorios = () => {
       })
       .sort((a, b) => b.subtotal - a.subtotal);
 
-    return { previsaoFinanceira: total, custoBreakdown: breakdown, custoPorSetor: porSetor };
-  }, [entregas]);
+    return { custoTotal: total, custoBreakdown: breakdown, custoPorSetor: porSetor };
+  }, [entregas, selectedMonth, isFutureMonth]);
 
   // ---- Gráfico de motivos ----
   const motivoData = useMemo(() => {
