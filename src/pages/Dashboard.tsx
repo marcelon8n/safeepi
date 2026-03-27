@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/AppLayout";
 import DashboardDetailModal from "@/components/dashboard/DashboardDetailModal";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 
 import { ptBR } from "date-fns/locale";
 
@@ -252,8 +252,10 @@ const Dashboard = () => {
                 </TableHeader>
                 <TableBody>
                   {prioridades.slice(0, 20).map((item, idx) => {
-                    const vencDate = item.data_vencimento ? new Date(item.data_vencimento + "T00:00:00") : null;
-                    const dias = vencDate ? differenceInDays(vencDate, new Date()) : 0;
+                    const vencDate = item.data_vencimento ? new Date(item.data_vencimento + "T12:00:00") : null;
+                    const hoje = new Date();
+                    hoje.setHours(12, 0, 0, 0);
+                    const dias = vencDate ? differenceInCalendarDays(vencDate, hoje) : 0;
                     const isVencido = dias < 0;
 
                     return (
