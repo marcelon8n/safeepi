@@ -257,6 +257,22 @@ const Colaboradores = () => {
                       </Select>
                     </div>
                   )}
+                  <div>
+                    <Label>PIN de Assinatura (Senha)</Label>
+                    <Input
+                      value={form.pin_assinatura}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setForm({ ...form, pin_assinatura: v });
+                      }}
+                      placeholder="0000"
+                      maxLength={4}
+                      inputMode="numeric"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
+                    </p>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
