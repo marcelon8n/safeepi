@@ -533,10 +533,12 @@ const RegistroEntregas = () => {
                   </AlertDescription>
                 </Alert>
                 <div className="flex items-start gap-2">
-                  <Checkbox
+                  <input
+                    type="checkbox"
                     id="ca-confirm"
                     checked={caConfirmado}
-                    onCheckedChange={(checked) => setCaConfirmado(checked === true)}
+                    onChange={(e) => setCaConfirmado(e.target.checked)}
+                    className="mt-0.5"
                   />
                   <Label htmlFor="ca-confirm" className="text-xs leading-tight cursor-pointer">
                     Confirmo que este lote foi adquirido dentro da validade do CA.
