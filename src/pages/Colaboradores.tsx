@@ -143,7 +143,7 @@ const Colaboradores = () => {
 
   const closeDialog = () => {
     setEditingData(null);
-    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
     clearDraft();
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("modal");
