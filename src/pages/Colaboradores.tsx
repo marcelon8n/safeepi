@@ -37,7 +37,7 @@ const Colaboradores = () => {
   const editing = modalParam === "editar-colaborador" ? editingData : null;
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
-  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
   const isNewModal = modalParam === "novo-colaborador";
   const { clearDraft } = useFormDraft("draft_novo_colaborador", form, setForm, isNewModal);
 
