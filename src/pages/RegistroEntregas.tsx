@@ -227,7 +227,7 @@ const RegistroEntregas = () => {
     setMotivoEntrega("entrega_inicial");
     setObservacoes("");
     setCaConfirmado(false);
-    setAceiteColaborador(false);
+    setPinDigitado("");
     clearEntregaDraft();
   };
 
