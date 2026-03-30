@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Checkbox } from "@/components/ui/checkbox";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ClipboardList, AlertTriangle, ArchiveRestore, Info, ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -84,7 +84,7 @@ const RegistroEntregas = () => {
 
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
   const [caConfirmado, setCaConfirmado] = useState(false);
-  const [aceiteColaborador, setAceiteColaborador] = useState(false);
+  const [pinDigitado, setPinDigitado] = useState("");
   const [showAceiteModal, setShowAceiteModal] = useState(false);
 
   // Modal pós-registro
@@ -227,7 +227,7 @@ const RegistroEntregas = () => {
     setMotivoEntrega("entrega_inicial");
     setObservacoes("");
     setCaConfirmado(false);
-    setAceiteColaborador(false);
+    setPinDigitado("");
     clearEntregaDraft();
   };
 
@@ -409,33 +409,49 @@ const RegistroEntregas = () => {
       <Dialog open={showAceiteModal} onOpenChange={(open) => !open && setShowAceiteModal(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assinatura Eletrônica Simples</DialogTitle>
+            <DialogTitle>Assinatura Eletrônica — PIN do Colaborador</DialogTitle>
             <DialogDescription>
-              Para finalizar o registro, o colaborador deve confirmar o recebimento do EPI.
+              Para finalizar, o colaborador <strong>{selectedColabNome || "—"}</strong> deve digitar seu PIN de 4 dígitos para confirmar o recebimento do EPI.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="flex items-start gap-3 rounded-md border p-3 bg-muted/50">
-              <Checkbox
-                id="aceite-colab"
-                checked={aceiteColaborador}
-                onCheckedChange={(v) => setAceiteColaborador(v === true)}
-              />
-              <label htmlFor="aceite-colab" className="text-sm leading-snug cursor-pointer">
-                O colaborador <strong>{selectedColabNome || "—"}</strong> confirma o recebimento do(s) EPI(s) e compromete-se a seguir as normas de segurança (NR 6).
-              </label>
+            <div className="flex flex-col items-center gap-3">
+              <Label className="text-sm font-medium">Digite o PIN de Assinatura</Label>
+              <InputOTP maxLength={4} value={pinDigitado} onChange={setPinDigitado}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground text-center">
               Ao confirmar, serão registrados automaticamente: IP da rede, dispositivo e um hash de segurança para auditoria.
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAceiteModal(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setShowAceiteModal(false); setPinDigitado(""); }}>Cancelar</Button>
             <Button
-              disabled={!aceiteColaborador || registrar.isPending}
-              onClick={() => { setShowAceiteModal(false); registrar.mutate(); }}
+              disabled={pinDigitado.length < 4 || registrar.isPending}
+              onClick={async () => {
+                const colab = colaboradores?.find((c) => c.id === colaboradorId);
+                const pinCorreto = (colab as any)?.pin_assinatura;
+                if (!pinCorreto) {
+                  toast.error("Este colaborador não possui PIN cadastrado. Cadastre o PIN na tela de Colaboradores.");
+                  return;
+                }
+                if (pinDigitado !== pinCorreto) {
+                  toast.error("PIN incorreto. Tente novamente.");
+                  setPinDigitado("");
+                  return;
+                }
+                setShowAceiteModal(false);
+                setPinDigitado("");
+                registrar.mutate();
+              }}
             >
-              {registrar.isPending ? "Registrando..." : "Confirmar e Registrar"}
+              {registrar.isPending ? "Registrando..." : "Confirmar Entrega"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -517,10 +533,12 @@ const RegistroEntregas = () => {
                   </AlertDescription>
                 </Alert>
                 <div className="flex items-start gap-2">
-                  <Checkbox
+                  <input
+                    type="checkbox"
                     id="ca-confirm"
                     checked={caConfirmado}
-                    onCheckedChange={(checked) => setCaConfirmado(checked === true)}
+                    onChange={(e) => setCaConfirmado(e.target.checked)}
+                    className="mt-0.5"
                   />
                   <Label htmlFor="ca-confirm" className="text-xs leading-tight cursor-pointer">
                     Confirmo que este lote foi adquirido dentro da validade do CA.
@@ -564,7 +582,7 @@ const RegistroEntregas = () => {
 
             <Button
               className="w-full"
-              onClick={() => { setAceiteColaborador(false); setShowAceiteModal(true); }}
+              onClick={() => { setPinDigitado(""); setShowAceiteModal(true); }}
               disabled={!canRegister}
             >
               Registrar Entrega

@@ -37,7 +37,7 @@ const Colaboradores = () => {
   const editing = modalParam === "editar-colaborador" ? editingData : null;
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
-  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+  const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
   const isNewModal = modalParam === "novo-colaborador";
   const { clearDraft } = useFormDraft("draft_novo_colaborador", form, setForm, isNewModal);
 
@@ -81,6 +81,7 @@ const Colaboradores = () => {
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
         status: form.status,
+        pin_assinatura: form.pin_assinatura || null,
       };
 
       if (editing && form.status === "ativo" && editing.status !== "ativo") {
@@ -134,6 +135,7 @@ const Colaboradores = () => {
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
+      pin_assinatura: (c as any).pin_assinatura ?? "",
     });
     const newParams = new URLSearchParams(searchParams);
     newParams.set("modal", "editar-colaborador");
@@ -142,7 +144,7 @@ const Colaboradores = () => {
 
   const closeDialog = () => {
     setEditingData(null);
-    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo" });
+    setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
     clearDraft();
     const newParams = new URLSearchParams(searchParams);
     newParams.delete("modal");
@@ -255,6 +257,22 @@ const Colaboradores = () => {
                       </Select>
                     </div>
                   )}
+                  <div>
+                    <Label>PIN de Assinatura (Senha)</Label>
+                    <Input
+                      value={form.pin_assinatura}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        setForm({ ...form, pin_assinatura: v });
+                      }}
+                      placeholder="0000"
+                      maxLength={4}
+                      inputMode="numeric"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
+                    </p>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
