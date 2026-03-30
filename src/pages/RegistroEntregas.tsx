@@ -373,6 +373,7 @@ const RegistroEntregas = () => {
 
   // Disable register button logic
   const canRegister = colaboradorId && epiId && dataEntrega && !registrar.isPending && (!caVencido || caConfirmado);
+  const selectedColabNome = colaboradores?.find((c) => c.id === colaboradorId)?.nome_completo;
 
   // Reset page when filters change
   const applyFilter = (setter: (v: string) => void, value: string) => {
