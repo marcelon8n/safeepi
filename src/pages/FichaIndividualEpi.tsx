@@ -116,15 +116,19 @@ const FichaIndividualEpi = () => {
       e.ca_numero_entregue || "—",
       MOTIVO_LABELS[e.motivo_entrega || ""] || e.motivo_entrega || "—",
       formatLocalDate(e.data_vencimento),
+      e.hash_registro
+        ? `Digital: ${e.hash_registro.slice(0, 8)}… | IP: ${e.ip_registro || "—"}`
+        : "",
     ]);
 
     autoTable(doc, {
       startY: y,
-      head: [["Data Entrega", "EPI", "CA", "Motivo", "Vencimento"]],
+      head: [["Data Entrega", "EPI", "CA", "Motivo", "Vencimento", "Assinatura"]],
       body: rows,
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 7, cellPadding: 2 },
       headStyles: { fillColor: [41, 98, 155], textColor: 255, fontStyle: "bold" },
       alternateRowStyles: { fillColor: [245, 247, 250] },
+      columnStyles: { 5: { font: "courier", fontSize: 6 } },
       margin: { left: 14, right: 14 },
     });
 
