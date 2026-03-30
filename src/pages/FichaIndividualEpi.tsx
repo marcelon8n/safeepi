@@ -67,7 +67,7 @@ const FichaIndividualEpi = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entregas_epi")
-        .select("id, data_entrega, ca_numero_entregue, motivo_entrega, data_vencimento, epi_id, epis(nome_epi)")
+        .select("id, data_entrega, ca_numero_entregue, motivo_entrega, data_vencimento, epi_id, hash_registro, ip_registro, epis(nome_epi)")
         .eq("colaborador_id", selectedColaboradorId)
         .order("data_entrega", { ascending: false });
       if (error) throw error;
