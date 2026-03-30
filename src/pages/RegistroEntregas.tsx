@@ -252,6 +252,10 @@ const RegistroEntregas = () => {
           .eq("status", "ativa");
       }
 
+      const ipRegistro = await captureIp();
+      const dispositivo = navigator.userAgent;
+      const hashRegistro = crypto.randomUUID();
+
       const { error } = await supabase.from("entregas_epi").insert({
         colaborador_id: colaboradorId,
         epi_id: epiId,
@@ -260,6 +264,10 @@ const RegistroEntregas = () => {
         empresa_id: empresaId,
         motivo_entrega: motivoEntrega,
         observacoes: observacoes || null,
+        tipo_validacao: "simples",
+        ip_registro: ipRegistro,
+        dispositivo,
+        hash_registro: hashRegistro,
       });
       if (error) throw error;
     },
