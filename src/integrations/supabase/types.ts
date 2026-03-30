@@ -86,6 +86,7 @@ export type Database = {
           id: string
           nome_completo: string
           onboarding_completo: boolean | null
+          pin_assinatura: string | null
           setor_id: string | null
           status: string | null
         }
@@ -97,6 +98,7 @@ export type Database = {
           id?: string
           nome_completo: string
           onboarding_completo?: boolean | null
+          pin_assinatura?: string | null
           setor_id?: string | null
           status?: string | null
         }
@@ -108,6 +110,7 @@ export type Database = {
           id?: string
           nome_completo?: string
           onboarding_completo?: boolean | null
+          pin_assinatura?: string | null
           setor_id?: string | null
           status?: string | null
         }
