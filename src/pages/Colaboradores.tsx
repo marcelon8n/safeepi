@@ -134,6 +134,7 @@ const Colaboradores = () => {
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
+      pin_assinatura: (c as any).pin_assinatura ?? "",
     });
     const newParams = new URLSearchParams(searchParams);
     newParams.set("modal", "editar-colaborador");
