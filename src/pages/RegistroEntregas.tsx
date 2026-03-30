@@ -83,8 +83,7 @@ const RegistroEntregas = () => {
   );
 
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
-  const [caConfirmado, setCaConfirmado] = useState(false);
-  const [aceiteColaborador, setAceiteColaborador] = useState(false);
+  const [pinDigitado, setPinDigitado] = useState("");
   const [showAceiteModal, setShowAceiteModal] = useState(false);
 
   // Modal pós-registro
