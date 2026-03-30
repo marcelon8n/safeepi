@@ -528,10 +528,10 @@ const RegistroEntregas = () => {
 
             <Button
               className="w-full"
-              onClick={() => registrar.mutate()}
+              onClick={() => { setAceiteColaborador(false); setShowAceiteModal(true); }}
               disabled={!canRegister}
             >
-              {registrar.isPending ? "Registrando..." : "Registrar Entrega"}
+              Registrar Entrega
             </Button>
           </CardContent>
         </Card>
