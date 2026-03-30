@@ -227,7 +227,18 @@ const RegistroEntregas = () => {
     setMotivoEntrega("entrega_inicial");
     setObservacoes("");
     setCaConfirmado(false);
+    setAceiteColaborador(false);
     clearEntregaDraft();
+  };
+
+  const captureIp = async (): Promise<string> => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(5000) });
+      const json = await res.json();
+      return json.ip ?? "IP Indisponível";
+    } catch {
+      return "IP Indisponível";
+    }
   };
 
   const registrar = useMutation({
