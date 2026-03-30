@@ -81,6 +81,7 @@ const Colaboradores = () => {
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
         status: form.status,
+        pin_assinatura: form.pin_assinatura || null,
       };
 
       if (editing && form.status === "ativo" && editing.status !== "ativo") {
