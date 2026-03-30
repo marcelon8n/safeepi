@@ -67,7 +67,7 @@ const FichaIndividualEpi = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entregas_epi")
-        .select("id, data_entrega, ca_numero_entregue, motivo_entrega, data_vencimento, epi_id, epis(nome_epi)")
+        .select("id, data_entrega, ca_numero_entregue, motivo_entrega, data_vencimento, epi_id, hash_registro, ip_registro, epis(nome_epi)")
         .eq("colaborador_id", selectedColaboradorId)
         .order("data_entrega", { ascending: false });
       if (error) throw error;
@@ -116,15 +116,19 @@ const FichaIndividualEpi = () => {
       e.ca_numero_entregue || "—",
       MOTIVO_LABELS[e.motivo_entrega || ""] || e.motivo_entrega || "—",
       formatLocalDate(e.data_vencimento),
+      e.hash_registro
+        ? `Digital: ${e.hash_registro.slice(0, 8)}… | IP: ${e.ip_registro || "—"}`
+        : "",
     ]);
 
     autoTable(doc, {
       startY: y,
-      head: [["Data Entrega", "EPI", "CA", "Motivo", "Vencimento"]],
+      head: [["Data Entrega", "EPI", "CA", "Motivo", "Vencimento", "Assinatura"]],
       body: rows,
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 7, cellPadding: 2 },
       headStyles: { fillColor: [41, 98, 155], textColor: 255, fontStyle: "bold" },
       alternateRowStyles: { fillColor: [245, 247, 250] },
+      columnStyles: { 5: { font: "courier", fontSize: 6 } },
       margin: { left: 14, right: 14 },
     });
 
@@ -257,6 +261,7 @@ const FichaIndividualEpi = () => {
                         <TableHead>CA</TableHead>
                         <TableHead>Motivo</TableHead>
                         <TableHead>Vencimento</TableHead>
+                        <TableHead>Assinatura</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -267,6 +272,18 @@ const FichaIndividualEpi = () => {
                           <TableCell>{e.ca_numero_entregue || "—"}</TableCell>
                           <TableCell>{MOTIVO_LABELS[e.motivo_entrega || ""] || e.motivo_entrega || "—"}</TableCell>
                           <TableCell>{formatLocalDate(e.data_vencimento)}</TableCell>
+                          <TableCell>
+                            {e.hash_registro ? (
+                              <div className="space-y-0.5">
+                                <span className="text-xs font-medium text-emerald-600">Assinatura Digital</span>
+                                <p className="text-xs font-mono text-muted-foreground truncate max-w-[180px]" title={`Hash: ${e.hash_registro} | IP: ${e.ip_registro}`}>
+                                  Hash: {e.hash_registro.slice(0, 8)}… | IP: {e.ip_registro || "—"}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="h-8 border-b border-dashed border-muted-foreground/40 w-32" title="Espaço para assinatura manual" />
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

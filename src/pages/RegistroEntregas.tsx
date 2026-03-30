@@ -84,6 +84,8 @@ const RegistroEntregas = () => {
 
   const [devolucaoId, setDevolucaoId] = useState<string | null>(null);
   const [caConfirmado, setCaConfirmado] = useState(false);
+  const [aceiteColaborador, setAceiteColaborador] = useState(false);
+  const [showAceiteModal, setShowAceiteModal] = useState(false);
 
   // Modal pós-registro
   const [entregaConfirmada, setEntregaConfirmada] = useState<{
@@ -225,7 +227,18 @@ const RegistroEntregas = () => {
     setMotivoEntrega("entrega_inicial");
     setObservacoes("");
     setCaConfirmado(false);
+    setAceiteColaborador(false);
     clearEntregaDraft();
+  };
+
+  const captureIp = async (): Promise<string> => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(5000) });
+      const json = await res.json();
+      return json.ip ?? "IP Indisponível";
+    } catch {
+      return "IP Indisponível";
+    }
   };
 
   const registrar = useMutation({
@@ -239,6 +252,10 @@ const RegistroEntregas = () => {
           .eq("status", "ativa");
       }
 
+      const ipRegistro = await captureIp();
+      const dispositivo = navigator.userAgent;
+      const hashRegistro = crypto.randomUUID();
+
       const { error } = await supabase.from("entregas_epi").insert({
         colaborador_id: colaboradorId,
         epi_id: epiId,
@@ -247,6 +264,10 @@ const RegistroEntregas = () => {
         empresa_id: empresaId,
         motivo_entrega: motivoEntrega,
         observacoes: observacoes || null,
+        tipo_validacao: "simples",
+        ip_registro: ipRegistro,
+        dispositivo,
+        hash_registro: hashRegistro,
       });
       if (error) throw error;
     },
@@ -352,6 +373,7 @@ const RegistroEntregas = () => {
 
   // Disable register button logic
   const canRegister = colaboradorId && epiId && dataEntrega && !registrar.isPending && (!caVencido || caConfirmado);
+  const selectedColabNome = colaboradores?.find((c) => c.id === colaboradorId)?.nome_completo;
 
   // Reset page when filters change
   const applyFilter = (setter: (v: string) => void, value: string) => {
@@ -378,6 +400,42 @@ const RegistroEntregas = () => {
               disabled={devolverMutation.isPending}
             >
               {devolverMutation.isPending ? "Processando..." : "Confirmar Baixa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Aceite / Assinatura Eletrônica */}
+      <Dialog open={showAceiteModal} onOpenChange={(open) => !open && setShowAceiteModal(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assinatura Eletrônica Simples</DialogTitle>
+            <DialogDescription>
+              Para finalizar o registro, o colaborador deve confirmar o recebimento do EPI.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-start gap-3 rounded-md border p-3 bg-muted/50">
+              <Checkbox
+                id="aceite-colab"
+                checked={aceiteColaborador}
+                onCheckedChange={(v) => setAceiteColaborador(v === true)}
+              />
+              <label htmlFor="aceite-colab" className="text-sm leading-snug cursor-pointer">
+                O colaborador <strong>{selectedColabNome || "—"}</strong> confirma o recebimento do(s) EPI(s) e compromete-se a seguir as normas de segurança (NR 6).
+              </label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ao confirmar, serão registrados automaticamente: IP da rede, dispositivo e um hash de segurança para auditoria.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAceiteModal(false)}>Cancelar</Button>
+            <Button
+              disabled={!aceiteColaborador || registrar.isPending}
+              onClick={() => { setShowAceiteModal(false); registrar.mutate(); }}
+            >
+              {registrar.isPending ? "Registrando..." : "Confirmar e Registrar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -506,10 +564,10 @@ const RegistroEntregas = () => {
 
             <Button
               className="w-full"
-              onClick={() => registrar.mutate()}
+              onClick={() => { setAceiteColaborador(false); setShowAceiteModal(true); }}
               disabled={!canRegister}
             >
-              {registrar.isPending ? "Registrando..." : "Registrar Entrega"}
+              Registrar Entrega
             </Button>
           </CardContent>
         </Card>
