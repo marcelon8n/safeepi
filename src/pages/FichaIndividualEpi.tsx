@@ -257,6 +257,7 @@ const FichaIndividualEpi = () => {
                         <TableHead>CA</TableHead>
                         <TableHead>Motivo</TableHead>
                         <TableHead>Vencimento</TableHead>
+                        <TableHead>Assinatura</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -267,6 +268,18 @@ const FichaIndividualEpi = () => {
                           <TableCell>{e.ca_numero_entregue || "—"}</TableCell>
                           <TableCell>{MOTIVO_LABELS[e.motivo_entrega || ""] || e.motivo_entrega || "—"}</TableCell>
                           <TableCell>{formatLocalDate(e.data_vencimento)}</TableCell>
+                          <TableCell>
+                            {e.hash_registro ? (
+                              <div className="space-y-0.5">
+                                <span className="text-xs font-medium text-emerald-600">Assinatura Digital</span>
+                                <p className="text-xs font-mono text-muted-foreground truncate max-w-[180px]" title={`Hash: ${e.hash_registro} | IP: ${e.ip_registro}`}>
+                                  Hash: {e.hash_registro.slice(0, 8)}… | IP: {e.ip_registro || "—"}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="h-8 border-b border-dashed border-muted-foreground/40 w-32" title="Espaço para assinatura manual" />
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
