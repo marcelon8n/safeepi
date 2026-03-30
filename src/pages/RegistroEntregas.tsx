@@ -405,6 +405,42 @@ const RegistroEntregas = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Aceite / Assinatura Eletrônica */}
+      <Dialog open={showAceiteModal} onOpenChange={(open) => !open && setShowAceiteModal(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assinatura Eletrônica Simples</DialogTitle>
+            <DialogDescription>
+              Para finalizar o registro, o colaborador deve confirmar o recebimento do EPI.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-start gap-3 rounded-md border p-3 bg-muted/50">
+              <Checkbox
+                id="aceite-colab"
+                checked={aceiteColaborador}
+                onCheckedChange={(v) => setAceiteColaborador(v === true)}
+              />
+              <label htmlFor="aceite-colab" className="text-sm leading-snug cursor-pointer">
+                O colaborador <strong>{selectedColabNome || "—"}</strong> confirma o recebimento do(s) EPI(s) e compromete-se a seguir as normas de segurança (NR 6).
+              </label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ao confirmar, serão registrados automaticamente: IP da rede, dispositivo e um hash de segurança para auditoria.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAceiteModal(false)}>Cancelar</Button>
+            <Button
+              disabled={!aceiteColaborador || registrar.isPending}
+              onClick={() => { setShowAceiteModal(false); registrar.mutate(); }}
+            >
+              {registrar.isPending ? "Registrando..." : "Confirmar e Registrar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Entrega Confirmada */}
       <Dialog open={!!entregaConfirmada} onOpenChange={(open) => !open && handleNovaEntrega()}>
         <DialogContent className="sm:max-w-md">
