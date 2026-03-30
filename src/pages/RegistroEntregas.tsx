@@ -582,7 +582,7 @@ const RegistroEntregas = () => {
 
             <Button
               className="w-full"
-              onClick={() => { setAceiteColaborador(false); setShowAceiteModal(true); }}
+              onClick={() => { setPinDigitado(""); setShowAceiteModal(true); }}
               disabled={!canRegister}
             >
               Registrar Entrega
