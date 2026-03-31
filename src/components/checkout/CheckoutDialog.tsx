@@ -58,6 +58,7 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 interface PlanInfo {
   name: string;
+  slug: string;
   price: string;
 }
 
