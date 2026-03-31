@@ -69,6 +69,33 @@ const AdminAuditLog = () => {
     },
   });
 
+  const { data: profiles } = useQuery({
+    queryKey: ["audit-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, nome, email");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const profileMap = useMemo(() => {
+    const map = new Map<string, { nome: string | null; email: string | null }>();
+    profiles?.forEach((p) => map.set(p.user_id, { nome: p.nome, email: p.email }));
+    return map;
+  }, [profiles]);
+
+  const resolveUser = (log: any) => {
+    const detailName = getUserName(log.detalhes);
+    if (detailName) return { type: "name" as const, label: detailName };
+    if (!log.usuario_id) return { type: "system" as const, label: "Sistema (Automático)" };
+    const profile = profileMap.get(log.usuario_id);
+    if (profile?.nome) return { type: "name" as const, label: profile.nome };
+    if (profile?.email) return { type: "name" as const, label: profile.email };
+    return { type: "deleted" as const, label: log.usuario_id.slice(0, 8) + "…" };
+  };
+
   const filtered = logs?.filter((l) => {
     const q = search.toLowerCase();
     const summary = getResumo(l.detalhes).toLowerCase();
