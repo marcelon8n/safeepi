@@ -25,6 +25,7 @@ const epiPlans = [
   },
   {
     name: "EPI Pro",
+    slug: "epi-pro",
     price: "299",
     icon: Crown,
     description: "Para empresas maiores que buscam compliance total.",
