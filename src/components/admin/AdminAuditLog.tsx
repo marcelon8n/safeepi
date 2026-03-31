@@ -154,8 +154,13 @@ const AdminAuditLog = () => {
                   <TableCell className="whitespace-nowrap text-sm">
                     {formatDate(l.created_at)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {getUserName(l.detalhes) || l.usuario_id?.slice(0, 8) || "Sistema"}
+                  <TableCell className="text-sm">
+                    {(() => {
+                      const user = resolveUser(l);
+                      if (user.type === "system") return <Badge variant="secondary" className="gap-1"><Bot className="h-3 w-3" />{user.label}</Badge>;
+                      if (user.type === "deleted") return <span className="flex items-center gap-1 text-muted-foreground"><UserX className="h-3 w-3" />{user.label}</span>;
+                      return <span className="text-foreground">{user.label}</span>;
+                    })()}
                   </TableCell>
                   <TableCell className="font-medium text-sm">{ACAO_LABELS[l.acao] || l.acao}</TableCell>
                   <TableCell className="text-sm">{TABELA_LABELS[l.tabela] || l.tabela}</TableCell>
