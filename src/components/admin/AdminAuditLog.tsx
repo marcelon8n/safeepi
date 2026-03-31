@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Bot, UserX } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -68,15 +69,42 @@ const AdminAuditLog = () => {
     },
   });
 
+  const { data: profiles } = useQuery({
+    queryKey: ["audit-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, nome, email");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const profileMap = useMemo(() => {
+    const map = new Map<string, { nome: string | null; email: string | null }>();
+    profiles?.forEach((p) => map.set(p.user_id, { nome: p.nome, email: p.email }));
+    return map;
+  }, [profiles]);
+
+  const resolveUser = (log: any) => {
+    const detailName = getUserName(log.detalhes);
+    if (detailName) return { type: "name" as const, label: detailName };
+    if (!log.usuario_id) return { type: "system" as const, label: "Sistema (Automático)" };
+    const profile = profileMap.get(log.usuario_id);
+    if (profile?.nome) return { type: "name" as const, label: profile.nome };
+    if (profile?.email) return { type: "name" as const, label: profile.email };
+    return { type: "deleted" as const, label: log.usuario_id.slice(0, 8) + "…" };
+  };
+
   const filtered = logs?.filter((l) => {
     const q = search.toLowerCase();
     const summary = getResumo(l.detalhes).toLowerCase();
-    const userName = (getUserName(l.detalhes) || "").toLowerCase();
+    const resolved = resolveUser(l).label.toLowerCase();
     return (
       l.acao.toLowerCase().includes(q) ||
       l.tabela.toLowerCase().includes(q) ||
       summary.includes(q) ||
-      userName.includes(q)
+      resolved.includes(q)
     );
   }) ?? [];
 
@@ -126,8 +154,13 @@ const AdminAuditLog = () => {
                   <TableCell className="whitespace-nowrap text-sm">
                     {formatDate(l.created_at)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {getUserName(l.detalhes) || l.usuario_id?.slice(0, 8) || "Sistema"}
+                  <TableCell className="text-sm">
+                    {(() => {
+                      const user = resolveUser(l);
+                      if (user.type === "system") return <Badge variant="secondary" className="gap-1"><Bot className="h-3 w-3" />{user.label}</Badge>;
+                      if (user.type === "deleted") return <span className="flex items-center gap-1 text-muted-foreground"><UserX className="h-3 w-3" />{user.label}</span>;
+                      return <span className="text-foreground">{user.label}</span>;
+                    })()}
                   </TableCell>
                   <TableCell className="font-medium text-sm">{ACAO_LABELS[l.acao] || l.acao}</TableCell>
                   <TableCell className="text-sm">{TABELA_LABELS[l.tabela] || l.tabela}</TableCell>
@@ -160,7 +193,7 @@ const AdminAuditLog = () => {
           {selectedLog && (
             <div className="space-y-3 text-sm">
               <div><span className="font-medium">Data:</span> {formatDate(selectedLog.created_at)}</div>
-              <div><span className="font-medium">Usuário:</span> {getUserName(selectedLog.detalhes) || selectedLog.usuario_id || "Sistema"}</div>
+              <div><span className="font-medium">Usuário:</span> {resolveUser(selectedLog).label}</div>
               <div><span className="font-medium">Ação:</span> {ACAO_LABELS[selectedLog.acao] || selectedLog.acao}</div>
               <div><span className="font-medium">Tabela:</span> {TABELA_LABELS[selectedLog.tabela] || selectedLog.tabela}</div>
               <div><span className="font-medium">Resumo:</span> {getResumo(selectedLog.detalhes)}</div>
