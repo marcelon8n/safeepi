@@ -42,6 +42,7 @@ const epiPlans = [
 const obrasPlans = [
   {
     name: "Obras Start",
+    slug: "obras-start",
     price: "349",
     icon: Building2,
     description: "Ideal para construtoras e prestadores de serviços.",
