@@ -193,7 +193,7 @@ const AdminAuditLog = () => {
           {selectedLog && (
             <div className="space-y-3 text-sm">
               <div><span className="font-medium">Data:</span> {formatDate(selectedLog.created_at)}</div>
-              <div><span className="font-medium">Usuário:</span> {getUserName(selectedLog.detalhes) || selectedLog.usuario_id || "Sistema"}</div>
+              <div><span className="font-medium">Usuário:</span> {resolveUser(selectedLog).label}</div>
               <div><span className="font-medium">Ação:</span> {ACAO_LABELS[selectedLog.acao] || selectedLog.acao}</div>
               <div><span className="font-medium">Tabela:</span> {TABELA_LABELS[selectedLog.tabela] || selectedLog.tabela}</div>
               <div><span className="font-medium">Resumo:</span> {getResumo(selectedLog.detalhes)}</div>
