@@ -11,6 +11,7 @@ import CheckoutDialog from "@/components/checkout/CheckoutDialog";
 const epiPlans = [
   {
     name: "EPI Essencial",
+    slug: "epi-essencial",
     price: "149",
     icon: ShieldCheck,
     description: "Ideal para empresas com operação interna fixa.",
@@ -24,6 +25,7 @@ const epiPlans = [
   },
   {
     name: "EPI Pro",
+    slug: "epi-pro",
     price: "299",
     icon: Crown,
     description: "Para empresas maiores que buscam compliance total.",
@@ -40,6 +42,7 @@ const epiPlans = [
 const obrasPlans = [
   {
     name: "Obras Start",
+    slug: "obras-start",
     price: "349",
     icon: Building2,
     description: "Ideal para construtoras e prestadores de serviços.",
@@ -54,6 +57,7 @@ const obrasPlans = [
   },
   {
     name: "Obras Premium",
+    slug: "obras-premium",
     price: "599",
     icon: HardHat,
     description: "Operação em escala máxima sem limites.",
@@ -80,6 +84,7 @@ interface PlanDef {
   name: string;
   price: string;
   icon: React.ComponentType<{ className?: string }>;
+  slug: string;
   description: string;
   features: { text: string; included: boolean }[];
   highlight: boolean;
