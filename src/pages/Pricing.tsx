@@ -84,6 +84,7 @@ interface PlanDef {
   name: string;
   price: string;
   icon: React.ComponentType<{ className?: string }>;
+  slug: string;
   description: string;
   features: { text: string; included: boolean }[];
   highlight: boolean;

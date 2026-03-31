@@ -159,6 +159,27 @@ const CheckoutDialog = ({ open, onOpenChange, plan }: CheckoutDialogProps) => {
   const onSubmit = async (values: CheckoutFormValues) => {
     setSubmitting(true);
     try {
+      // 1. Busca o plano_id pelo slug e atualiza a empresa antes de chamar o webhook
+      if (empresaId && plan?.slug) {
+        const { data: planoRow } = await supabase
+          .from("planos")
+          .select("id")
+          .eq("slug", plan.slug)
+          .maybeSingle();
+
+        if (planoRow?.id) {
+          const { error: updateError } = await supabase
+            .from("empresas")
+            .update({ plano_id: planoRow.id, plan_type: "mensal" })
+            .eq("id", empresaId);
+
+          if (updateError) {
+            throw new Error("Falha ao vincular plano à empresa: " + updateError.message);
+          }
+        }
+      }
+
+      // 2. Dispara o webhook do n8n
       const body = {
         nome: values.razaoSocial,
         cpfCnpj: values.cpfCnpj.replace(/\D/g, ""),
