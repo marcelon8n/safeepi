@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, AlertTriangle, Search, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle, Search, Eye, EyeOff } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ const Colaboradores = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
+  const [showPin, setShowPin] = useState(false);
   const isNewModal = modalParam === "novo-colaborador";
   const { clearDraft } = useFormDraft("draft_novo_colaborador", form, setForm, isNewModal);
 
@@ -259,16 +260,27 @@ const Colaboradores = () => {
                   )}
                   <div>
                     <Label>PIN de Assinatura (Senha)</Label>
-                    <Input
-                      value={form.pin_assinatura}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        setForm({ ...form, pin_assinatura: v });
-                      }}
-                      placeholder="0000"
-                      maxLength={4}
-                      inputMode="numeric"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPin ? "text" : "password"}
+                        value={form.pin_assinatura}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          setForm({ ...form, pin_assinatura: v });
+                        }}
+                        placeholder="••••"
+                        maxLength={4}
+                        inputMode="numeric"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPin(!showPin)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
                     </p>
