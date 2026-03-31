@@ -99,12 +99,12 @@ const AdminAuditLog = () => {
   const filtered = logs?.filter((l) => {
     const q = search.toLowerCase();
     const summary = getResumo(l.detalhes).toLowerCase();
-    const userName = (getUserName(l.detalhes) || "").toLowerCase();
+    const resolved = resolveUser(l).label.toLowerCase();
     return (
       l.acao.toLowerCase().includes(q) ||
       l.tabela.toLowerCase().includes(q) ||
       summary.includes(q) ||
-      userName.includes(q)
+      resolved.includes(q)
     );
   }) ?? [];
 
