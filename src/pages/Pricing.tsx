@@ -11,6 +11,7 @@ import CheckoutDialog from "@/components/checkout/CheckoutDialog";
 const epiPlans = [
   {
     name: "EPI Essencial",
+    slug: "epi-essencial",
     price: "149",
     icon: ShieldCheck,
     description: "Ideal para empresas com operação interna fixa.",
