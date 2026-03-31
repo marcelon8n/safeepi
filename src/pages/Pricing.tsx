@@ -57,6 +57,7 @@ const obrasPlans = [
   },
   {
     name: "Obras Premium",
+    slug: "obras-premium",
     price: "599",
     icon: HardHat,
     description: "Operação em escala máxima sem limites.",
