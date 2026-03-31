@@ -260,16 +260,27 @@ const Colaboradores = () => {
                   )}
                   <div>
                     <Label>PIN de Assinatura (Senha)</Label>
-                    <Input
-                      value={form.pin_assinatura}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                        setForm({ ...form, pin_assinatura: v });
-                      }}
-                      placeholder="0000"
-                      maxLength={4}
-                      inputMode="numeric"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPin ? "text" : "password"}
+                        value={form.pin_assinatura}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          setForm({ ...form, pin_assinatura: v });
+                        }}
+                        placeholder="••••"
+                        maxLength={4}
+                        inputMode="numeric"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPin(!showPin)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
                     </p>
