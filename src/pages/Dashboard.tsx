@@ -82,7 +82,7 @@ const Dashboard = () => {
     let vencidos = 0;
     let aVencer15 = 0;
     let comHash = 0;
-    let caVencido = 0;
+    
     const motivoCounts: Record<string, number> = {};
     const urgentes: Array<{
       id: string;
