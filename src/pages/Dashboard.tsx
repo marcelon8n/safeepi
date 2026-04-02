@@ -208,7 +208,7 @@ const Dashboard = () => {
       description="Painel de Controle de Risco — NR 6"
     >
       {/* ───── Alert Cards ───── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {/* Vencidos */}
         <Card
           className="border-l-4 border-l-destructive cursor-pointer hover:shadow-md transition-shadow"
