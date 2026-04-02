@@ -10,7 +10,7 @@ import {
   Clock,
   CheckCircle2,
   Fingerprint,
-  FileWarning,
+  
   ArrowRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +82,7 @@ const Dashboard = () => {
     let vencidos = 0;
     let aVencer15 = 0;
     let comHash = 0;
-    let caVencido = 0;
+    
     const motivoCounts: Record<string, number> = {};
     const urgentes: Array<{
       id: string;
@@ -131,12 +131,6 @@ const Dashboard = () => {
       // Hash (blindagem jurídica)
       if (e.hash_registro) comHash++;
 
-      // CA vencido
-      if (e.data_validade_ca_entregue) {
-        const caDate = new Date(e.data_validade_ca_entregue + "T12:00:00");
-        if (caDate < hoje) caVencido++;
-      }
-
       // Motivo
       const motivo = e.motivo_entrega ?? "entrega_inicial";
       motivoCounts[motivo] = (motivoCounts[motivo] || 0) + 1;
@@ -162,7 +156,7 @@ const Dashboard = () => {
       vencidos,
       aVencer15,
       blindagem,
-      caVencido,
+      
       motivoData,
       urgentes,
       totalEntregas: entregas.length,
@@ -214,7 +208,7 @@ const Dashboard = () => {
       description="Painel de Controle de Risco — NR 6"
     >
       {/* ───── Alert Cards ───── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {/* Vencidos */}
         <Card
           className="border-l-4 border-l-destructive cursor-pointer hover:shadow-md transition-shadow"
@@ -287,27 +281,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Alerta CA */}
-        <Card className="border-l-4 border-l-destructive">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Alerta de CA
-              </span>
-              <FileWarning className="w-5 h-5 text-destructive" />
-            </div>
-            <p className="text-3xl font-bold text-destructive">
-              {isLoading ? (
-                <Skeleton className="h-9 w-12 inline-block" />
-              ) : (
-                kpis?.caVencido ?? 0
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              CAs expirados em uso
-            </p>
-          </CardContent>
-        </Card>
+
+
       </div>
 
       {/* ───── Middle row: Chart + Summary ───── */}
@@ -316,10 +291,10 @@ const Dashboard = () => {
         <Card className="lg:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Análise de Desperdício
+              Motivos de Substituição de EPI
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Motivos de troca de EPIs
+              Distribuição por motivo de troca
             </p>
           </CardHeader>
           <CardContent>
