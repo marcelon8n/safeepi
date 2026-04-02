@@ -52,7 +52,12 @@ const Auth = () => {
         toast.success("Conta criada! Verifique seu e-mail para confirmar.");
       }
     } catch (error: any) {
-      toast.error(error.message || "Erro na autenticação.");
+      console.error('Auth error:', error);
+      if (isLogin) {
+        toast.error("Email ou senha incorretos.");
+      } else {
+        toast.error("Erro ao criar conta. Tente novamente.");
+      }
     } finally {
       setSubmitting(false);
     }
