@@ -281,27 +281,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Alerta CA */}
-        <Card className="border-l-4 border-l-destructive">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Alerta de CA
-              </span>
-              <FileWarning className="w-5 h-5 text-destructive" />
-            </div>
-            <p className="text-3xl font-bold text-destructive">
-              {isLoading ? (
-                <Skeleton className="h-9 w-12 inline-block" />
-              ) : (
-                kpis?.caVencido ?? 0
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              CAs expirados em uso
-            </p>
-          </CardContent>
-        </Card>
+
+
       </div>
 
       {/* ───── Middle row: Chart + Summary ───── */}
