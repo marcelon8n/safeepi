@@ -156,7 +156,7 @@ const Dashboard = () => {
       vencidos,
       aVencer15,
       blindagem,
-      caVencido,
+      
       motivoData,
       urgentes,
       totalEntregas: entregas.length,
