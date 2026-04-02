@@ -310,7 +310,7 @@ const Dashboard = () => {
         <Card className="lg:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Análise de Desperdício
+              Motivos de Substituição de EPI
             </CardTitle>
             <p className="text-xs text-muted-foreground">
               Motivos de troca de EPIs
