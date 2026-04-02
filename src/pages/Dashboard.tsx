@@ -313,7 +313,7 @@ const Dashboard = () => {
               Motivos de Substituição de EPI
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Motivos de troca de EPIs
+              Distribuição por motivo de troca
             </p>
           </CardHeader>
           <CardContent>
