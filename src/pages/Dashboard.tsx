@@ -131,12 +131,6 @@ const Dashboard = () => {
       // Hash (blindagem jurídica)
       if (e.hash_registro) comHash++;
 
-      // CA vencido
-      if (e.data_validade_ca_entregue) {
-        const caDate = new Date(e.data_validade_ca_entregue + "T12:00:00");
-        if (caDate < hoje) caVencido++;
-      }
-
       // Motivo
       const motivo = e.motivo_entrega ?? "entrega_inicial";
       motivoCounts[motivo] = (motivoCounts[motivo] || 0) + 1;
