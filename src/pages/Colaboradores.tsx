@@ -38,6 +38,7 @@ const Colaboradores = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [form, setForm] = useState({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
+  const [hasExistingPin, setHasExistingPin] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const isNewModal = modalParam === "novo-colaborador";
   const { clearDraft } = useFormDraft("draft_novo_colaborador", form, setForm, isNewModal);
@@ -82,7 +83,6 @@ const Colaboradores = () => {
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
         status: form.status,
-        pin_assinatura: form.pin_assinatura || null,
       };
 
       if (editing && form.status === "ativo" && editing.status !== "ativo") {
@@ -92,12 +92,25 @@ const Colaboradores = () => {
         }
       }
 
+      let colaboradorId: string;
+
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
         if (error) throw error;
+        colaboradorId = editing.id;
       } else {
-        const { error } = await supabase.from("colaboradores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"colaboradores">);
+        const { data, error } = await supabase.from("colaboradores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"colaboradores">).select("id").single();
         if (error) throw error;
+        colaboradorId = data.id;
+      }
+
+      // Set PIN via secure RPC if provided
+      if (form.pin_assinatura && form.pin_assinatura.length === 4) {
+        const { error: pinError } = await supabase.rpc("set_colaborador_pin", {
+          p_colaborador_id: colaboradorId,
+          p_pin: form.pin_assinatura,
+        });
+        if (pinError) throw pinError;
       }
     },
     onSuccess: () => {
@@ -129,15 +142,18 @@ const Colaboradores = () => {
     onError: () => toast.error("Erro ao remover colaborador."),
   });
 
-  const openEdit = (c: Colaborador) => {
+  const openEdit = async (c: Colaborador) => {
     setEditingData(c);
     setForm({
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
-      pin_assinatura: (c as any).pin_assinatura ?? "",
+      pin_assinatura: "",
     });
+    // Check if PIN exists without exposing value
+    const { data } = await supabase.rpc("colaborador_has_pin", { p_colaborador_id: c.id });
+    setHasExistingPin(!!data);
     const newParams = new URLSearchParams(searchParams);
     newParams.set("modal", "editar-colaborador");
     setSearchParams(newParams);
@@ -145,6 +161,7 @@ const Colaboradores = () => {
 
   const closeDialog = () => {
     setEditingData(null);
+    setHasExistingPin(false);
     setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
     clearDraft();
     const newParams = new URLSearchParams(searchParams);
@@ -259,7 +276,7 @@ const Colaboradores = () => {
                     </div>
                   )}
                   <div>
-                    <Label>PIN de Assinatura (Senha)</Label>
+                    <Label>{editing && hasExistingPin ? "Alterar PIN de Assinatura" : "PIN de Assinatura (Senha)"}</Label>
                     <div className="relative">
                       <Input
                         type={showPin ? "text" : "password"}
@@ -268,7 +285,7 @@ const Colaboradores = () => {
                           const v = e.target.value.replace(/\D/g, "").slice(0, 4);
                           setForm({ ...form, pin_assinatura: v });
                         }}
-                        placeholder="••••"
+                        placeholder={editing && hasExistingPin ? "Deixe vazio para manter o atual" : "••••"}
                         maxLength={4}
                         inputMode="numeric"
                         className="pr-10"
@@ -282,7 +299,9 @@ const Colaboradores = () => {
                       </button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
+                      {editing && hasExistingPin
+                        ? "PIN já cadastrado. Preencha apenas se desejar alterar."
+                        : "Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs."}
                     </p>
                   </div>
                 </div>
