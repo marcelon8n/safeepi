@@ -276,7 +276,7 @@ const Colaboradores = () => {
                     </div>
                   )}
                   <div>
-                    <Label>PIN de Assinatura (Senha)</Label>
+                    <Label>{editing && hasExistingPin ? "Alterar PIN de Assinatura" : "PIN de Assinatura (Senha)"}</Label>
                     <div className="relative">
                       <Input
                         type={showPin ? "text" : "password"}
@@ -285,7 +285,7 @@ const Colaboradores = () => {
                           const v = e.target.value.replace(/\D/g, "").slice(0, 4);
                           setForm({ ...form, pin_assinatura: v });
                         }}
-                        placeholder="••••"
+                        placeholder={editing && hasExistingPin ? "Deixe vazio para manter o atual" : "••••"}
                         maxLength={4}
                         inputMode="numeric"
                         className="pr-10"
@@ -299,7 +299,11 @@ const Colaboradores = () => {
                       </button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs.
+                      {editing && hasExistingPin
+                        ? "PIN já cadastrado. Preencha apenas se desejar alterar."
+                        : "Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs."}
+                    </p>
+                  </div>
                     </p>
                   </div>
                 </div>
