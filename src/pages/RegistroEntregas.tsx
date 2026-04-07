@@ -435,20 +435,31 @@ const RegistroEntregas = () => {
             <Button
               disabled={pinDigitado.length < 4 || registrar.isPending}
               onClick={async () => {
-                const colab = colaboradores?.find((c) => c.id === colaboradorId);
-                const pinCorreto = (colab as any)?.pin_assinatura;
-                if (!pinCorreto) {
-                  toast.error("Este colaborador não possui PIN cadastrado. Cadastre o PIN na tela de Colaboradores.");
-                  return;
-                }
-                if (pinDigitado !== pinCorreto) {
-                  toast.error("PIN incorreto. Tente novamente.");
+                try {
+                  const { data: pinValido, error } = await supabase.rpc("validar_pin_colaborador", {
+                    p_colaborador_id: colaboradorId,
+                    p_pin: pinDigitado,
+                  });
+                  if (error) {
+                    const msg = error.message?.includes("PIN cadastrado")
+                      ? "Este colaborador não possui PIN cadastrado. Cadastre o PIN na tela de Colaboradores."
+                      : "Erro ao validar PIN.";
+                    toast.error(msg);
+                    setPinDigitado("");
+                    return;
+                  }
+                  if (!pinValido) {
+                    toast.error("PIN incorreto. Tente novamente.");
+                    setPinDigitado("");
+                    return;
+                  }
+                  setShowAceiteModal(false);
                   setPinDigitado("");
-                  return;
+                  registrar.mutate();
+                } catch {
+                  toast.error("Erro ao validar PIN.");
+                  setPinDigitado("");
                 }
-                setShowAceiteModal(false);
-                setPinDigitado("");
-                registrar.mutate();
               }}
             >
               {registrar.isPending ? "Registrando..." : "Confirmar Entrega"}
