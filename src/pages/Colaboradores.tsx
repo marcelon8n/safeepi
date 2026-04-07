@@ -142,15 +142,18 @@ const Colaboradores = () => {
     onError: () => toast.error("Erro ao remover colaborador."),
   });
 
-  const openEdit = (c: Colaborador) => {
+  const openEdit = async (c: Colaborador) => {
     setEditingData(c);
     setForm({
       nome_completo: c.nome_completo,
       cargo: c.cargo ?? "",
       setor_id: (c as any).setor_id ?? "",
       status: c.status ?? "ativo",
-      pin_assinatura: (c as any).pin_assinatura ?? "",
+      pin_assinatura: "",
     });
+    // Check if PIN exists without exposing value
+    const { data } = await supabase.rpc("colaborador_has_pin", { p_colaborador_id: c.id });
+    setHasExistingPin(!!data);
     const newParams = new URLSearchParams(searchParams);
     newParams.set("modal", "editar-colaborador");
     setSearchParams(newParams);
