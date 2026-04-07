@@ -735,6 +735,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_empresa_id: { Args: never; Returns: string }
+      validar_pin_colaborador: {
+        Args: { p_colaborador_id: string; p_pin: string }
+        Returns: boolean
+      }
       verificar_limite_colaboradores: {
         Args: { empresa_uuid: string }
         Returns: {
