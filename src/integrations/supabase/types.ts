@@ -77,6 +77,55 @@ export type Database = {
           },
         ]
       }
+      colaborador_pins: {
+        Row: {
+          colaborador_id: string
+          created_at: string | null
+          empresa_id: string
+          id: string
+          pin: string
+          updated_at: string | null
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          pin: string
+          updated_at?: string | null
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          pin?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "colaborador_pins_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: true
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaborador_pins_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: true
+            referencedRelation: "v_alertas_vencimento"
+            referencedColumns: ["colaborador_id"]
+          },
+          {
+            foreignKeyName: "colaborador_pins_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: true
+            referencedRelation: "vw_epis_vencendo_7_dias"
+            referencedColumns: ["colaborador_id"]
+          },
+        ]
+      }
       colaboradores: {
         Row: {
           cargo: string | null
@@ -86,7 +135,6 @@ export type Database = {
           id: string
           nome_completo: string
           onboarding_completo: boolean | null
-          pin_assinatura: string | null
           setor_id: string | null
           status: string | null
         }
@@ -98,7 +146,6 @@ export type Database = {
           id?: string
           nome_completo: string
           onboarding_completo?: boolean | null
-          pin_assinatura?: string | null
           setor_id?: string | null
           status?: string | null
         }
@@ -110,7 +157,6 @@ export type Database = {
           id?: string
           nome_completo?: string
           onboarding_completo?: boolean | null
-          pin_assinatura?: string | null
           setor_id?: string | null
           status?: string | null
         }
@@ -712,6 +758,10 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_convite_id: string }; Returns: string }
+      colaborador_has_pin: {
+        Args: { p_colaborador_id: string }
+        Returns: boolean
+      }
       create_empresa_onboarding:
         | { Args: { p_cnpj: string; p_nome_fantasia: string }; Returns: string }
         | {
@@ -735,6 +785,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_empresa_id: { Args: never; Returns: string }
+      set_colaborador_pin: {
+        Args: { p_colaborador_id: string; p_pin: string }
+        Returns: undefined
+      }
       validar_pin_colaborador: {
         Args: { p_colaborador_id: string; p_pin: string }
         Returns: boolean
