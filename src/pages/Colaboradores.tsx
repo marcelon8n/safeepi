@@ -83,7 +83,6 @@ const Colaboradores = () => {
         cargo: form.cargo || null,
         setor_id: form.setor_id || null,
         status: form.status,
-        pin_assinatura: form.pin_assinatura || null,
       };
 
       if (editing && form.status === "ativo" && editing.status !== "ativo") {
@@ -93,12 +92,25 @@ const Colaboradores = () => {
         }
       }
 
+      let colaboradorId: string;
+
       if (editing) {
         const { error } = await supabase.from("colaboradores").update(payload).eq("id", editing.id);
         if (error) throw error;
+        colaboradorId = editing.id;
       } else {
-        const { error } = await supabase.from("colaboradores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"colaboradores">);
+        const { data, error } = await supabase.from("colaboradores").insert({ ...payload, empresa_id: empresaId } as TablesInsert<"colaboradores">).select("id").single();
         if (error) throw error;
+        colaboradorId = data.id;
+      }
+
+      // Set PIN via secure RPC if provided
+      if (form.pin_assinatura && form.pin_assinatura.length === 4) {
+        const { error: pinError } = await supabase.rpc("set_colaborador_pin", {
+          p_colaborador_id: colaboradorId,
+          p_pin: form.pin_assinatura,
+        });
+        if (pinError) throw pinError;
       }
     },
     onSuccess: () => {
