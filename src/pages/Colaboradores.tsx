@@ -161,6 +161,7 @@ const Colaboradores = () => {
 
   const closeDialog = () => {
     setEditingData(null);
+    setHasExistingPin(false);
     setForm({ nome_completo: "", cargo: "", setor_id: "", status: "ativo", pin_assinatura: "" });
     clearDraft();
     const newParams = new URLSearchParams(searchParams);
