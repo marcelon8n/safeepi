@@ -549,15 +549,27 @@ const RegistroEntregas = () => {
             )}
 
             <div>
-              <Label>Motivo da Entrega *</Label>
-              <Select value={motivoEntrega} onValueChange={(v) => setMotivoEntrega(v as MotivoEntrega)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {MOTIVOS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="mb-2 block">Motivo da Entrega *</Label>
+              <RadioGroup
+                value={motivoEntrega}
+                onValueChange={(v) => setMotivoEntrega(v as MotivoEntrega)}
+                className="grid grid-cols-2 gap-2"
+              >
+                {MOTIVOS.map((m) => (
+                  <Label
+                    key={m.value}
+                    htmlFor={`motivo-${m.value}`}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${
+                      motivoEntrega === m.value
+                        ? "border-primary bg-primary/5 text-primary font-medium"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <RadioGroupItem value={m.value} id={`motivo-${m.value}`} />
+                    {m.label}
+                  </Label>
+                ))}
+              </RadioGroup>
             </div>
 
             {showObservacoes && (
