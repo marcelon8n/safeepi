@@ -304,8 +304,6 @@ const Colaboradores = () => {
                         : "Esta senha de 4 números será usada pelo colaborador para assinar o recebimento de EPIs."}
                     </p>
                   </div>
-                    </p>
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={closeDialog}>Cancelar</Button>
