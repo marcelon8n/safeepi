@@ -39,29 +39,29 @@ const AppSidebar = () => {
 
   const groups: NavGroup[] = [
     {
-      label: "Operacional",
+      label: "Operação",
       show: true,
       items: [
         { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
-        { to: "/entregas", label: "Entregas de EPI", icon: ClipboardList, show: isEditor },
-        { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
-        { to: "/setores", label: "Setores", icon: Layers, show: true },
-        { to: "/ficha-epi", label: "Ficha Individual", icon: FileText, show: true },
+        { to: "/entregas", label: "Registro de Entregas", icon: ClipboardList, show: isEditor },
+        { to: "/ficha-epi", label: "Fichas Individuais", icon: FileText, show: true },
       ],
     },
     {
-      label: "Pessoas",
+      label: "Cadastros Base",
       show: true,
       items: [
+        { to: "/epis", label: "Catálogo de EPIs", icon: HardHat, show: true },
         { to: "/colaboradores", label: "Colaboradores", icon: Users, show: true },
+        { to: "/setores", label: "Setores", icon: Layers, show: true },
       ],
     },
     {
-      label: "Gestão",
+      label: "Gestão & Configurações",
       show: isAdmin,
       items: [
         { to: "/relatorios", label: "Relatórios", icon: BarChart3, show: isAdmin },
-        { to: "/admin", label: "Painel Estratégico", icon: ShieldAlert, show: isOwner },
+        { to: "/admin", label: "Painel Admin", icon: ShieldAlert, show: isOwner },
         { to: "/meu-perfil", label: "Meu Perfil", icon: User, show: true },
         { to: "/dados-empresa", label: "Dados da Empresa", icon: Building, show: isOwner },
         { to: "/auditoria", label: "Auditoria", icon: ScrollText, show: isOwner },
