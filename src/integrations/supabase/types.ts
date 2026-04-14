@@ -780,6 +780,7 @@ export type Database = {
           total_trocas: number
         }[]
       }
+      get_my_email: { Args: never; Returns: string }
       get_my_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
