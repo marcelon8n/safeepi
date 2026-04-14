@@ -113,20 +113,32 @@ const AdminUsers = () => {
           role: inviteRole,
           created_by: user?.id,
         })
-        .select()
+        .select("*")
         .single();
+
       if (error) {
         if (error.code === "23505") throw new Error("Já existe um convite para este e-mail.");
         throw error;
       }
 
+      console.log("Convite criado no banco:", data);
+
       // Dispara webhook para o n8n enviar o e-mail
+      const webhookUrl = "https://webhooks-mvp.lab-n8n.com/webhook/enviar-convite";
+      console.log("Enviando para o webhook:", data);
+
       try {
-        await fetch("https://webhooks-mvp.lab-n8n.com/webhook/enviar-convite", {
+        const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
+        console.log("Resposta do webhook:", response.status, response.statusText);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Webhook error response:", response.status, errorText);
+        }
       } catch (webhookErr) {
         console.error("Erro ao disparar webhook de convite:", webhookErr);
       }
