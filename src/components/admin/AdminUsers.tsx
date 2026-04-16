@@ -105,42 +105,18 @@ const AdminUsers = () => {
       const email = inviteEmail.trim().toLowerCase();
       if (!email) throw new Error("E-mail obrigatório");
       
-      const { data, error } = await (supabase as any)
+      const { error } = await (supabase as any)
         .from("convites")
         .insert({
           empresa_id: empresaId,
           email,
           role: inviteRole,
           created_by: user?.id,
-        })
-        .select("*")
-        .single();
+        });
 
       if (error) {
         if (error.code === "23505") throw new Error("Já existe um convite para este e-mail.");
         throw error;
-      }
-
-      console.log("Convite criado no banco:", data);
-
-      // Dispara webhook para o n8n enviar o e-mail
-      const webhookUrl = "https://webhooks-mvp.lab-n8n.com/webhook/enviar-convite";
-      console.log("Enviando para o webhook:", data);
-
-      try {
-        const response = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        console.log("Resposta do webhook:", response.status, response.statusText);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Webhook error response:", response.status, errorText);
-        }
-      } catch (webhookErr) {
-        console.error("Erro ao disparar webhook de convite:", webhookErr);
       }
     },
     onSuccess: () => {
