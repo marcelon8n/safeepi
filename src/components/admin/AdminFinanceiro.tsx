@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { DollarSign, TrendingUp } from "lucide-react";
 import AdminAssinatura from "./AdminAssinatura";
+import PlanUsageCard from "./PlanUsageCard";
 
 const AdminFinanceiro = () => {
   const { empresaId } = useEmpresaId();
@@ -46,6 +47,9 @@ const AdminFinanceiro = () => {
 
   return (
     <div className="space-y-6">
+      {/* Plan Usage / Upsell Trigger */}
+      <PlanUsageCard />
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Card className="shadow-sm">
